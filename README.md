@@ -1,6 +1,6 @@
-# Create and Heal
+# Creative Companion
 
-Create and Heal is an AI-powered web application concept for personalized, art-inspired, non-clinical emotional support for cancer patients and survivors. The project aims to help users reflect on daily emotions, notice recent emotional patterns, and receive gentle creative coping activity suggestions grounded in curated, reliable resources.
+Creative Companion is an AI-powered web application concept for personalized, art-inspired, non-clinical emotional support for cancer patients and survivors. The project aims to help users reflect on daily emotions, notice recent emotional patterns, and receive gentle creative coping activity suggestions grounded in curated, reliable resources.
 
 This project is not a medical, diagnostic, crisis intervention, psychotherapy, or art therapy service. It is designed as a supportive reflection and creative coping tool that should complement, not replace, professional care.
 
