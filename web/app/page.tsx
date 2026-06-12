@@ -1,57 +1,68 @@
-import { DeployButton } from "@/components/deploy-button";
-import { EnvVarWarning } from "@/components/env-var-warning";
-import { AuthButton } from "@/components/auth-button";
-import { Hero } from "@/components/hero";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { ConnectSupabaseSteps } from "@/components/tutorial/connect-supabase-steps";
-import { SignUpUserSteps } from "@/components/tutorial/sign-up-user-steps";
-import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
 import { Suspense } from "react";
+
+import { AuthButton } from "@/components/auth-button";
+import { Button } from "@/components/ui/button";
+
+const publicFeatures = [
+  "Daily emotional reflection",
+  "Art-inspired coping prompts",
+  "Private artwork notes",
+  "Consent-centered AI support",
+];
 
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-20 items-center">
-        <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-          <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-            <div className="flex gap-5 items-center font-semibold">
-              <Link href={"/"}>Next.js Supabase Starter</Link>
-              <div className="flex items-center gap-2">
-                <DeployButton />
-              </div>
-            </div>
-            {!hasEnvVars ? (
-              <EnvVarWarning />
-            ) : (
-              <Suspense>
-                <AuthButton />
-              </Suspense>
-            )}
+      <div className="w-full max-w-6xl flex-1 p-5">
+        <nav className="flex flex-col gap-4 py-4 text-sm md:flex-row md:items-center md:justify-between">
+          <Link href="/" className="font-semibold">
+            Creative Companion
+          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/crisis"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Crisis Resources
+            </Link>
+            <Suspense>
+              <AuthButton />
+            </Suspense>
           </div>
         </nav>
-        <div className="flex-1 flex flex-col gap-20 max-w-5xl p-5">
-          <Hero />
-          <main className="flex-1 flex flex-col gap-6 px-4">
-            <h2 className="font-medium text-xl mb-4">Next steps</h2>
-            {hasEnvVars ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
-          </main>
-        </div>
 
-        <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
-          <p>
-            Powered by{" "}
-            <a
-              href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
-              target="_blank"
-              className="font-bold hover:underline"
-              rel="noreferrer"
-            >
-              Supabase
-            </a>
-          </p>
-          <ThemeSwitcher />
-        </footer>
+        <section className="grid min-h-[calc(100vh-9rem)] content-center gap-10 py-10">
+          <div className="grid max-w-3xl gap-5">
+            <h1 className="text-4xl font-bold md:text-6xl">
+              A creative reflection space for cancer patients and survivors
+            </h1>
+            <p className="text-lg text-muted-foreground md:text-xl">
+              Creative Companion offers non-clinical, art-inspired emotional
+              support through daily check-ins, private reflections, and careful
+              AI-assisted recommendations.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild>
+                <Link href="/auth/sign-up">Create an account</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/auth/login">Sign in</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/crisis">Crisis resources</Link>
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-4">
+            {publicFeatures.map((feature) => (
+              <div key={feature} className="rounded-md border p-4 text-sm">
+                {feature}
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </main>
   );

@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -23,6 +24,7 @@ export function SignUpForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
+  const [acceptedSafetyTerms, setAcceptedSafetyTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -39,12 +41,18 @@ export function SignUpForm({
       return;
     }
 
+    if (!acceptedSafetyTerms) {
+      setError("Please review and accept the safety acknowledgement.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/protected`,
+          emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
       if (error) throw error;
@@ -100,6 +108,42 @@ export function SignUpForm({
                   value={repeatPassword}
                   onChange={(e) => setRepeatPassword(e.target.value)}
                 />
+              </div>
+              <div className="flex items-start gap-3 rounded-md border p-3">
+                <Checkbox
+                  id="safety-acknowledgement"
+                  checked={acceptedSafetyTerms}
+                  onCheckedChange={(checked) =>
+                    setAcceptedSafetyTerms(checked === true)
+                  }
+                  aria-describedby="safety-acknowledgement-description"
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <Label htmlFor="safety-acknowledgement">
+                    I understand the safety boundaries
+                  </Label>
+                  <p
+                    id="safety-acknowledgement-description"
+                    className="text-sm leading-relaxed text-muted-foreground"
+                  >
+                    Creative Companion is a non-clinical support tool, not a
+                    medical, psychotherapy, crisis, or emergency service. I will
+                    review consent settings before using diary or AI features.{" "}
+                    <Link
+                      href="/safety"
+                      className="font-medium underline underline-offset-4"
+                    >
+                      Safety and consent basics
+                    </Link>{" "}
+                    ·{" "}
+                    <Link
+                      href="/crisis"
+                      className="font-medium underline underline-offset-4"
+                    >
+                      Crisis resources
+                    </Link>
+                  </p>
+                </div>
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full" disabled={isLoading}>
