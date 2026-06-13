@@ -3,8 +3,10 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { AppShell } from "@/components/app-shell";
+import { AnalyzeDiaryButton } from "@/components/analyze-diary-button";
 import { DiaryEntryForm } from "@/components/diary-entry-form";
 import { DiaryEntryList } from "@/components/diary-entry-list";
+import { EmotionSummaryList } from "@/components/emotion-summary-list";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
@@ -43,8 +45,19 @@ async function DiaryDetails() {
     .eq("user_id", data.user.id)
     .order("created_at", { ascending: false });
 
+  const { data: summaries } = await supabase
+    .from("emotion_summaries")
+    .select(
+      "id, summary_text, dominant_moods, average_intensity, safety_level, created_at",
+    )
+    .eq("user_id", data.user.id)
+    .order("created_at", { ascending: false })
+    .limit(3);
+
   return (
     <div className="grid gap-8">
+      <AnalyzeDiaryButton />
+      <EmotionSummaryList summaries={summaries ?? []} />
       <DiaryEntryForm userId={data.user.id} />
       <DiaryEntryList entries={entries ?? []} />
     </div>
