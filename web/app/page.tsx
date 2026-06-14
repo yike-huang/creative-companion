@@ -2,14 +2,45 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { AuthButton } from "@/components/auth-button";
+import { HomeFeatureLinks } from "@/components/home-feature-links";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/server";
 
-const publicFeatures = [
-  "Daily emotional reflection",
-  "Art-inspired coping prompts",
-  "Private artwork notes",
-  "Consent-centered AI support",
-];
+async function HomeActions() {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getUser();
+  const isSignedIn = Boolean(data.user);
+
+  if (isSignedIn) {
+    return (
+      <div className="flex flex-wrap gap-3">
+        <Button asChild>
+          <Link href="/dashboard">Go to dashboard</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link href="/recommendations">Recommendations</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link href="/artworks">Artwork space</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap gap-3">
+      <Button asChild>
+        <Link href="/auth/sign-up">Create an account</Link>
+      </Button>
+      <Button asChild variant="outline">
+        <Link href="/auth/login">Sign in</Link>
+      </Button>
+      <Button asChild variant="outline">
+        <Link href="/crisis">Crisis resources</Link>
+      </Button>
+    </div>
+  );
+}
 
 export default function Home() {
   return (
@@ -42,26 +73,14 @@ export default function Home() {
               support through daily check-ins, private reflections, and careful
               AI-assisted recommendations.
             </p>
-            <div className="flex flex-wrap gap-3">
-              <Button asChild>
-                <Link href="/auth/sign-up">Create an account</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/auth/login">Sign in</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/crisis">Crisis resources</Link>
-              </Button>
-            </div>
+            <Suspense>
+              <HomeActions />
+            </Suspense>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-4">
-            {publicFeatures.map((feature) => (
-              <div key={feature} className="rounded-md border p-4 text-sm">
-                {feature}
-              </div>
-            ))}
-          </div>
+          <Suspense>
+            <HomeFeatureLinks />
+          </Suspense>
         </section>
       </div>
     </main>

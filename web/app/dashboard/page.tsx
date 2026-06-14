@@ -16,15 +16,15 @@ const features = [
   },
   {
     href: "/recommendations",
-    title: "Recommendations",
+    title: "Personalized art-inspired coping activities",
     description:
-      "Review art-inspired coping suggestions generated from your reflections.",
+      "Review activity suggestions and create while keeping the guidance visible.",
   },
   {
     href: "/artworks",
-    title: "Artwork space",
+    title: "Independent artwork space",
     description:
-      "Upload artwork photos and keep notes about your creative process.",
+      "Draw or upload artwork that is not tied to a specific recommendation.",
   },
   {
     href: "/consent",

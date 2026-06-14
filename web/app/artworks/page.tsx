@@ -71,10 +71,11 @@ export default function ArtworksPage() {
     <AppShell>
       <div className="grid gap-8">
         <div className="grid gap-2">
-          <h1 className="text-3xl font-bold">Artwork space</h1>
+          <h1 className="text-3xl font-bold">Independent artwork space</h1>
           <p className="max-w-2xl text-muted-foreground">
-            Draw online, upload photos of physical artwork, and keep private
-            reflections about your creative process.
+            Draw or upload artwork on your own, separate from a specific
+            recommendation, and keep private reflections about your creative
+            process.
           </p>
         </div>
 

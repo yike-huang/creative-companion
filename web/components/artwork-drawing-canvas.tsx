@@ -6,6 +6,8 @@ import {
   Eye,
   EyeOff,
   Minus,
+  Maximize2,
+  Minimize2,
   PaintBucket,
   Paintbrush,
   PenLine,
@@ -42,6 +44,7 @@ function createLayerCanvas() {
 }
 
 export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const layersRef = useRef<Map<string, HTMLCanvasElement>>(new Map());
   const isDrawingRef = useRef(false);
@@ -63,6 +66,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const router = useRouter();
 
   const renderCanvas = useCallback((currentLayers = layers) => {
@@ -109,6 +113,17 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
   useEffect(() => {
     activeLayerIdRef.current = activeLayerId;
   }, [activeLayerId]);
+
+  useEffect(() => {
+    function handleFullscreenChange() {
+      setIsFullscreen(document.fullscreenElement === rootRef.current);
+    }
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
 
   function getActiveLayerContext() {
     const layerCanvas = layersRef.current.get(activeLayerIdRef.current);
@@ -466,6 +481,18 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
     router.refresh();
   }
 
+  async function toggleFullscreen() {
+    if (!rootRef.current) {
+      return;
+    }
+
+    if (document.fullscreenElement === rootRef.current) {
+      await document.exitFullscreen();
+    } else {
+      await rootRef.current.requestFullscreen();
+    }
+  }
+
   const tools: Array<{
     id: DrawingTool;
     label: string;
@@ -480,16 +507,36 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
   ];
 
   return (
-    <div className="grid gap-5 rounded-md border p-5">
-      <div className="grid gap-2">
-        <h2 className="text-xl font-semibold">Draw online</h2>
-        <p className="text-sm text-muted-foreground">
-          Create a digital drawing with layers, brush styles, lines, and simple
-          shapes, then save it privately with a reflection.
-        </p>
+    <div
+      ref={rootRef}
+      className="grid gap-5 rounded-md border bg-background p-5"
+    >
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div className="grid gap-2">
+          <h2 className="text-xl font-semibold">Draw online</h2>
+          <p className="text-sm text-muted-foreground">
+            Create a digital drawing with layers, brush styles, lines, and
+            simple shapes, then save it privately with a reflection.
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-fit"
+          onClick={toggleFullscreen}
+        >
+          {isFullscreen ? <Minimize2 /> : <Maximize2 />}
+          {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+        </Button>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_18rem]">
+      <div
+        className={
+          isFullscreen
+            ? "grid min-h-0 flex-1 gap-4 xl:grid-cols-[1fr_18rem]"
+            : "grid gap-4 xl:grid-cols-[1fr_18rem]"
+        }
+      >
         <div className="overflow-hidden rounded-md border bg-white">
           <canvas
             ref={canvasRef}
