@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { AppShell } from "@/components/app-shell";
+import { ArtworkDrawingCanvas } from "@/components/artwork-drawing-canvas";
 import { ArtworkGallery } from "@/components/artwork-gallery";
 import { ArtworkUploadForm } from "@/components/artwork-upload-form";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,7 @@ async function ArtworkDetails() {
 
   return (
     <div className="grid gap-8">
+      <ArtworkDrawingCanvas userId={data.user.id} />
       <ArtworkUploadForm userId={data.user.id} />
       <ArtworkGallery artworks={artworksWithUrls} />
     </div>
@@ -71,8 +73,8 @@ export default function ArtworksPage() {
         <div className="grid gap-2">
           <h1 className="text-3xl font-bold">Artwork space</h1>
           <p className="max-w-2xl text-muted-foreground">
-            Upload photos of physical artwork and keep private reflections. A
-            digital drawing canvas will come next.
+            Draw online, upload photos of physical artwork, and keep private
+            reflections about your creative process.
           </p>
         </div>
 
