@@ -68,8 +68,13 @@ async function getEmotionContext(
 }
 
 function parseAnalysis(text: string): AnalysisResult {
+  const jsonText = text
+    .trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "");
+
   try {
-    const parsed = JSON.parse(text) as Partial<AnalysisResult>;
+    const parsed = JSON.parse(jsonText) as Partial<AnalysisResult>;
     return {
       summary_text:
         typeof parsed.summary_text === "string"
@@ -85,7 +90,7 @@ function parseAnalysis(text: string): AnalysisResult {
     };
   } catch {
     return {
-      summary_text: text,
+      summary_text: jsonText,
       dominant_moods: [],
       safety_level: "none",
     };
