@@ -7,6 +7,18 @@ type EmotionSummary = {
   created_at: string;
 };
 
+function getSafetyMessage(safetyLevel: string) {
+  if (safetyLevel === "elevated") {
+    return "This reflection found language that may need extra support. Crisis resources are available if you feel at risk or need urgent help.";
+  }
+
+  if (safetyLevel === "low") {
+    return "This reflection noticed some emotional strain, but it is not a diagnosis.";
+  }
+
+  return "This is a non-clinical reflection, not a diagnosis.";
+}
+
 export function EmotionSummaryList({
   summaries,
 }: {
@@ -29,10 +41,18 @@ export function EmotionSummaryList({
             )}
           </div>
           <p className="text-sm">{summary.summary_text}</p>
+          <p className="text-sm text-muted-foreground">
+            {getSafetyMessage(summary.safety_level)}
+          </p>
           {summary.dominant_moods.length > 0 && (
             <p className="text-sm text-muted-foreground">
               Dominant moods: {summary.dominant_moods.join(", ")}
             </p>
+          )}
+          {summary.safety_level === "elevated" && (
+            <a className="text-sm underline underline-offset-4" href="/crisis">
+              View crisis resources
+            </a>
           )}
         </article>
       ))}

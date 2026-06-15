@@ -7,12 +7,20 @@ const model = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
 
 const highRiskPatterns = [
   "suicide",
+  "suicidal",
   "kill myself",
   "end my life",
   "harm myself",
+  "self harm",
+  "self-harm",
   "hurt myself",
   "want to die",
+  "wanted to die",
+  "wish i were dead",
+  "wish i was dead",
   "no reason to live",
+  "can't go on",
+  "cannot go on",
 ];
 
 type AnalysisResult = {
@@ -26,6 +34,37 @@ function estimateSafetyLevel(entries: { diary_text: string }[]) {
   return highRiskPatterns.some((pattern) => text.includes(pattern))
     ? "elevated"
     : "none";
+}
+
+async function getEmotionContext(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+) {
+  const { data, error } = await supabase
+    .from("resource_chunks")
+    .select(
+      "chunk_text, chunk_summary, topic_tags, curated_resources(title, source_name, source_url)",
+    )
+    .overlaps("topic_tags", [
+      "cancer",
+      "emotions",
+      "stress",
+      "anxiety",
+      "sadness",
+      "support",
+      "emotional_expression",
+    ])
+    .limit(6);
+
+  if (error || !data) {
+    return [];
+  }
+
+  return data.map((chunk) => ({
+    text: chunk.chunk_text,
+    summary: chunk.chunk_summary,
+    tags: chunk.topic_tags,
+    source: chunk.curated_resources,
+  }));
 }
 
 function parseAnalysis(text: string): AnalysisResult {
@@ -104,6 +143,7 @@ export async function POST() {
     entries.reduce((sum, entry) => sum + (entry.mood_intensity ?? 0), 0) /
     entries.length;
   const heuristicSafetyLevel = estimateSafetyLevel(entries);
+  const emotionContext = await getEmotionContext(supabase);
 
   const client = new OpenAI({
     timeout: 30_000,
@@ -119,13 +159,15 @@ export async function POST() {
         {
           role: "system",
           content:
-            "You analyze private diary check-ins for a non-clinical emotional support app. Do not diagnose, provide medical advice, provide psychotherapy, or give crisis counseling. Return only valid JSON with keys summary_text, dominant_moods, and safety_level. safety_level must be one of none, low, elevated. Keep summary_text gentle, concise, and non-clinical.",
+            "You analyze private diary check-ins for a non-clinical emotional support app for people affected by cancer. Follow this workflow: 1) treat the provided rule_based_safety_level as a safety floor; never lower elevated safety to none or low, 2) use the reliable_context only as background for careful, non-pathologizing language, 3) identify likely emotion themes using uncertain wording such as may, might, or seems, 4) return a concise non-clinical reflection only. Do not diagnose, provide medical advice, provide psychotherapy, provide crisis counseling, or recommend coping activities. Return only valid JSON with keys summary_text, dominant_moods, and safety_level. safety_level must be one of none, low, elevated. dominant_moods should contain 1 to 5 short emotion/theme labels.",
         },
         {
           role: "user",
           content: JSON.stringify({
             instruction:
-              "Summarize recent emotional patterns from these diary entries. Do not provide coping recommendations yet.",
+              "Summarize recent emotional patterns from these diary entries. Do not provide coping recommendations yet. If reliable_context is empty, still use the rule-based safety floor and non-clinical boundaries.",
+            rule_based_safety_level: heuristicSafetyLevel,
+            reliable_context: emotionContext,
             entries,
           }),
         },

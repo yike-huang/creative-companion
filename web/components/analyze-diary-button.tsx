@@ -55,8 +55,9 @@ export function AnalyzeDiaryButton() {
       <div className="grid gap-2">
         <h2 className="text-xl font-semibold">AI-assisted reflection</h2>
         <p className="text-sm text-muted-foreground">
-          Analyze recent diary entries for non-clinical emotional patterns. This
-          does not generate coping recommendations yet.
+          Analyze recent diary entries for non-clinical emotional patterns using
+          safety checks and curated context when available. This does not
+          generate coping recommendations yet.
         </p>
       </div>
       <Button
