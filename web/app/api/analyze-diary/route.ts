@@ -36,23 +36,16 @@ function estimateSafetyLevel(entries: { diary_text: string }[]) {
     : "none";
 }
 
-async function getEmotionContext(
+async function getResourceContext(
   supabase: Awaited<ReturnType<typeof createClient>>,
+  useCaseTags: string[],
 ) {
   const { data, error } = await supabase
     .from("resource_chunks")
     .select(
-      "chunk_text, chunk_summary, topic_tags, curated_resources(title, source_name, source_url)",
+      "chunk_text, chunk_summary, topic_tags, use_case_tags, curated_resources(title, source_name, source_url)",
     )
-    .overlaps("topic_tags", [
-      "cancer",
-      "emotions",
-      "stress",
-      "anxiety",
-      "sadness",
-      "support",
-      "emotional_expression",
-    ])
+    .overlaps("use_case_tags", useCaseTags)
     .limit(6);
 
   if (error || !data) {
@@ -63,6 +56,7 @@ async function getEmotionContext(
     text: chunk.chunk_text,
     summary: chunk.chunk_summary,
     tags: chunk.topic_tags,
+    use_case_tags: chunk.use_case_tags,
     source: chunk.curated_resources,
   }));
 }
@@ -148,7 +142,13 @@ export async function POST() {
     entries.reduce((sum, entry) => sum + (entry.mood_intensity ?? 0), 0) /
     entries.length;
   const heuristicSafetyLevel = estimateSafetyLevel(entries);
-  const emotionContext = await getEmotionContext(supabase);
+  const emotionContext = await getResourceContext(supabase, [
+    "emotion_analysis",
+  ]);
+  const safetyContext = await getResourceContext(supabase, [
+    "safety_boundary",
+    "support_referral",
+  ]);
 
   const client = new OpenAI({
     timeout: 30_000,
@@ -164,15 +164,16 @@ export async function POST() {
         {
           role: "system",
           content:
-            "You analyze private diary check-ins for a non-clinical emotional support app for people affected by cancer. Follow this workflow: 1) treat the provided rule_based_safety_level as a safety floor; never lower elevated safety to none or low, 2) use the reliable_context only as background for careful, non-pathologizing language, 3) identify likely emotion themes using uncertain wording such as may, might, or seems, 4) return a concise non-clinical reflection only. Do not diagnose, provide medical advice, provide psychotherapy, provide crisis counseling, or recommend coping activities. Return only valid JSON with keys summary_text, dominant_moods, and safety_level. safety_level must be one of none, low, elevated. dominant_moods should contain 1 to 5 short emotion/theme labels.",
+            "You analyze private diary check-ins for a non-clinical emotional support app for people affected by cancer. Follow this workflow: 1) treat the provided rule_based_safety_level as a safety floor; never lower elevated safety to none or low, 2) use emotion_context only as background for careful, non-pathologizing emotion reflection, 3) use safety_context only for non-diagnostic boundary and support-referral language, 4) identify likely emotion themes using uncertain wording such as may, might, or seems, 5) return a concise non-clinical reflection only. Do not diagnose, provide medical advice, provide psychotherapy, provide crisis counseling, or recommend coping activities. Do not use clinical labels such as depression, anxiety disorder, PTSD, adjustment disorder, disorder, symptom, or patient appears to have. Use everyday feeling words instead, such as worry, fear, sadness, guilt, numbness, tiredness, loneliness, uncertainty, anger, hope, or gratitude. Return only valid JSON with keys summary_text, dominant_moods, and safety_level. safety_level must be one of none, low, elevated. dominant_moods should contain 1 to 5 short everyday emotion/theme labels.",
         },
         {
           role: "user",
           content: JSON.stringify({
             instruction:
-              "Summarize recent emotional patterns from these diary entries. Do not provide coping recommendations yet. If reliable_context is empty, still use the rule-based safety floor and non-clinical boundaries.",
+              "Summarize recent emotional patterns from these diary entries. Do not provide coping recommendations yet. If context is empty, still use the rule-based safety floor and non-clinical boundaries.",
             rule_based_safety_level: heuristicSafetyLevel,
-            reliable_context: emotionContext,
+            emotion_context: emotionContext,
+            safety_context: safetyContext,
             entries,
           }),
         },
