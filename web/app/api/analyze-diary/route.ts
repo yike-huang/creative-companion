@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 const model = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
+const embeddingModel =
+  process.env.OPENAI_EMBEDDING_MODEL ?? "text-embedding-3-small";
 
 const highRiskPatterns = [
   "suicide",
@@ -36,10 +38,32 @@ function estimateSafetyLevel(entries: { diary_text: string }[]) {
     : "none";
 }
 
-async function getResourceContext(
+type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
+
+type ResourceChunkMatch = {
+  chunk_text: string;
+  chunk_summary: string | null;
+  topic_tags: string[];
+  use_case_tags: string[];
+  title: string;
+  source_name: string;
+  source_url: string | null;
+  similarity: number;
+};
+
+type ResourceContext = {
+  text: string;
+  summary: string | null;
+  tags: string[];
+  use_case_tags: string[];
+  source: unknown;
+  similarity?: number;
+};
+
+async function getResourceContextByTags(
   supabase: Awaited<ReturnType<typeof createClient>>,
   useCaseTags: string[],
-) {
+): Promise<ResourceContext[]> {
   const { data, error } = await supabase
     .from("resource_chunks")
     .select(
@@ -52,12 +76,63 @@ async function getResourceContext(
     return [];
   }
 
-  return data.map((chunk) => ({
+  return data.map((chunk) => {
+    const source = Array.isArray(chunk.curated_resources)
+      ? chunk.curated_resources[0]
+      : chunk.curated_resources;
+
+    return {
+      text: chunk.chunk_text,
+      summary: chunk.chunk_summary,
+      tags: chunk.topic_tags,
+      use_case_tags: chunk.use_case_tags,
+      source,
+    };
+  });
+}
+
+async function getResourceContextByEmbedding(
+  supabase: SupabaseClient,
+  openai: OpenAI,
+  queryText: string,
+  useCaseTags: string[],
+): Promise<ResourceContext[]> {
+  const embeddingResponse = await openai.embeddings.create({
+    model: embeddingModel,
+    input: queryText,
+    dimensions: 1536,
+  });
+  const queryEmbedding = embeddingResponse.data[0]?.embedding;
+
+  if (!queryEmbedding) {
+    return [];
+  }
+
+  const { data, error } = await supabase.rpc(
+    "match_resource_chunks_by_use_case",
+    {
+      query_embedding: queryEmbedding,
+      match_threshold: 0.2,
+      match_count: 6,
+      filter_use_case_tags: useCaseTags,
+    },
+  );
+
+  if (error || !data) {
+    return [];
+  }
+
+  return (data as ResourceChunkMatch[]).map((chunk) => ({
     text: chunk.chunk_text,
     summary: chunk.chunk_summary,
     tags: chunk.topic_tags,
     use_case_tags: chunk.use_case_tags,
-    source: chunk.curated_resources,
+    source: {
+      title: chunk.title,
+      source_name: chunk.source_name,
+      source_url: chunk.source_url,
+    },
+    similarity: chunk.similarity,
   }));
 }
 
@@ -138,21 +213,45 @@ export async function POST() {
     );
   }
 
+  const client = new OpenAI({
+    timeout: 30_000,
+  });
   const averageIntensity =
     entries.reduce((sum, entry) => sum + (entry.mood_intensity ?? 0), 0) /
     entries.length;
   const heuristicSafetyLevel = estimateSafetyLevel(entries);
-  const emotionContext = await getResourceContext(supabase, [
-    "emotion_analysis",
-  ]);
-  const safetyContext = await getResourceContext(supabase, [
-    "safety_boundary",
-    "support_referral",
-  ]);
+  const contextQuery = JSON.stringify(
+    entries.map((entry) => ({
+      mood_labels: entry.mood_labels,
+      mood_intensity: entry.mood_intensity,
+      diary_text: entry.diary_text,
+    })),
+  );
+  let emotionContext = await getResourceContextByEmbedding(
+    supabase,
+    client,
+    contextQuery,
+    ["emotion_analysis"],
+  );
+  let safetyContext = await getResourceContextByEmbedding(
+    supabase,
+    client,
+    contextQuery,
+    ["safety_boundary", "support_referral"],
+  );
 
-  const client = new OpenAI({
-    timeout: 30_000,
-  });
+  if (emotionContext.length === 0) {
+    emotionContext = await getResourceContextByTags(supabase, [
+      "emotion_analysis",
+    ]);
+  }
+
+  if (safetyContext.length === 0) {
+    safetyContext = await getResourceContextByTags(supabase, [
+      "safety_boundary",
+      "support_referral",
+    ]);
+  }
 
   let response;
 

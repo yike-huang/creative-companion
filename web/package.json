@@ -2,6 +2,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "embed:resources": "node scripts/embed-resource-chunks.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint ."
