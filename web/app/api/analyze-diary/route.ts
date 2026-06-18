@@ -97,12 +97,18 @@ async function getResourceContextByEmbedding(
   queryText: string,
   useCaseTags: string[],
 ): Promise<ResourceContext[]> {
-  const embeddingResponse = await openai.embeddings.create({
-    model: embeddingModel,
-    input: queryText,
-    dimensions: 1536,
-  });
-  const queryEmbedding = embeddingResponse.data[0]?.embedding;
+  let queryEmbedding: number[] | undefined;
+
+  try {
+    const embeddingResponse = await openai.embeddings.create({
+      model: embeddingModel,
+      input: queryText,
+      dimensions: 1536,
+    });
+    queryEmbedding = embeddingResponse.data[0]?.embedding;
+  } catch {
+    return [];
+  }
 
   if (!queryEmbedding) {
     return [];

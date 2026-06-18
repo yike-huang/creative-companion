@@ -19,14 +19,13 @@ export function AnalyzeDiaryButton() {
     const timeoutId = window.setTimeout(() => controller.abort(), 35_000);
 
     let response: Response;
-    let result: { error?: string };
+    let result: { error?: string } = {};
 
     try {
       response = await fetch("/api/analyze-diary", {
         method: "POST",
         signal: controller.signal,
       });
-      result = await response.json();
     } catch (error) {
       setError(
         error instanceof Error && error.name === "AbortError"
@@ -39,6 +38,18 @@ export function AnalyzeDiaryButton() {
     }
 
     window.clearTimeout(timeoutId);
+
+    const responseText = await response.text();
+
+    try {
+      result = responseText ? JSON.parse(responseText) : {};
+    } catch {
+      result = {
+        error:
+          responseText ||
+          "The analysis service returned an unexpected response.",
+      };
+    }
 
     if (!response.ok) {
       setError(result.error ?? "Unable to analyze diary entries.");
