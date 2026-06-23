@@ -20,6 +20,14 @@ type ResourceChunkMatch = {
   similarity: number;
 };
 
+type UserProfileContext = {
+  age_range: string | null;
+  cancer_type: string | null;
+  journey_stage: string | null;
+  country: string | null;
+  preferred_language: string | null;
+};
+
 type ResourceContext = {
   text: string;
   summary: string | null;
@@ -27,6 +35,18 @@ type ResourceContext = {
   use_case_tags: string[];
   source: unknown;
   similarity?: number;
+};
+
+type EvidenceScopeContext = {
+  sourceTitle: string;
+  evidenceRole: string;
+  evidenceDirection: string;
+  populationFit: string;
+  ageScope: string[];
+  cancerStageScope: string[];
+  careSettingScope: string[];
+  cancerTypeScope: string[];
+  generalizabilityNote: string | null;
 };
 
 type RecommendationSource = {
@@ -113,6 +133,68 @@ async function getContextSources(
         source.url === null || visibilityByUrl.get(source.url) !== false,
     )
     .slice(0, 4);
+}
+
+async function getEvidenceScopeContext(
+  supabase: SupabaseClient,
+  context: ResourceContext[],
+): Promise<EvidenceScopeContext[]> {
+  const sourceUrls = Array.from(
+    new Set(
+      context.flatMap((item) => {
+        const source = item.source as
+          | { source_url?: unknown }
+          | null
+          | undefined;
+
+        return typeof source?.source_url === "string"
+          ? [source.source_url]
+          : [];
+      }),
+    ),
+  );
+
+  if (sourceUrls.length === 0) {
+    return [];
+  }
+
+  const { data: resources, error: resourcesError } = await supabase
+    .from("curated_resources")
+    .select("id, title")
+    .in("source_url", sourceUrls);
+
+  if (resourcesError || !resources || resources.length === 0) {
+    return [];
+  }
+
+  const resourceTitles = new Map(
+    resources.map((resource) => [resource.id, resource.title]),
+  );
+  const { data: links, error: linksError } = await supabase
+    .from("recommendation_evidence_links")
+    .select(
+      "resource_id, evidence_role, evidence_direction, population_fit, age_scope, cancer_stage_scope, care_setting_scope, cancer_type_scope, generalizability_note",
+    )
+    .in(
+      "resource_id",
+      resources.map((resource) => resource.id),
+    );
+
+  if (linksError || !links) {
+    return [];
+  }
+
+  return links.map((link) => ({
+    sourceTitle: resourceTitles.get(link.resource_id) ?? "Curated source",
+    evidenceRole: link.evidence_role,
+    evidenceDirection: link.evidence_direction,
+    populationFit: link.population_fit,
+    ageScope: link.age_scope ?? [],
+    cancerStageScope: link.cancer_stage_scope ?? [],
+    careSettingScope: link.care_setting_scope ?? [],
+    cancerTypeScope: link.cancer_type_scope ?? [],
+    generalizabilityNote: link.generalizability_note,
+  }));
 }
 
 function parseRecommendations(
@@ -263,6 +345,14 @@ export async function POST() {
 
   const userId = authData.user.id;
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select(
+      "age_range, cancer_type, journey_stage, country, preferred_language",
+    )
+    .eq("id", userId)
+    .maybeSingle();
+
   const { data: consent } = await supabase
     .from("consents")
     .select("allow_ai_analysis")
@@ -324,6 +414,7 @@ export async function POST() {
   const contextQuery = JSON.stringify({
     latest_summary: latestSummary,
     recent_entries: entries ?? [],
+    profile: profile ?? null,
   });
   let activityContext = await getResourceContextByEmbedding(
     supabase,
@@ -349,6 +440,10 @@ export async function POST() {
       "safety_boundary",
     ]);
   }
+  const evidenceScopeContext = await getEvidenceScopeContext(supabase, [
+    ...activityContext,
+    ...safetyContext,
+  ]);
   const recommendationSources = await getContextSources(supabase, [
     ...activityContext,
     ...safetyContext,
@@ -364,7 +459,7 @@ export async function POST() {
         {
           role: "system",
           content:
-            "You generate non-clinical art-inspired coping activity recommendations for people affected by cancer. There is no deterministic or universally valid one-to-one mapping between an emotion and an art exercise. Present every output as a tentative creative option, never as the correct activity for a feeling. Use activity_context for grounded creative activity framing and safety_context for boundaries. Treat sources as background principles and creative constraints for source-informed adaptation, not as a closed catalog of activities or instructions that prescribe exact art activities. You may create gentle variations that combine supported principles with different colors, marks, shapes, patterns, symbols, collage-like composition, short captions, or digital and paper formats. Keep adaptations proportionate to the evidence and clearly distinguish them from a study's exact activity. Do not say or imply that NIH, NCCIH, AATA, ACS, or any source recommends this specific activity unless the source explicitly does. Do not call the activities art therapy, psychotherapy, treatment, or medical advice. Do not diagnose. Do not claim clinical benefit, symptom reduction, or guaranteed emotional improvement. Generate exactly two genuinely different, complementary options so the user can choose what feels right. Vary the creative process, visual structure, level of emotional engagement, and effort level; avoid repeatedly defaulting to the same mandala, breathing-color, or journaling prompt unless it is especially relevant. When supported by the retrieved context, one option may gently engage with, notice, or express the emotion, while the other may offer soothing, grounding, attentional shifting, or a neutral absorbing subject. Do not rank the options, claim one regulation strategy is generally better, or imply the user should avoid, suppress, confront, or process an emotion. Never force emotional disclosure or interpretation. Recommend gentle, optional, low-pressure creative activities that can be done digitally or on paper. Avoid trauma processing, exposure, body inspection, or emotionally intense prompts. Every recommendation should make it easy for the user to stop, rest, simplify, or choose something else. Return only valid JSON with key recommendations, an array of exactly 2 items. Each item must include id, title, reason, whyThisFits, steps, and safetyNote. Do not invent citations or URLs. Use short practical steps.",
+            "You generate non-clinical art-inspired coping activity recommendations for people affected by cancer. There is no deterministic or universally valid one-to-one mapping between an emotion and an art exercise. Present every output as a tentative creative option, never as the correct activity for a feeling. Use activity_context for grounded creative activity framing and safety_context for boundaries. Use evidence_scope_context to judge how closely retrieved evidence matches the user's optional profile. Treat profile fields as contextual preferences, not clinical facts. When evidence comes from a different age group, cancer type, journey stage, or care setting, adapt conservatively and describe the connection with lower certainty. Never imply that evidence from hospitalized adolescents, a specific cancer population, or professionally delivered art therapy directly validates a self-guided activity for a different user. If scope data is absent or mismatched, keep the activity low-risk and general rather than filling gaps with clinical assumptions. Treat sources as background principles and creative constraints for source-informed adaptation, not as a closed catalog of activities or instructions that prescribe exact art activities. You may create gentle variations that combine supported principles with different colors, marks, shapes, patterns, symbols, collage-like composition, short captions, or digital and paper formats. Keep adaptations proportionate to the evidence and clearly distinguish them from a study's exact activity. Do not say or imply that NIH, NCCIH, AATA, ACS, or any source recommends this specific activity unless the source explicitly does. Do not call the activities art therapy, psychotherapy, treatment, or medical advice. Do not diagnose. Do not claim clinical benefit, symptom reduction, or guaranteed emotional improvement. Generate exactly two genuinely different, complementary options so the user can choose what feels right. Vary the creative process, visual structure, level of emotional engagement, and effort level; avoid repeatedly defaulting to the same mandala, breathing-color, or journaling prompt unless it is especially relevant. When supported by the retrieved context, one option may gently engage with, notice, or express the emotion, while the other may offer soothing, grounding, attentional shifting, or a neutral absorbing subject. Do not rank the options, claim one regulation strategy is generally better, or imply the user should avoid, suppress, confront, or process an emotion. Never force emotional disclosure or interpretation. Recommend gentle, optional, low-pressure creative activities that can be done digitally or on paper. Avoid trauma processing, exposure, body inspection, or emotionally intense prompts. Every recommendation should make it easy for the user to stop, rest, simplify, or choose something else. Return only valid JSON with key recommendations, an array of exactly 2 items. Each item must include id, title, reason, whyThisFits, steps, and safetyNote. Do not invent citations or URLs. Use short practical steps.",
         },
         {
           role: "user",
@@ -373,8 +468,10 @@ export async function POST() {
               "Generate two personalized and meaningfully different art-inspired creative coping options based on the latest non-clinical emotion summary and recent diary entries. Present them as equal choices, not as a best option and a fallback. Ground them in the provided context as gentle adaptations of general principles, not as source-prescribed interventions. Explain why each option might fit in tentative, non-clinical language, and preserve the user's choice between engaging with a feeling and taking a gentle pause from it when the evidence context supports both.",
             latest_summary: latestSummary,
             recent_entries: entries ?? [],
+            profile: (profile ?? null) as UserProfileContext | null,
             activity_context: activityContext,
             safety_context: safetyContext,
+            evidence_scope_context: evidenceScopeContext,
           }),
         },
       ],
