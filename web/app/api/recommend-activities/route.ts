@@ -55,6 +55,10 @@ type RecommendationSource = {
   url: string | null;
 };
 
+type RecommendationSourceOption = RecommendationSource & {
+  id: string;
+};
+
 type ActivityRecommendation = {
   id: string;
   title: string;
@@ -68,7 +72,7 @@ type ActivityRecommendation = {
 async function getContextSources(
   supabase: SupabaseClient,
   context: ResourceContext[],
-): Promise<RecommendationSource[]> {
+): Promise<RecommendationSourceOption[]> {
   const sources = new Map<string, RecommendationSource>();
 
   for (const item of context) {
@@ -110,7 +114,10 @@ async function getContextSources(
   );
 
   if (sourceUrls.length === 0) {
-    return candidates.slice(0, 4);
+    return candidates.slice(0, 6).map((source, index) => ({
+      ...source,
+      id: `source-${index + 1}`,
+    }));
   }
 
   const { data, error } = await supabase
@@ -120,7 +127,10 @@ async function getContextSources(
 
   // Keep the old behavior until the display_to_users migration is applied.
   if (error || !data) {
-    return candidates.slice(0, 4);
+    return candidates.slice(0, 6).map((source, index) => ({
+      ...source,
+      id: `source-${index + 1}`,
+    }));
   }
 
   const visibilityByUrl = new Map(
@@ -132,7 +142,11 @@ async function getContextSources(
       (source) =>
         source.url === null || visibilityByUrl.get(source.url) !== false,
     )
-    .slice(0, 4);
+    .slice(0, 6)
+    .map((source, index) => ({
+      ...source,
+      id: `source-${index + 1}`,
+    }));
 }
 
 async function getEvidenceScopeContext(
@@ -199,7 +213,7 @@ async function getEvidenceScopeContext(
 
 function parseRecommendations(
   text: string,
-  sources: RecommendationSource[],
+  sourceOptions: RecommendationSourceOption[],
 ): ActivityRecommendation[] {
   const jsonText = text
     .trim()
@@ -215,7 +229,32 @@ function parseRecommendations(
 
     return parsed.recommendations
       .map((item, index) => {
-        const recommendation = item as Partial<ActivityRecommendation>;
+        const recommendation = item as Partial<ActivityRecommendation> & {
+          sourceIds?: unknown;
+        };
+        const sourceIds = Array.isArray(recommendation.sourceIds)
+          ? recommendation.sourceIds.filter(
+              (sourceId): sourceId is string =>
+                typeof sourceId === "string",
+            )
+          : [];
+        const sources = sourceIds
+          .flatMap((sourceId) => {
+            const source = sourceOptions.find(
+              (option) => option.id === sourceId,
+            );
+
+            return source
+              ? [
+                  {
+                    title: source.title,
+                    sourceName: source.sourceName,
+                    url: source.url,
+                  },
+                ]
+              : [];
+          })
+          .slice(0, 2);
 
         return {
           id:
@@ -459,7 +498,7 @@ export async function POST() {
         {
           role: "system",
           content:
-            "You generate non-clinical art-inspired coping activity recommendations for people affected by cancer. There is no deterministic or universally valid one-to-one mapping between an emotion and an art exercise. Present every output as a tentative creative option, never as the correct activity for a feeling. Use activity_context for grounded creative activity framing and safety_context for boundaries. Use evidence_scope_context to judge how closely retrieved evidence matches the user's optional profile. Treat profile fields as contextual preferences, not clinical facts. When evidence comes from a different age group, cancer type, journey stage, or care setting, adapt conservatively and describe the connection with lower certainty. Never imply that evidence from hospitalized adolescents, a specific cancer population, or professionally delivered art therapy directly validates a self-guided activity for a different user. If scope data is absent or mismatched, keep the activity low-risk and general rather than filling gaps with clinical assumptions. Treat sources as background principles and creative constraints for source-informed adaptation, not as a closed catalog of activities or instructions that prescribe exact art activities. You may create gentle variations that combine supported principles with different colors, marks, shapes, patterns, symbols, collage-like composition, short captions, or digital and paper formats. Keep adaptations proportionate to the evidence and clearly distinguish them from a study's exact activity. Do not say or imply that NIH, NCCIH, AATA, ACS, or any source recommends this specific activity unless the source explicitly does. Do not call the activities art therapy, psychotherapy, treatment, or medical advice. Do not diagnose. Do not claim clinical benefit, symptom reduction, or guaranteed emotional improvement. Generate exactly two genuinely different, complementary options so the user can choose what feels right. Vary the creative process, visual structure, level of emotional engagement, and effort level; avoid repeatedly defaulting to the same mandala, breathing-color, or journaling prompt unless it is especially relevant. When supported by the retrieved context, one option may gently engage with, notice, or express the emotion, while the other may offer soothing, grounding, attentional shifting, or a neutral absorbing subject. Do not rank the options, claim one regulation strategy is generally better, or imply the user should avoid, suppress, confront, or process an emotion. Never force emotional disclosure or interpretation. Recommend gentle, optional, low-pressure creative activities that can be done digitally or on paper. Avoid trauma processing, exposure, body inspection, or emotionally intense prompts. Every recommendation should make it easy for the user to stop, rest, simplify, or choose something else. Return only valid JSON with key recommendations, an array of exactly 2 items. Each item must include id, title, reason, whyThisFits, steps, and safetyNote. Do not invent citations or URLs. Use short practical steps.",
+            "You generate non-clinical art-inspired coping activity recommendations for people affected by cancer. There is no deterministic or universally valid one-to-one mapping between an emotion and an art exercise. Present every output as a tentative creative option, never as the correct activity for a feeling. Use activity_context for grounded creative activity framing and safety_context for boundaries. Use evidence_scope_context to judge how closely retrieved evidence matches the user's optional profile. Treat profile fields as contextual preferences, not clinical facts. When evidence comes from a different age group, cancer type, journey stage, or care setting, adapt conservatively and describe the connection with lower certainty. Never imply that evidence from hospitalized adolescents, a specific cancer population, or professionally delivered art therapy directly validates a self-guided activity for a different user. If scope data is absent or mismatched, keep the activity low-risk and general rather than filling gaps with clinical assumptions. Treat sources as background principles and creative constraints for source-informed adaptation, not as a closed catalog of activities or instructions that prescribe exact art activities. You may create gentle variations that combine supported principles with different colors, marks, shapes, patterns, symbols, collage-like composition, short captions, or digital and paper formats. Keep adaptations proportionate to the evidence and clearly distinguish them from a study's exact activity. Do not say or imply that NIH, NCCIH, AATA, ACS, or any source recommends this specific activity unless the source explicitly does. Do not call the activities art therapy, psychotherapy, treatment, or medical advice. Do not diagnose. Do not claim clinical benefit, symptom reduction, or guaranteed emotional improvement. Generate exactly two genuinely different, complementary options so the user can choose what feels right. Vary the creative process, visual structure, level of emotional engagement, and effort level; avoid repeatedly defaulting to the same mandala, breathing-color, or journaling prompt unless it is especially relevant. When supported by the retrieved context, one option may gently engage with, notice, or express the emotion, while the other may offer soothing, grounding, attentional shifting, or a neutral absorbing subject. Do not rank the options, claim one regulation strategy is generally better, or imply the user should avoid, suppress, confront, or process an emotion. Never force emotional disclosure or interpretation. Recommend gentle, optional, low-pressure creative activities that can be done digitally or on paper. Avoid trauma processing, exposure, body inspection, or emotionally intense prompts. Every recommendation should make it easy for the user to stop, rest, simplify, or choose something else. Return only valid JSON with key recommendations, an array of exactly 2 items. Each item must include id, title, reason, whyThisFits, steps, safetyNote, and sourceIds. sourceIds must contain zero to two IDs copied exactly from user_facing_source_options that genuinely support that specific option. Do not automatically attach the same sources to both recommendations. Use an empty array when no visible source clearly fits. Never invent source IDs, citations, or URLs. Use short practical steps.",
         },
         {
           role: "user",
@@ -472,6 +511,11 @@ export async function POST() {
             activity_context: activityContext,
             safety_context: safetyContext,
             evidence_scope_context: evidenceScopeContext,
+            user_facing_source_options: recommendationSources.map((source) => ({
+              id: source.id,
+              title: source.title,
+              source_name: source.sourceName,
+            })),
           }),
         },
       ],
