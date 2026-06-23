@@ -100,6 +100,11 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
               <p className="text-sm text-muted-foreground">
                 {selectedRecommendation.reason}
               </p>
+              <p className="text-xs text-muted-foreground">
+                This is one creative option, not a prescribed match for a
+                feeling. Change it, pause, or choose something else at any
+                point.
+              </p>
             </div>
 
             <div className="rounded-md border p-3 text-sm">
@@ -167,6 +172,12 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
             Create gentle art-inspired options from your latest reflection.
             These are creative prompts, not art therapy, medical care, or crisis
             support.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Feelings do not map to one “right” art exercise. These suggestions
+            combine your reflection with curated research and support resources
+            to offer different possibilities. You can choose, change, or skip
+            either one.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -240,6 +251,10 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                     <p className="font-medium">Why this might fit</p>
                     <p className="text-muted-foreground">
                       {recommendation.whyThisFits}
+                    </p>
+                    <p className="text-muted-foreground">
+                      This explanation is a tentative connection, not proof that
+                      this activity will have a particular effect for you.
                     </p>
                   </div>
                   {recommendation.sources.length > 0 && (

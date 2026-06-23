@@ -45,7 +45,10 @@ type ActivityRecommendation = {
   sources: RecommendationSource[];
 };
 
-function getContextSources(context: ResourceContext[]): RecommendationSource[] {
+async function getContextSources(
+  supabase: SupabaseClient,
+  context: ResourceContext[],
+): Promise<RecommendationSource[]> {
   const sources = new Map<string, RecommendationSource>();
 
   for (const item of context) {
@@ -81,7 +84,35 @@ function getContextSources(context: ResourceContext[]): RecommendationSource[] {
     });
   }
 
-  return Array.from(sources.values()).slice(0, 4);
+  const candidates = Array.from(sources.values());
+  const sourceUrls = candidates.flatMap((source) =>
+    source.url ? [source.url] : [],
+  );
+
+  if (sourceUrls.length === 0) {
+    return candidates.slice(0, 4);
+  }
+
+  const { data, error } = await supabase
+    .from("curated_resources")
+    .select("source_url, display_to_users")
+    .in("source_url", sourceUrls);
+
+  // Keep the old behavior until the display_to_users migration is applied.
+  if (error || !data) {
+    return candidates.slice(0, 4);
+  }
+
+  const visibilityByUrl = new Map(
+    data.map((source) => [source.source_url, source.display_to_users]),
+  );
+
+  return candidates
+    .filter(
+      (source) =>
+        source.url === null || visibilityByUrl.get(source.url) !== false,
+    )
+    .slice(0, 4);
 }
 
 function parseRecommendations(
@@ -318,7 +349,7 @@ export async function POST() {
       "safety_boundary",
     ]);
   }
-  const recommendationSources = getContextSources([
+  const recommendationSources = await getContextSources(supabase, [
     ...activityContext,
     ...safetyContext,
   ]);
@@ -333,13 +364,13 @@ export async function POST() {
         {
           role: "system",
           content:
-            "You generate non-clinical art-inspired coping activity recommendations for people affected by cancer. Use activity_context for grounded creative activity framing and safety_context for boundaries. Treat sources as background principles for source-informed adaptation, not as instructions that prescribe exact art activities. Do not say or imply that NIH, NCCIH, AATA, ACS, or any source recommends this specific activity unless the source explicitly does. Do not call the activities art therapy, psychotherapy, treatment, or medical advice. Do not diagnose. Do not claim clinical benefit, symptom reduction, or guaranteed emotional improvement. Recommend gentle, optional, low-pressure creative activities that can be done digitally or on paper. Avoid trauma processing, exposure, body inspection, or emotionally intense prompts. Every recommendation should make it easy for the user to stop, rest, simplify, or choose something else. Return only valid JSON with key recommendations, an array of exactly 2 items. Each item must include id, title, reason, whyThisFits, steps, and safetyNote. Do not invent citations or URLs. Use short practical steps.",
+            "You generate non-clinical art-inspired coping activity recommendations for people affected by cancer. There is no deterministic or universally valid one-to-one mapping between an emotion and an art exercise. Present every output as a tentative creative option, never as the correct activity for a feeling. Use activity_context for grounded creative activity framing and safety_context for boundaries. Treat sources as background principles and creative constraints for source-informed adaptation, not as a closed catalog of activities or instructions that prescribe exact art activities. You may create gentle variations that combine supported principles with different colors, marks, shapes, patterns, symbols, collage-like composition, short captions, or digital and paper formats. Keep adaptations proportionate to the evidence and clearly distinguish them from a study's exact activity. Do not say or imply that NIH, NCCIH, AATA, ACS, or any source recommends this specific activity unless the source explicitly does. Do not call the activities art therapy, psychotherapy, treatment, or medical advice. Do not diagnose. Do not claim clinical benefit, symptom reduction, or guaranteed emotional improvement. Generate exactly two genuinely different, complementary options so the user can choose what feels right. Vary the creative process, visual structure, level of emotional engagement, and effort level; avoid repeatedly defaulting to the same mandala, breathing-color, or journaling prompt unless it is especially relevant. When supported by the retrieved context, one option may gently engage with, notice, or express the emotion, while the other may offer soothing, grounding, attentional shifting, or a neutral absorbing subject. Do not rank the options, claim one regulation strategy is generally better, or imply the user should avoid, suppress, confront, or process an emotion. Never force emotional disclosure or interpretation. Recommend gentle, optional, low-pressure creative activities that can be done digitally or on paper. Avoid trauma processing, exposure, body inspection, or emotionally intense prompts. Every recommendation should make it easy for the user to stop, rest, simplify, or choose something else. Return only valid JSON with key recommendations, an array of exactly 2 items. Each item must include id, title, reason, whyThisFits, steps, and safetyNote. Do not invent citations or URLs. Use short practical steps.",
         },
         {
           role: "user",
           content: JSON.stringify({
             instruction:
-              "Generate two personalized art-inspired creative coping activities based on the latest non-clinical emotion summary and recent diary entries. Ground the activities in the provided context as gentle adaptations of general principles, not as source-prescribed interventions. Explain why each activity might fit the emotion summary in whyThisFits using tentative, non-clinical language.",
+              "Generate two personalized and meaningfully different art-inspired creative coping options based on the latest non-clinical emotion summary and recent diary entries. Present them as equal choices, not as a best option and a fallback. Ground them in the provided context as gentle adaptations of general principles, not as source-prescribed interventions. Explain why each option might fit in tentative, non-clinical language, and preserve the user's choice between engaging with a feeling and taking a gentle pause from it when the evidence context supports both.",
             latest_summary: latestSummary,
             recent_entries: entries ?? [],
             activity_context: activityContext,
