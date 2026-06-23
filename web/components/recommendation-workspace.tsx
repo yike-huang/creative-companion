@@ -48,7 +48,7 @@ type PreferenceOption<T extends string> = {
 };
 
 const energyOptions: PreferenceOption<EnergyPreference>[] = [
-  { value: "surprise_me", label: "Surprise me", icon: Shuffle },
+  { value: "surprise_me", label: "No preference", icon: Shuffle },
   { value: "low", label: "Low energy", icon: BatteryLow },
   { value: "medium", label: "Some energy", icon: BatteryMedium },
 ];
@@ -60,9 +60,17 @@ const mediumOptions: PreferenceOption<MediumPreference>[] = [
 ];
 
 const directionOptions: PreferenceOption<DirectionPreference>[] = [
-  { value: "surprise_me", label: "Surprise me", icon: Shuffle },
-  { value: "gently_engage", label: "Stay with it", icon: Blend },
-  { value: "take_a_pause", label: "Take a pause", icon: Sparkles },
+  { value: "surprise_me", label: "No preference", icon: Shuffle },
+  {
+    value: "gently_engage",
+    label: "Express what I’m feeling",
+    icon: Blend,
+  },
+  {
+    value: "take_a_pause",
+    label: "Focus on something else",
+    icon: Sparkles,
+  },
 ];
 
 function PreferenceControl<T extends string>({
@@ -292,7 +300,7 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
               onChange={setMediumPreference}
             />
             <PreferenceControl
-              label="What kind of direction sounds better?"
+              label="What would feel most helpful right now?"
               value={directionPreference}
               options={directionOptions}
               onChange={setDirectionPreference}
