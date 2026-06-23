@@ -1,5 +1,14 @@
 "use client";
 
+import {
+  BatteryLow,
+  BatteryMedium,
+  Blend,
+  Laptop,
+  Pencil,
+  Shuffle,
+  Sparkles,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -25,6 +34,74 @@ type RecommendationResponse = {
   error?: string;
 };
 
+type EnergyPreference = "surprise_me" | "low" | "medium";
+type MediumPreference = "surprise_me" | "digital" | "paper";
+type DirectionPreference =
+  | "surprise_me"
+  | "gently_engage"
+  | "take_a_pause";
+
+type PreferenceOption<T extends string> = {
+  value: T;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+};
+
+const energyOptions: PreferenceOption<EnergyPreference>[] = [
+  { value: "surprise_me", label: "Surprise me", icon: Shuffle },
+  { value: "low", label: "Low energy", icon: BatteryLow },
+  { value: "medium", label: "Some energy", icon: BatteryMedium },
+];
+
+const mediumOptions: PreferenceOption<MediumPreference>[] = [
+  { value: "surprise_me", label: "Either", icon: Shuffle },
+  { value: "digital", label: "Digital", icon: Laptop },
+  { value: "paper", label: "Paper", icon: Pencil },
+];
+
+const directionOptions: PreferenceOption<DirectionPreference>[] = [
+  { value: "surprise_me", label: "Surprise me", icon: Shuffle },
+  { value: "gently_engage", label: "Stay with it", icon: Blend },
+  { value: "take_a_pause", label: "Take a pause", icon: Sparkles },
+];
+
+function PreferenceControl<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  options: PreferenceOption<T>[];
+  onChange: (value: T) => void;
+}) {
+  return (
+    <div className="grid gap-2">
+      <p className="text-sm font-medium">{label}</p>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => {
+          const Icon = option.icon;
+
+          return (
+            <Button
+              key={option.value}
+              type="button"
+              variant={value === option.value ? "default" : "outline"}
+              size="sm"
+              onClick={() => onChange(option.value)}
+              aria-pressed={value === option.value}
+            >
+              <Icon className="size-4" />
+              {option.label}
+            </Button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function RecommendationWorkspace({ userId }: { userId: string }) {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [selectedRecommendation, setSelectedRecommendation] =
@@ -34,6 +111,12 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
   >(null);
   const [error, setError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [energyPreference, setEnergyPreference] =
+    useState<EnergyPreference>("surprise_me");
+  const [mediumPreference, setMediumPreference] =
+    useState<MediumPreference>("surprise_me");
+  const [directionPreference, setDirectionPreference] =
+    useState<DirectionPreference>("surprise_me");
 
   async function handleGenerate() {
     setIsGenerating(true);
@@ -44,6 +127,16 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
     try {
       response = await fetch("/api/recommend-activities", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          preferences: {
+            energy: energyPreference,
+            medium: mediumPreference,
+            direction: directionPreference,
+          },
+        }),
       });
     } catch {
       setError("Unable to reach the recommendation service.");
@@ -179,6 +272,32 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
             to offer different possibilities. You can choose, change, or skip
             either one.
           </p>
+        </div>
+        <div className="grid gap-4 border-t pt-4">
+          <p className="text-sm text-muted-foreground">
+            Optional for this moment only. These choices are not a wellbeing
+            assessment and are not saved to your profile.
+          </p>
+          <div className="grid gap-4 lg:grid-cols-3">
+            <PreferenceControl
+              label="How much energy feels available?"
+              value={energyPreference}
+              options={energyOptions}
+              onChange={setEnergyPreference}
+            />
+            <PreferenceControl
+              label="What would you like to use?"
+              value={mediumPreference}
+              options={mediumOptions}
+              onChange={setMediumPreference}
+            />
+            <PreferenceControl
+              label="What kind of direction sounds better?"
+              value={directionPreference}
+              options={directionOptions}
+              onChange={setDirectionPreference}
+            />
+          </div>
         </div>
         <div className="flex flex-wrap gap-3">
           <Button
