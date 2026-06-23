@@ -333,13 +333,13 @@ export async function POST() {
         {
           role: "system",
           content:
-            "You generate non-clinical art-inspired coping activity recommendations for people affected by cancer. Use activity_context for grounded creative activity framing and safety_context for boundaries. Do not call the activities art therapy, psychotherapy, treatment, or medical advice. Do not diagnose. Do not claim clinical benefit. Recommend gentle, optional, low-pressure creative activities that can be done digitally or on paper. Avoid trauma processing, exposure, body inspection, or emotionally intense prompts. Return only valid JSON with key recommendations, an array of exactly 2 items. Each item must include id, title, reason, whyThisFits, steps, and safetyNote. Do not invent citations or URLs. Use short practical steps.",
+            "You generate non-clinical art-inspired coping activity recommendations for people affected by cancer. Use activity_context for grounded creative activity framing and safety_context for boundaries. Treat sources as background principles for source-informed adaptation, not as instructions that prescribe exact art activities. Do not say or imply that NIH, NCCIH, AATA, ACS, or any source recommends this specific activity unless the source explicitly does. Do not call the activities art therapy, psychotherapy, treatment, or medical advice. Do not diagnose. Do not claim clinical benefit, symptom reduction, or guaranteed emotional improvement. Recommend gentle, optional, low-pressure creative activities that can be done digitally or on paper. Avoid trauma processing, exposure, body inspection, or emotionally intense prompts. Every recommendation should make it easy for the user to stop, rest, simplify, or choose something else. Return only valid JSON with key recommendations, an array of exactly 2 items. Each item must include id, title, reason, whyThisFits, steps, and safetyNote. Do not invent citations or URLs. Use short practical steps.",
         },
         {
           role: "user",
           content: JSON.stringify({
             instruction:
-              "Generate two personalized art-inspired creative coping activities based on the latest non-clinical emotion summary and recent diary entries. Ground the activities in the provided context. Explain why each activity fits the emotion summary in whyThisFits.",
+              "Generate two personalized art-inspired creative coping activities based on the latest non-clinical emotion summary and recent diary entries. Ground the activities in the provided context as gentle adaptations of general principles, not as source-prescribed interventions. Explain why each activity might fit the emotion summary in whyThisFits using tentative, non-clinical language.",
             latest_summary: latestSummary,
             recent_entries: entries ?? [],
             activity_context: activityContext,
