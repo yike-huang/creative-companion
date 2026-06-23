@@ -124,7 +124,9 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
 
             {selectedRecommendation.sources.length > 0 && (
               <div className="grid gap-2 text-sm text-muted-foreground">
-                <h3 className="font-semibold text-foreground">Learn more</h3>
+                <h3 className="font-semibold text-foreground">
+                  Gentle background
+                </h3>
                 <ul className="grid list-disc gap-1 pl-5">
                   {selectedRecommendation.sources.map((source) => (
                     <li key={`${source.sourceName}-${source.title}`}>
@@ -243,7 +245,11 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                   {recommendation.sources.length > 0 && (
                     <div className="grid gap-1 text-muted-foreground">
                       <p className="font-medium text-foreground">
-                        Related sources
+                        Gentle background
+                      </p>
+                      <p>
+                        These links are optional starting points if you want to
+                        understand the idea behind the suggestion.
                       </p>
                       <ul className="grid list-disc gap-1 pl-5">
                         {recommendation.sources.map((source) => (

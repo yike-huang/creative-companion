@@ -61,6 +61,16 @@ function getContextSources(context: ResourceContext[]): RecommendationSource[] {
       continue;
     }
 
+    const isBackgroundEvidence =
+      source.title
+        .toLowerCase()
+        .includes("what is the evidence on the role of the arts") ||
+      source.source_name.toLowerCase().includes("world health organization");
+
+    if (isBackgroundEvidence) {
+      continue;
+    }
+
     const url = typeof source.source_url === "string" ? source.source_url : null;
     const key = url ?? `${source.source_name}:${source.title}`;
 
