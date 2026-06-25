@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 const model = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
 const embeddingModel =
   process.env.OPENAI_EMBEDDING_MODEL ?? "text-embedding-3-small";
+const promptVersion = "recommendation-v1.1";
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -29,12 +30,16 @@ type UserProfileContext = {
 };
 
 type ResourceContext = {
+  chunkId: string | null;
+  resourceId: string | null;
   text: string;
   summary: string | null;
   tags: string[];
   use_case_tags: string[];
   source: unknown;
   similarity?: number;
+  retrievalType?: "activity" | "safety";
+  retrievalRank?: number;
 };
 
 type EvidenceScopeContext = {
@@ -246,6 +251,172 @@ async function getEvidenceScopeContext(
   }));
 }
 
+async function enrichContextIds(
+  supabase: SupabaseClient,
+  context: ResourceContext[],
+): Promise<ResourceContext[]> {
+  const missingTexts = Array.from(
+    new Set(
+      context
+        .filter((item) => !item.chunkId)
+        .map((item) => item.text),
+    ),
+  );
+
+  if (missingTexts.length === 0) {
+    return context;
+  }
+
+  const { data, error } = await supabase
+    .from("resource_chunks")
+    .select("id, resource_id, chunk_text")
+    .in("chunk_text", missingTexts);
+
+  if (error || !data) {
+    return context;
+  }
+
+  const idsByText = new Map(
+    data.map((chunk) => [
+      chunk.chunk_text,
+      { chunkId: chunk.id, resourceId: chunk.resource_id },
+    ]),
+  );
+
+  return context.map((item) => {
+    const ids = idsByText.get(item.text);
+
+    return ids
+      ? {
+          ...item,
+          chunkId: ids.chunkId,
+          resourceId: ids.resourceId,
+        }
+      : item;
+  });
+}
+
+async function saveRecommendations(
+  supabase: SupabaseClient,
+  {
+    userId,
+    emotionSummaryId,
+    preferences,
+    recommendations,
+    context,
+    evidenceScopeContext,
+  }: {
+    userId: string;
+    emotionSummaryId: string;
+    preferences: RecommendationPreferences;
+    recommendations: ActivityRecommendation[];
+    context: ResourceContext[];
+    evidenceScopeContext: EvidenceScopeContext[];
+  },
+): Promise<string | null> {
+  const generationId = crypto.randomUUID();
+  const usedResourceIds = Array.from(
+    new Set(
+      context.flatMap((item) =>
+        item.resourceId ? [item.resourceId] : [],
+      ),
+    ),
+  );
+
+  const { data: savedRecommendations, error: recommendationError } =
+    await supabase
+      .from("recommendations")
+      .insert(
+        recommendations.map((recommendation) => ({
+          user_id: userId,
+          emotion_summary_id: emotionSummaryId,
+          generation_id: generationId,
+          title: recommendation.title,
+          recommendation_text: recommendation.reason,
+          activity_steps: recommendation.steps,
+          used_resource_ids: usedResourceIds,
+          safety_note: recommendation.safetyNote,
+          model_name: model,
+          rationale_summary: recommendation.whyThisFits,
+          creative_preferences: preferences,
+          evidence_summary: {
+            retrieved_source_count: usedResourceIds.length,
+            scope_notes: evidenceScopeContext,
+            user_visible_sources: recommendation.sources,
+          },
+          prompt_version: promptVersion,
+        })),
+      )
+      .select("id");
+
+  if (
+    recommendationError ||
+    !savedRecommendations ||
+    savedRecommendations.length !== recommendations.length
+  ) {
+    return recommendationError?.message ?? "Unable to save recommendations.";
+  }
+
+  const traces = savedRecommendations.flatMap((saved, recommendationIndex) => {
+    const citedUrls = new Set(
+      recommendations[recommendationIndex].sources.flatMap((source) =>
+        source.url ? [source.url] : [],
+      ),
+    );
+
+    return context.flatMap((item) => {
+      if (!item.chunkId) {
+        return [];
+      }
+
+      const source = item.source as
+        | { source_url?: unknown }
+        | null
+        | undefined;
+      const scope = evidenceScopeContext.find((entry) => {
+        const contextSource = item.source as
+          | { title?: unknown }
+          | null
+          | undefined;
+
+        return (
+          typeof contextSource?.title === "string" &&
+          entry.sourceTitle === contextSource.title
+        );
+      });
+
+      return [
+        {
+          recommendation_id: saved.id,
+          resource_chunk_id: item.chunkId,
+          resource_id: item.resourceId,
+          retrieval_type: item.retrievalType ?? "activity",
+          similarity: item.similarity ?? null,
+          retrieval_rank: item.retrievalRank ?? null,
+          evidence_role: scope?.evidenceRole ?? null,
+          evidence_direction: scope?.evidenceDirection ?? null,
+          population_fit: scope?.populationFit ?? null,
+          generalizability_note: scope?.generalizabilityNote ?? null,
+          included_in_prompt: true,
+          cited_to_user:
+            typeof source?.source_url === "string" &&
+            citedUrls.has(source.source_url),
+        },
+      ];
+    });
+  });
+
+  if (traces.length === 0) {
+    return null;
+  }
+
+  const { error: traceError } = await supabase
+    .from("recommendation_rag_traces")
+    .insert(traces);
+
+  return traceError?.message ?? null;
+}
+
 function parseRecommendations(
   text: string,
   sourceOptions: RecommendationSourceOption[],
@@ -334,7 +505,7 @@ async function getResourceContextByTags(
   const { data, error } = await supabase
     .from("resource_chunks")
     .select(
-      "chunk_text, chunk_summary, topic_tags, use_case_tags, curated_resources(title, source_name, source_url)",
+      "id, resource_id, chunk_text, chunk_summary, topic_tags, use_case_tags, curated_resources(id, title, source_name, source_url)",
     )
     .overlaps("use_case_tags", useCaseTags)
     .limit(8);
@@ -349,6 +520,8 @@ async function getResourceContextByTags(
       : chunk.curated_resources;
 
     return {
+      chunkId: chunk.id,
+      resourceId: chunk.resource_id,
       text: chunk.chunk_text,
       summary: chunk.chunk_summary,
       tags: chunk.topic_tags,
@@ -396,6 +569,8 @@ async function getResourceContextByEmbedding(
   }
 
   return (data as ResourceChunkMatch[]).map((chunk) => ({
+    chunkId: null,
+    resourceId: null,
     text: chunk.chunk_text,
     summary: chunk.chunk_summary,
     tags: chunk.topic_tags,
@@ -458,7 +633,7 @@ export async function POST(request: Request) {
 
   const { data: latestSummary } = await supabase
     .from("emotion_summaries")
-    .select("summary_text, dominant_moods, average_intensity, safety_level, created_at")
+    .select("id, summary_text, dominant_moods, average_intensity, safety_level, created_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -528,6 +703,20 @@ export async function POST(request: Request) {
       "safety_boundary",
     ]);
   }
+  activityContext = (await enrichContextIds(supabase, activityContext)).map(
+    (item, index) => ({
+      ...item,
+      retrievalType: "activity",
+      retrievalRank: index + 1,
+    }),
+  );
+  safetyContext = (await enrichContextIds(supabase, safetyContext)).map(
+    (item, index) => ({
+      ...item,
+      retrievalType: "safety",
+      retrievalRank: index + 1,
+    }),
+  );
   const evidenceScopeContext = await getEvidenceScopeContext(supabase, [
     ...activityContext,
     ...safetyContext,
@@ -592,6 +781,22 @@ export async function POST(request: Request) {
   if (recommendations.length === 0) {
     return NextResponse.json(
       { error: "The recommendation response could not be parsed." },
+      { status: 500 },
+    );
+  }
+
+  const saveError = await saveRecommendations(supabase, {
+    userId,
+    emotionSummaryId: latestSummary.id,
+    preferences,
+    recommendations,
+    context: [...activityContext, ...safetyContext],
+    evidenceScopeContext,
+  });
+
+  if (saveError) {
+    return NextResponse.json(
+      { error: `Recommendations were generated but could not be saved: ${saveError}` },
       { status: 500 },
     );
   }
