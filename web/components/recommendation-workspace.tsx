@@ -26,16 +26,65 @@ type Recommendation = {
     title: string;
     sourceName: string;
     url: string | null;
+    sourceType?: string | null;
   }[];
   researchSources: {
     title: string;
     sourceName: string;
     url: string | null;
+    sourceType?: string | null;
   }[];
 };
 
 function getResearchSources(recommendation: Recommendation) {
   return recommendation.researchSources ?? [];
+}
+
+function isConnectionResource(source: {
+  sourceType?: string | null;
+  sourceName: string;
+}) {
+  const sourceType = source.sourceType?.toLowerCase() ?? "";
+  const sourceName = source.sourceName.toLowerCase();
+
+  return (
+    sourceType.includes("support_resource") ||
+    sourceType.includes("support") ||
+    sourceName.includes("imerman angels") ||
+    sourceName.includes("cancer support community")
+  );
+}
+
+function getReadingSources(recommendation: Recommendation) {
+  return recommendation.sources.filter((source) => !isConnectionResource(source));
+}
+
+function getConnectionSources(recommendation: Recommendation) {
+  return recommendation.sources.filter(isConnectionResource);
+}
+
+function SourceLink({
+  source,
+}: {
+  source: { title: string; sourceName: string; url: string | null };
+}) {
+  return (
+    <>
+      {source.url ? (
+        <a
+          href={source.url}
+          target="_blank"
+          rel="noreferrer"
+          className="underline underline-offset-4"
+        >
+          {source.title}
+        </a>
+      ) : (
+        source.title
+      )}{" "}
+      <span>({source.sourceName})</span>
+    </>
+  );
 }
 
 type RecommendationResponse = {
@@ -253,30 +302,45 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
               {selectedRecommendation.safetyNote}
             </div>
 
-            {selectedRecommendation.sources.length > 0 && (
+            {(getReadingSources(selectedRecommendation).length > 0 ||
+              getConnectionSources(selectedRecommendation).length > 0) && (
               <div className="grid gap-2 text-sm text-muted-foreground">
-                <h3 className="font-semibold text-foreground">
-                  Gentle background
-                </h3>
-                <ul className="grid list-disc gap-1 pl-5">
-                  {selectedRecommendation.sources.map((source) => (
-                    <li key={`${source.sourceName}-${source.title}`}>
-                      {source.url ? (
-                        <a
-                          href={source.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="underline underline-offset-4"
-                        >
-                          {source.title}
-                        </a>
-                      ) : (
-                        source.title
-                      )}{" "}
-                      <span>({source.sourceName})</span>
-                    </li>
-                  ))}
-                </ul>
+                {getReadingSources(selectedRecommendation).length > 0 && (
+                  <div className="grid gap-1">
+                    <h3 className="font-semibold text-foreground">
+                      Gentle background
+                    </h3>
+                    <ul className="grid list-disc gap-1 pl-5">
+                      {getReadingSources(selectedRecommendation).map(
+                        (source) => (
+                          <li key={`${source.sourceName}-${source.title}`}>
+                            <SourceLink source={source} />
+                          </li>
+                        ),
+                      )}
+                    </ul>
+                  </div>
+                )}
+                {getConnectionSources(selectedRecommendation).length > 0 && (
+                  <div className="grid gap-1">
+                    <h3 className="font-semibold text-foreground">
+                      Connection resources
+                    </h3>
+                    <p>
+                      These links are places to connect with people or support
+                      programs, not just articles to read.
+                    </p>
+                    <ul className="grid list-disc gap-1 pl-5">
+                      {getConnectionSources(selectedRecommendation).map(
+                        (source) => (
+                          <li key={`${source.sourceName}-${source.title}`}>
+                            <SourceLink source={source} />
+                          </li>
+                        ),
+                      )}
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
           </aside>
@@ -436,34 +500,49 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                       skip anything that does not feel right.
                     </p>
                   </div>
-                  {recommendation.sources.length > 0 && (
+                  {(getReadingSources(recommendation).length > 0 ||
+                    getConnectionSources(recommendation).length > 0) && (
                     <div className="grid gap-1 text-muted-foreground">
-                      <p className="font-medium text-foreground">
-                        Gentle background
-                      </p>
-                      <p>
-                        These links are optional starting points if you want to
-                        understand the idea behind the suggestion.
-                      </p>
-                      <ul className="grid list-disc gap-1 pl-5">
-                        {recommendation.sources.map((source) => (
-                          <li key={`${source.sourceName}-${source.title}`}>
-                            {source.url ? (
-                              <a
-                                href={source.url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="underline underline-offset-4"
-                              >
-                                {source.title}
-                              </a>
-                            ) : (
-                              source.title
-                            )}{" "}
-                            <span>({source.sourceName})</span>
-                          </li>
-                        ))}
-                      </ul>
+                      {getReadingSources(recommendation).length > 0 && (
+                        <div className="grid gap-1">
+                          <p className="font-medium text-foreground">
+                            Gentle background
+                          </p>
+                          <p>
+                            These links are optional starting points if you want
+                            to understand the idea behind the suggestion.
+                          </p>
+                          <ul className="grid list-disc gap-1 pl-5">
+                            {getReadingSources(recommendation).map((source) => (
+                              <li key={`${source.sourceName}-${source.title}`}>
+                                <SourceLink source={source} />
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {getConnectionSources(recommendation).length > 0 && (
+                        <div className="grid gap-1">
+                          <p className="font-medium text-foreground">
+                            Connection resources
+                          </p>
+                          <p>
+                            These are optional places to connect with people,
+                            peer support, or community programs.
+                          </p>
+                          <ul className="grid list-disc gap-1 pl-5">
+                            {getConnectionSources(recommendation).map(
+                              (source) => (
+                                <li
+                                  key={`${source.sourceName}-${source.title}`}
+                                >
+                                  <SourceLink source={source} />
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   )}
                   <details className="rounded-md border p-3 text-muted-foreground">
@@ -489,19 +568,7 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                           <ul className="grid list-disc gap-1 pl-5">
                             {getResearchSources(recommendation).map((source) => (
                               <li key={`${source.sourceName}-${source.title}`}>
-                                {source.url ? (
-                                  <a
-                                    href={source.url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="underline underline-offset-4"
-                                  >
-                                    {source.title}
-                                  </a>
-                                ) : (
-                                  source.title
-                                )}{" "}
-                                <span>({source.sourceName})</span>
+                                <SourceLink source={source} />
                               </li>
                             ))}
                           </ul>
