@@ -423,8 +423,8 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                       {recommendation.whyThisFits}
                     </p>
                     <p className="text-muted-foreground">
-                      This explanation is a tentative connection, not proof that
-                      this activity will have a particular effect for you.
+                      This is one possible fit, not a rule. Please change or
+                      skip anything that does not feel right.
                     </p>
                   </div>
                   {recommendation.sources.length > 0 && (
@@ -457,6 +457,25 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                       </ul>
                     </div>
                   )}
+                  <details className="rounded-md border p-3 text-muted-foreground">
+                    <summary className="cursor-pointer font-medium text-foreground">
+                      Evidence notes
+                    </summary>
+                    <div className="mt-2 grid gap-2">
+                      <p>
+                        These ideas are generated from your reflection and a
+                        small set of curated sources. Some sources are directly
+                        about art activities; others are broader support or
+                        safety background.
+                      </p>
+                      <p>
+                        A source may inform the general direction without
+                        proving that this exact activity will work for you.
+                        That is why each suggestion stays optional and easy to
+                        adjust.
+                      </p>
+                    </div>
+                  </details>
                 </div>
               )}
             </article>

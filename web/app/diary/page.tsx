@@ -52,7 +52,7 @@ async function DiaryDetails() {
     )
     .eq("user_id", data.user.id)
     .order("created_at", { ascending: false })
-    .limit(3);
+    .limit(20);
 
   return (
     <div className="grid gap-8">

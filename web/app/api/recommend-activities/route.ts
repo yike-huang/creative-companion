@@ -91,6 +91,25 @@ type RecommendationPreferences = {
   direction: "surprise_me" | "gently_engage" | "take_a_pause";
 };
 
+const emotionTagPatterns: { tag: string; patterns: string[] }[] = [
+  { tag: "anger", patterns: ["anger", "angry", "mad", "rage", "frustrat"] },
+  {
+    tag: "fear_worry",
+    patterns: ["fear", "afraid", "scared", "worry", "worried"],
+  },
+  {
+    tag: "stress_anxiety",
+    patterns: ["stress", "anxious", "anxiety", "nervous", "panic"],
+  },
+  { tag: "sadness_low_mood", patterns: ["sad", "low", "grief", "down"] },
+  { tag: "loneliness", patterns: ["lonely", "alone", "isolat"] },
+  { tag: "guilt", patterns: ["guilt", "guilty", "blame"] },
+  { tag: "hope", patterns: ["hope", "hopeful"] },
+  { tag: "gratitude", patterns: ["gratitude", "grateful", "thankful"] },
+  { tag: "overwhelmed", patterns: ["overwhelm", "too much"] },
+  { tag: "numbness", patterns: ["numb", "empty", "disconnected"] },
+];
+
 const defaultPreferences: RecommendationPreferences = {
   energy: "surprise_me",
   medium: "surprise_me",
@@ -118,6 +137,35 @@ function parsePreferences(value: unknown): RecommendationPreferences {
         ? preferences.direction
         : defaultPreferences.direction,
   };
+}
+
+function inferEmotionTargetTags({
+  latestSummary,
+  entries,
+}: {
+  latestSummary: {
+    summary_text: string | null;
+    dominant_moods: string[] | null;
+  };
+  entries:
+    | { mood_labels: string[] | null; diary_text: string | null }[]
+    | null;
+}) {
+  const text = [
+    latestSummary.summary_text,
+    ...(latestSummary.dominant_moods ?? []),
+    ...(entries ?? []).flatMap((entry) => [
+      entry.diary_text,
+      ...(entry.mood_labels ?? []),
+    ]),
+  ]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ")
+    .toLowerCase();
+
+  return emotionTagPatterns
+    .filter(({ patterns }) => patterns.some((pattern) => text.includes(pattern)))
+    .map(({ tag }) => tag);
 }
 
 async function getContextSources(
@@ -610,6 +658,88 @@ async function getResourceContextByTags(
   });
 }
 
+async function getResourceContextByEmotionTargets(
+  supabase: SupabaseClient,
+  targetTags: string[],
+): Promise<ResourceContext[]> {
+  if (targetTags.length === 0) {
+    return [];
+  }
+
+  const { data: links, error: linksError } = await supabase
+    .from("recommendation_evidence_links")
+    .select(
+      "resource_id, evidence_role, user_facing_fit, recommendation_coverage_plan!inner(dimension, target_tag)",
+    )
+    .eq("recommendation_coverage_plan.dimension", "emotion_to_activity")
+    .in("recommendation_coverage_plan.target_tag", targetTags);
+
+  if (linksError || !links || links.length === 0) {
+    return [];
+  }
+
+  const scoredResourceIds = new Map<string, number>();
+
+  for (const link of links) {
+    const roleScore =
+      link.evidence_role === "direct_art"
+        ? 0
+        : link.evidence_role === "supporting_art"
+          ? 1
+          : link.evidence_role === "user_facing_context"
+            ? 2
+            : 3;
+    const userFacingScore =
+      link.user_facing_fit === "target_specific"
+        ? 0
+        : link.user_facing_fit === "stage_specific"
+          ? 1
+          : link.user_facing_fit === "general_context"
+            ? 2
+            : 3;
+    const score = roleScore + userFacingScore;
+    const current = scoredResourceIds.get(link.resource_id);
+
+    if (current === undefined || score < current) {
+      scoredResourceIds.set(link.resource_id, score);
+    }
+  }
+
+  const resourceIds = Array.from(scoredResourceIds.keys());
+  const { data, error } = await supabase
+    .from("resource_chunks")
+    .select(
+      "id, resource_id, chunk_text, chunk_summary, topic_tags, use_case_tags, curated_resources(id, title, source_name, source_url)",
+    )
+    .in("resource_id", resourceIds)
+    .overlaps("use_case_tags", ["activity_recommendation"])
+    .limit(12);
+
+  if (error || !data) {
+    return [];
+  }
+
+  return data
+    .map((chunk) => {
+      const source = Array.isArray(chunk.curated_resources)
+        ? chunk.curated_resources[0]
+        : chunk.curated_resources;
+
+      return {
+        chunkId: chunk.id,
+        resourceId: chunk.resource_id,
+        text: chunk.chunk_text,
+        summary: chunk.chunk_summary,
+        tags: chunk.topic_tags,
+        use_case_tags: chunk.use_case_tags,
+        source,
+        similarity: 1 - (scoredResourceIds.get(chunk.resource_id) ?? 9) / 10,
+      };
+    })
+    .sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0))
+    .slice(0, 8);
+}
+
 async function getResourceContextByEmbedding(
   supabase: SupabaseClient,
   openai: OpenAI,
@@ -763,11 +893,30 @@ export async function POST(request: Request) {
     profile: profile ?? null,
     creative_preferences: preferences,
   });
-  let activityContext = await getResourceContextByEmbedding(
+  const emotionTargetTags = inferEmotionTargetTags({
+    latestSummary,
+    entries: entries ?? [],
+  });
+  const emotionTargetContext = await getResourceContextByEmotionTargets(
+    supabase,
+    emotionTargetTags,
+  );
+  const embeddedActivityContext = await getResourceContextByEmbedding(
     supabase,
     client,
     contextQuery,
     ["activity_recommendation"],
+  );
+  let activityContext = [
+    ...emotionTargetContext,
+    ...embeddedActivityContext,
+  ].filter(
+    (item, index, context) =>
+      context.findIndex(
+        (candidate) =>
+          (candidate.chunkId && candidate.chunkId === item.chunkId) ||
+          (!candidate.chunkId && candidate.text === item.text),
+      ) === index,
   );
   let safetyContext = await getResourceContextByEmbedding(
     supabase,
@@ -821,7 +970,7 @@ export async function POST(request: Request) {
         {
           role: "system",
           content:
-            "You generate non-clinical art-inspired coping activity recommendations for people affected by cancer. There is no deterministic or universally valid one-to-one mapping between an emotion and an art exercise. Present every output as a tentative creative option, never as the correct activity for a feeling. Use creative_preferences as optional, momentary preferences rather than a wellbeing assessment: low energy should reduce steps and effort; medium should influence paper versus digital format; direction should gently shape whether options engage with a feeling or offer a pause. A preference is a soft constraint, never permission to force emotional disclosure, and surprise_me means preserve variety. Use activity_context for grounded creative activity framing and safety_context for boundaries. Use evidence_scope_context to judge how closely retrieved evidence matches the user's optional profile. Treat profile fields as contextual preferences, not clinical facts. When evidence comes from a different age group, cancer type, journey stage, or care setting, adapt conservatively and describe the connection with lower certainty. Never imply that evidence from hospitalized adolescents, a specific cancer population, or professionally delivered art therapy directly validates a self-guided activity for a different user. If scope data is absent or mismatched, keep the activity low-risk and general rather than filling gaps with clinical assumptions. Separate evidence-supported mechanisms from creative presentation: reasons and whyThisFits may refer only to grounded mechanisms or broad principles, while materials, colors, subjects, composition, and mark-making can vary as clearly non-validated creative adaptations. Do not imply that every material variation was studied. Treat sources as background principles and creative constraints for source-informed adaptation, not as a closed catalog of activities or instructions that prescribe exact art activities. You may create gentle variations that combine supported principles with different colors, marks, shapes, patterns, symbols, collage-like composition, short captions, or digital and paper formats. Keep adaptations proportionate to the evidence and clearly distinguish them from a study's exact activity. Do not say or imply that NIH, NCCIH, AATA, ACS, or any source recommends this specific activity unless the source explicitly does. Do not call the activities art therapy, psychotherapy, treatment, or medical advice. Do not diagnose. Do not claim clinical benefit, symptom reduction, or guaranteed emotional improvement. Generate exactly two genuinely different, complementary options so the user can choose what feels right. Unless the user's medium preference requires otherwise, use different materials or visual structures for the two options. Vary the creative process, visual structure, level of emotional engagement, and effort level; avoid repeatedly defaulting to the same watercolor, mandala, breathing-color, or journaling prompt unless it is especially relevant. When supported by the retrieved context, one option may gently engage with, notice, or express the emotion, while the other may offer soothing, grounding, attentional shifting, or a neutral absorbing subject. Do not rank the options, claim one regulation strategy is generally better, or imply the user should avoid, suppress, confront, or process an emotion. Never force emotional disclosure or interpretation. Recommend gentle, optional, low-pressure creative activities that can be done digitally or on paper. Avoid trauma processing, exposure, body inspection, or emotionally intense prompts. Every recommendation should make it easy for the user to stop, rest, simplify, or choose something else. Return only valid JSON with key recommendations, an array of exactly 2 items. Each item must include id, title, reason, whyThisFits, steps, safetyNote, and sourceIds. sourceIds must contain zero to two IDs copied exactly from user_facing_source_options that genuinely support that specific option. Do not automatically attach the same sources to both recommendations. Use an empty array when no visible source clearly fits. Never invent source IDs, citations, or URLs. Use short practical steps.",
+            "You generate non-clinical art-inspired coping activity recommendations for people affected by cancer. There is no deterministic or universally valid one-to-one mapping between an emotion and an art exercise. Present every output as a tentative creative option, never as the correct activity for a feeling. Use creative_preferences as optional, momentary preferences rather than a wellbeing assessment: low energy should reduce steps and effort; medium should influence paper versus digital format; direction should gently shape whether options engage with a feeling or offer a pause. A preference is a soft constraint, never permission to force emotional disclosure, and surprise_me means preserve variety. Use activity_context for grounded creative activity framing and safety_context for boundaries. Use evidence_scope_context to judge how closely retrieved evidence matches the user's optional profile. Treat profile fields as contextual preferences, not clinical facts. When evidence comes from a different age group, cancer type, journey stage, or care setting, adapt conservatively and describe the connection with lower certainty. Never imply that evidence from hospitalized adolescents, a specific cancer population, or professionally delivered art therapy directly validates a self-guided activity for a different user. If scope data is absent or mismatched, keep the activity low-risk and general rather than filling gaps with clinical assumptions. Separate evidence-supported mechanisms from creative presentation: reasons and whyThisFits may refer only to grounded mechanisms or broad principles, while materials, colors, subjects, composition, and mark-making can vary as clearly non-validated creative adaptations. Do not imply that every material variation was studied. Treat sources as background principles and creative constraints for source-informed adaptation, not as a closed catalog of activities or instructions that prescribe exact art activities. You may create gentle variations that combine supported principles with different colors, marks, shapes, patterns, symbols, collage-like composition, short captions, or digital and paper formats. Keep adaptations proportionate to the evidence and clearly distinguish them from a study's exact activity. Do not say or imply that NIH, NCCIH, AATA, ACS, or any source recommends this specific activity unless the source explicitly does. Do not call the activities art therapy, psychotherapy, treatment, or medical advice. Do not diagnose. Do not claim clinical benefit, symptom reduction, or guaranteed emotional improvement. Generate exactly two genuinely different, complementary options so the user can choose what feels right. Unless the user's medium preference requires otherwise, use different materials or visual structures for the two options. Vary the creative process, visual structure, level of emotional engagement, and effort level; avoid repeatedly defaulting to the same watercolor, mandala, breathing-color, or journaling prompt unless it is especially relevant. When supported by the retrieved context, one option may gently engage with, notice, or express the emotion, while the other may offer soothing, grounding, attentional shifting, or a neutral absorbing subject. Do not rank the options, claim one regulation strategy is generally better, or imply the user should avoid, suppress, confront, or process an emotion. Never force emotional disclosure or interpretation. Recommend gentle, optional, low-pressure creative activities that can be done digitally or on paper. Avoid trauma processing, exposure, body inspection, or emotionally intense prompts. Every recommendation should make it easy for the user to stop, rest, simplify, or choose something else. Return only valid JSON with key recommendations, an array of exactly 2 items. Each item must include id, title, reason, whyThisFits, steps, safetyNote, and sourceIds. sourceIds must contain zero to two IDs copied exactly from user_facing_source_options that genuinely support that specific option. Prefer target-specific or stage-specific sources. Use broad general-context sources only when they clearly fit the recommendation; otherwise use an empty array. Do not automatically attach the same sources to both recommendations. Do not cite a broad article just because no better source is available. Never invent source IDs, citations, or URLs. Use short practical steps.",
         },
         {
           role: "user",

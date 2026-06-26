@@ -7,6 +7,7 @@ export const moodOptions = [
   { value: "Sad", emoji: "😢" },
   { value: "Angry", emoji: "😠" },
   { value: "Afraid", emoji: "😨" },
+  { value: "Lonely", emoji: "🫧" },
   { value: "Tired", emoji: "😴" },
   { value: "Numb", emoji: "😶" },
 ];
