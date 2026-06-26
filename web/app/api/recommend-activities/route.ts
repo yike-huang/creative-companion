@@ -64,6 +64,17 @@ type RecommendationSourceOption = RecommendationSource & {
   id: string;
 };
 
+type UserFacingFit =
+  | "target_specific"
+  | "stage_specific"
+  | "general_context"
+  | "not_user_facing";
+
+type CandidateSource = RecommendationSource & {
+  resourceId: string | null;
+  contextOrder: number;
+};
+
 type ActivityRecommendation = {
   id: string;
   title: string;
@@ -112,10 +123,11 @@ function parsePreferences(value: unknown): RecommendationPreferences {
 async function getContextSources(
   supabase: SupabaseClient,
   context: ResourceContext[],
+  profile: UserProfileContext | null,
 ): Promise<RecommendationSourceOption[]> {
-  const sources = new Map<string, RecommendationSource>();
+  const sources = new Map<string, CandidateSource>();
 
-  for (const item of context) {
+  for (const [index, item] of context.entries()) {
     const source = item.source as
       | { title?: unknown; source_name?: unknown; source_url?: unknown }
       | null
@@ -139,21 +151,25 @@ async function getContextSources(
     }
 
     const url = typeof source.source_url === "string" ? source.source_url : null;
-    const key = url ?? `${source.source_name}:${source.title}`;
+    const key = item.resourceId ?? url ?? `${source.source_name}:${source.title}`;
 
-    sources.set(key, {
-      title: source.title,
-      sourceName: source.source_name,
-      url,
-    });
+    if (!sources.has(key)) {
+      sources.set(key, {
+        title: source.title,
+        sourceName: source.source_name,
+        url,
+        resourceId: item.resourceId,
+        contextOrder: index,
+      });
+    }
   }
 
   const candidates = Array.from(sources.values());
-  const sourceUrls = candidates.flatMap((source) =>
-    source.url ? [source.url] : [],
+  const resourceIds = candidates.flatMap((source) =>
+    source.resourceId ? [source.resourceId] : [],
   );
 
-  if (sourceUrls.length === 0) {
+  if (resourceIds.length === 0) {
     return candidates.slice(0, 6).map((source, index) => ({
       ...source,
       id: `source-${index + 1}`,
@@ -162,8 +178,8 @@ async function getContextSources(
 
   const { data, error } = await supabase
     .from("curated_resources")
-    .select("source_url, display_to_users")
-    .in("source_url", sourceUrls);
+    .select("id, display_to_users")
+    .in("id", resourceIds);
 
   // Keep the old behavior until the display_to_users migration is applied.
   if (error || !data) {
@@ -173,20 +189,83 @@ async function getContextSources(
     }));
   }
 
-  const visibilityByUrl = new Map(
-    data.map((source) => [source.source_url, source.display_to_users]),
+  const visibilityByResourceId = new Map(
+    data.map((source) => [source.id, source.display_to_users]),
   );
+  const { data: links } = await supabase
+    .from("recommendation_evidence_links")
+    .select("resource_id, user_facing_fit, cancer_stage_scope")
+    .in("resource_id", resourceIds);
 
-  return candidates
-    .filter(
-      (source) =>
-        source.url === null || visibilityByUrl.get(source.url) !== false,
-    )
-    .slice(0, 6)
-    .map((source, index) => ({
-      ...source,
-      id: `source-${index + 1}`,
-    }));
+  const linksByResourceId = new Map<
+    string,
+    { user_facing_fit: UserFacingFit | null; cancer_stage_scope: string[] | null }[]
+  >();
+
+  for (const link of links ?? []) {
+    const current = linksByResourceId.get(link.resource_id) ?? [];
+    current.push({
+      user_facing_fit: link.user_facing_fit as UserFacingFit | null,
+      cancer_stage_scope: link.cancer_stage_scope,
+    });
+    linksByResourceId.set(link.resource_id, current);
+  }
+
+  function fitScore(source: CandidateSource) {
+    if (!source.resourceId) {
+      return 50;
+    }
+
+    const sourceLinks = linksByResourceId.get(source.resourceId) ?? [];
+    const scores = sourceLinks.map((link) => {
+      const fit = link.user_facing_fit;
+
+      if (fit === "target_specific") {
+        return 0;
+      }
+
+      if (fit === "stage_specific") {
+        const stageScope = link.cancer_stage_scope ?? [];
+        const stage = profile?.journey_stage;
+        return stage && stageScope.includes(stage) ? 1 : 2;
+      }
+
+      if (fit === "general_context") {
+        return 3;
+      }
+
+      return 99;
+    });
+
+    return scores.length > 0 ? Math.min(...scores) : 50;
+  }
+
+  const eligible = candidates
+    .filter((source) => {
+      if (!source.resourceId) {
+        return true;
+      }
+
+      return visibilityByResourceId.get(source.resourceId) !== false;
+    })
+    .map((source) => ({ source, score: fitScore(source) }))
+    .filter(({ score }) => score < 99)
+    .sort(
+      (a, b) =>
+        a.score - b.score || a.source.contextOrder - b.source.contextOrder,
+    );
+
+  const hasSpecificSource = eligible.some(({ score }) => score <= 2);
+  const selected = hasSpecificSource
+    ? eligible.filter(({ score }) => score <= 2)
+    : eligible;
+
+  return selected.slice(0, 6).map(({ source }, index) => ({
+    title: source.title,
+    sourceName: source.sourceName,
+    url: source.url,
+    id: `source-${index + 1}`,
+  }));
 }
 
 async function getEvidenceScopeContext(
@@ -726,10 +805,11 @@ export async function POST(request: Request) {
     ...activityContext,
     ...safetyContext,
   ]);
-  const recommendationSources = await getContextSources(supabase, [
-    ...activityContext,
-    ...safetyContext,
-  ]);
+  const recommendationSources = await getContextSources(
+    supabase,
+    [...activityContext, ...safetyContext],
+    (profile ?? null) as UserProfileContext | null,
+  );
 
   let response;
 
