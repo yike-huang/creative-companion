@@ -532,14 +532,48 @@ async function saveRecommendations(
       ];
     });
   });
+  const dedupedTraces = Array.from(
+    traces
+      .reduce((traceMap, trace) => {
+        const key = `${trace.recommendation_id}:${trace.resource_chunk_id}`;
+        const existing = traceMap.get(key);
 
-  if (traces.length === 0) {
+        if (!existing) {
+          traceMap.set(key, trace);
+          return traceMap;
+        }
+
+        traceMap.set(key, {
+          ...existing,
+          similarity:
+            existing.similarity !== null && trace.similarity !== null
+              ? Math.max(existing.similarity, trace.similarity)
+              : (existing.similarity ?? trace.similarity),
+          retrieval_rank:
+            existing.retrieval_rank !== null && trace.retrieval_rank !== null
+              ? Math.min(existing.retrieval_rank, trace.retrieval_rank)
+              : (existing.retrieval_rank ?? trace.retrieval_rank),
+          evidence_role: existing.evidence_role ?? trace.evidence_role,
+          evidence_direction:
+            existing.evidence_direction ?? trace.evidence_direction,
+          population_fit: existing.population_fit ?? trace.population_fit,
+          generalizability_note:
+            existing.generalizability_note ?? trace.generalizability_note,
+          cited_to_user: existing.cited_to_user || trace.cited_to_user,
+        });
+
+        return traceMap;
+      }, new Map<string, (typeof traces)[number]>())
+      .values(),
+  );
+
+  if (dedupedTraces.length === 0) {
     return null;
   }
 
   const { error: traceError } = await supabase
     .from("recommendation_rag_traces")
-    .insert(traces);
+    .insert(dedupedTraces);
 
   return traceError?.message ?? null;
 }
