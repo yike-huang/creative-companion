@@ -18,8 +18,8 @@ import {
   Trash2,
   Undo2,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +30,14 @@ const canvasWidth = 900;
 const canvasHeight = 600;
 
 type DrawingTool = "brush" | "eraser" | "fill" | "line" | "rectangle" | "ellipse";
-type BrushStyle = "pencil" | "soft" | "marker" | "airbrush";
+type BrushStyle =
+  | "pencil"
+  | "soft"
+  | "marker"
+  | "airbrush"
+  | "watercolor"
+  | "oil"
+  | "blend";
 type Point = { x: number; y: number };
 type Layer = {
   id: string;
@@ -59,6 +66,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
   const layersRef = useRef<Map<string, HTMLCanvasElement>>(new Map());
   const isDrawingRef = useRef(false);
   const startPointRef = useRef<Point | null>(null);
+  const previousPointRef = useRef<Point | null>(null);
   const lastPointRef = useRef<Point | null>(null);
   const activeLayerIdRef = useRef("layer-1");
   const pendingHistoryRef = useRef<LayerSnapshot[] | null>(null);
@@ -232,19 +240,22 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
 
   function configureStroke(context: CanvasRenderingContext2D) {
     const opacity = Number(brushOpacity) / 100;
+    const size = Number(brushSize);
 
     context.lineCap = "round";
     context.lineJoin = "round";
-    context.lineWidth =
-      brushStyle === "soft" && tool !== "eraser"
-        ? Number(brushSize) * 1.35
-        : Number(brushSize);
+    context.lineWidth = size;
     context.strokeStyle = brushColor;
-    context.globalAlpha = brushStyle === "soft" ? opacity * 0.22 : opacity;
+    context.globalAlpha = opacity;
     context.globalCompositeOperation =
       tool === "eraser" ? "destination-out" : "source-over";
     context.shadowBlur = 0;
     context.shadowColor = "transparent";
+
+    if (brushStyle === "soft" && tool !== "eraser") {
+      context.lineWidth = size * 1.35;
+      context.globalAlpha = opacity * 0.22;
+    }
 
     if (brushStyle === "marker") {
       context.lineCap = "butt";
@@ -252,6 +263,16 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
       context.globalAlpha = opacity * 0.75;
     }
 
+    if (brushStyle === "watercolor" && tool !== "eraser") {
+      context.lineWidth = size * 1.55;
+      context.globalAlpha = opacity * 0.24;
+      context.globalCompositeOperation = "multiply";
+    }
+
+    if (brushStyle === "oil" && tool !== "eraser") {
+      context.lineWidth = size * 1.65;
+      context.globalAlpha = opacity * 0.88;
+    }
   }
 
   function sprayAt(context: CanvasRenderingContext2D, point: Point) {
@@ -289,6 +310,149 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
     context.restore();
   }
 
+  function drawWatercolorCurve(
+    context: CanvasRenderingContext2D,
+    startPoint: Point,
+    controlPoint: Point,
+    endPoint: Point,
+  ) {
+    context.beginPath();
+    context.moveTo(startPoint.x, startPoint.y);
+    context.quadraticCurveTo(
+      controlPoint.x,
+      controlPoint.y,
+      endPoint.x,
+      endPoint.y,
+    );
+    context.stroke();
+  }
+
+  function drawImpastoCurve(
+    context: CanvasRenderingContext2D,
+    startPoint: Point,
+    controlPoint: Point,
+    endPoint: Point,
+    offsetX = 0,
+    offsetY = 0,
+  ) {
+    context.beginPath();
+    context.moveTo(startPoint.x + offsetX, startPoint.y + offsetY);
+    context.quadraticCurveTo(
+      controlPoint.x + offsetX,
+      controlPoint.y + offsetY,
+      endPoint.x + offsetX,
+      endPoint.y + offsetY,
+    );
+    context.stroke();
+  }
+
+  function drawOilStroke(
+    context: CanvasRenderingContext2D,
+    from: Point,
+    to: Point,
+  ) {
+    const size = Number(brushSize);
+    const opacity = Number(brushOpacity) / 100;
+    const previousPoint = previousPointRef.current ?? from;
+    const controlPoint = from;
+    const endPoint = {
+      x: (from.x + to.x) / 2,
+      y: (from.y + to.y) / 2,
+    };
+    const startPoint = {
+      x: (previousPoint.x + from.x) / 2,
+      y: (previousPoint.y + from.y) / 2,
+    };
+    const dx = endPoint.x - startPoint.x;
+    const dy = endPoint.y - startPoint.y;
+    const length = Math.hypot(dx, dy) || 1;
+    const normalX = -dy / length;
+    const normalY = dx / length;
+
+    context.save();
+    context.globalCompositeOperation = "source-over";
+    context.lineCap = "butt";
+    context.lineJoin = "round";
+    context.strokeStyle = brushColor;
+    context.globalAlpha = opacity * 0.92;
+    context.lineWidth = size * 1.9;
+    drawImpastoCurve(context, startPoint, controlPoint, endPoint);
+
+    context.globalAlpha = opacity * 0.28;
+    context.lineWidth = Math.max(1, size * 0.22);
+    context.strokeStyle = "rgba(255, 255, 255, 0.72)";
+
+    [-0.42, -0.14, 0.18, 0.43].forEach((ridge, index) => {
+      const wobble = Math.sin((from.x + from.y + index * 37) * 0.08) * size * 0.035;
+      drawImpastoCurve(
+        context,
+        startPoint,
+        controlPoint,
+        endPoint,
+        normalX * size * ridge + wobble,
+        normalY * size * ridge - wobble,
+      );
+    });
+
+    context.globalAlpha = opacity * 0.18;
+    context.lineWidth = Math.max(1, size * 0.18);
+    context.strokeStyle = "rgba(0, 0, 0, 0.28)";
+
+    [-0.3, 0.32].forEach((ridge, index) => {
+      const wobble = Math.cos((from.x - from.y + index * 29) * 0.07) * size * 0.03;
+      drawImpastoCurve(
+        context,
+        startPoint,
+        controlPoint,
+        endPoint,
+        normalX * size * ridge - wobble,
+        normalY * size * ridge + wobble,
+      );
+    });
+
+    context.restore();
+  }
+
+  function blendStroke(
+    context: CanvasRenderingContext2D,
+    from: Point,
+    to: Point,
+  ) {
+    const size = Number(brushSize);
+    const opacity = Number(brushOpacity) / 100;
+    const radius = Math.max(8, size * 1.6);
+    const diameter = radius * 2;
+    const sourceCanvas = context.canvas;
+    const smudgeCanvas = document.createElement("canvas");
+    const smudgeContext = smudgeCanvas.getContext("2d");
+
+    if (!smudgeContext) {
+      return;
+    }
+
+    smudgeCanvas.width = diameter;
+    smudgeCanvas.height = diameter;
+    smudgeContext.drawImage(
+      sourceCanvas,
+      from.x - radius,
+      from.y - radius,
+      diameter,
+      diameter,
+      0,
+      0,
+      diameter,
+      diameter,
+    );
+
+    context.save();
+    context.globalCompositeOperation = "source-over";
+    context.globalAlpha = Math.min(0.72, opacity * 0.58);
+    context.filter = `blur(${Math.max(1, size * 0.08)}px)`;
+    context.drawImage(smudgeCanvas, to.x - radius, to.y - radius);
+    context.filter = "none";
+    context.restore();
+  }
+
   function strokeBetween(
     context: CanvasRenderingContext2D,
     from: Point,
@@ -299,11 +463,69 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
       return;
     }
 
+    if (brushStyle === "blend" && tool !== "eraser") {
+      blendStroke(context, from, to);
+      return;
+    }
+
     configureStroke(context);
-    context.beginPath();
-    context.moveTo(from.x, from.y);
-    context.lineTo(to.x, to.y);
-    context.stroke();
+
+    if (brushStyle === "watercolor" && tool !== "eraser") {
+      const size = Number(brushSize);
+      const opacity = Number(brushOpacity) / 100;
+      const previousPoint = previousPointRef.current ?? from;
+      const controlPoint = from;
+      const endPoint = {
+        x: (from.x + to.x) / 2,
+        y: (from.y + to.y) / 2,
+      };
+      const startPoint = {
+        x: (previousPoint.x + from.x) / 2,
+        y: (previousPoint.y + from.y) / 2,
+      };
+
+      context.save();
+      context.globalCompositeOperation = "multiply";
+      context.strokeStyle = brushColor;
+      context.lineCap = "butt";
+      context.lineJoin = "round";
+      context.globalAlpha = opacity * 0.085;
+      context.lineWidth = size * 3.6;
+      drawWatercolorCurve(context, startPoint, controlPoint, endPoint);
+
+      context.globalAlpha = opacity * 0.12;
+      context.lineWidth = size * 2.45;
+      drawWatercolorCurve(context, startPoint, controlPoint, endPoint);
+
+      context.globalAlpha = opacity * 0.045;
+      context.lineWidth = size * 1.05;
+      drawWatercolorCurve(context, startPoint, controlPoint, endPoint);
+
+      context.globalAlpha = opacity * 0.085;
+      context.lineWidth = Math.max(0.8, size * 0.22);
+
+      for (let index = 0; index < 4; index += 1) {
+        const edge = index % 2 === 0 ? 1 : -1;
+        const offset = edge * (size * (0.65 + Math.random() * 0.75));
+        const drift = (Math.random() - 0.5) * size * 0.35;
+
+        drawWatercolorCurve(
+          context,
+          { x: startPoint.x + offset, y: startPoint.y + drift },
+          { x: controlPoint.x + offset * 0.82, y: controlPoint.y + drift },
+          { x: endPoint.x + offset, y: endPoint.y + drift },
+        );
+      }
+      context.restore();
+    } else if (brushStyle === "oil" && tool !== "eraser") {
+      drawOilStroke(context, from, to);
+    } else {
+      context.beginPath();
+      context.moveTo(from.x, from.y);
+      context.lineTo(to.x, to.y);
+      context.stroke();
+    }
+
     context.globalAlpha = 1;
     context.globalCompositeOperation = "source-over";
     context.shadowBlur = 0;
@@ -370,6 +592,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
 
     isDrawingRef.current = true;
     startPointRef.current = point;
+    previousPointRef.current = point;
     lastPointRef.current = point;
     const before = captureLayerSnapshot(activeLayerIdRef.current);
     pendingHistoryRef.current = before ? [before] : null;
@@ -401,6 +624,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
 
     if (tool === "brush" || tool === "eraser") {
       strokeBetween(layerContext, lastPoint, currentPoint);
+      previousPointRef.current = lastPoint;
       lastPointRef.current = currentPoint;
       renderCanvas();
       return;
@@ -439,6 +663,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
 
     isDrawingRef.current = false;
     startPointRef.current = null;
+    previousPointRef.current = null;
     lastPointRef.current = null;
     pendingHistoryRef.current = null;
   }
@@ -720,8 +945,18 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
 
           <div className="grid gap-2">
             <Label>Brush style</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {(["pencil", "soft", "marker", "airbrush"] as BrushStyle[]).map((style) => (
+            <div className="grid grid-cols-2 gap-2">
+              {(
+                [
+                  "pencil",
+                  "soft",
+                  "marker",
+                  "airbrush",
+                  "watercolor",
+                  "oil",
+                  "blend",
+                ] as BrushStyle[]
+              ).map((style) => (
                 <Button
                   key={style}
                   type="button"
