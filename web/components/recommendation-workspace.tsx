@@ -27,6 +27,11 @@ type Recommendation = {
     sourceName: string;
     url: string | null;
   }[];
+  researchSources: {
+    title: string;
+    sourceName: string;
+    url: string | null;
+  }[];
 };
 
 type RecommendationResponse = {
@@ -467,6 +472,42 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                         small set of curated sources. Some sources are directly
                         about art activities; others are broader support or
                         safety background.
+                      </p>
+                      {recommendation.researchSources.length > 0 && (
+                        <div className="grid gap-1">
+                          <p className="font-medium text-foreground">
+                            Optional research links
+                          </p>
+                          <p>
+                            These are more technical papers used as background.
+                            You do not need to read them to use the activity.
+                          </p>
+                          <ul className="grid list-disc gap-1 pl-5">
+                            {recommendation.researchSources.map((source) => (
+                              <li key={`${source.sourceName}-${source.title}`}>
+                                {source.url ? (
+                                  <a
+                                    href={source.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="underline underline-offset-4"
+                                  >
+                                    {source.title}
+                                  </a>
+                                ) : (
+                                  source.title
+                                )}{" "}
+                                <span>({source.sourceName})</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      <p>
+                        Research links may be detailed or technical, so they
+                        live here instead of in the lighter background section.
+                        They are context for transparency, not homework or a
+                        promise that the activity will work a certain way.
                       </p>
                       <p>
                         A source may inform the general direction without

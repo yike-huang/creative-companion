@@ -83,6 +83,7 @@ type ActivityRecommendation = {
   steps: string[];
   safetyNote: string;
   sources: RecommendationSource[];
+  researchSources: RecommendationSource[];
 };
 
 type RecommendationPreferences = {
@@ -229,12 +230,8 @@ async function getContextSources(
     .select("id, display_to_users")
     .in("id", resourceIds);
 
-  // Keep the old behavior until the display_to_users migration is applied.
   if (error || !data) {
-    return candidates.slice(0, 6).map((source, index) => ({
-      ...source,
-      id: `source-${index + 1}`,
-    }));
+    return [];
   }
 
   const visibilityByResourceId = new Map(
@@ -303,10 +300,7 @@ async function getContextSources(
         a.score - b.score || a.source.contextOrder - b.source.contextOrder,
     );
 
-  const hasSpecificSource = eligible.some(({ score }) => score <= 2);
-  const selected = hasSpecificSource
-    ? eligible.filter(({ score }) => score <= 2)
-    : eligible;
+  const selected = eligible.filter(({ score }) => score <= 2);
 
   return selected.slice(0, 6).map(({ source }, index) => ({
     title: source.title,
@@ -314,6 +308,86 @@ async function getContextSources(
     url: source.url,
     id: `source-${index + 1}`,
   }));
+}
+
+async function getResearchSources(
+  supabase: SupabaseClient,
+  context: ResourceContext[],
+): Promise<RecommendationSource[]> {
+  const sources = new Map<string, CandidateSource>();
+
+  for (const [index, item] of context.entries()) {
+    const source = item.source as
+      | { title?: unknown; source_name?: unknown; source_url?: unknown }
+      | null
+      | undefined;
+
+    if (
+      !item.resourceId ||
+      typeof source?.title !== "string" ||
+      typeof source.source_name !== "string"
+    ) {
+      continue;
+    }
+
+    sources.set(item.resourceId, {
+      title: source.title,
+      sourceName: source.source_name,
+      url: typeof source.source_url === "string" ? source.source_url : null,
+      resourceId: item.resourceId,
+      contextOrder: index,
+    });
+  }
+
+  const candidates = Array.from(sources.values());
+  const resourceIds = candidates.flatMap((source) =>
+    source.resourceId ? [source.resourceId] : [],
+  );
+
+  if (resourceIds.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("curated_resources")
+    .select("id, display_to_users, source_type")
+    .in("id", resourceIds);
+
+  if (error || !data) {
+    return [];
+  }
+
+  const metadataByResourceId = new Map(
+    data.map((source) => [
+      source.id,
+      {
+        displayToUsers: source.display_to_users,
+        sourceType:
+          typeof source.source_type === "string" ? source.source_type : "",
+      },
+    ]),
+  );
+
+  return candidates
+    .filter((source) => {
+      if (!source.resourceId) {
+        return false;
+      }
+
+      const metadata = metadataByResourceId.get(source.resourceId);
+
+      return (
+        metadata?.displayToUsers === false &&
+        /study|trial|review|analysis|journal|peer/i.test(metadata.sourceType)
+      );
+    })
+    .sort((a, b) => a.contextOrder - b.contextOrder)
+    .slice(0, 3)
+    .map((source) => ({
+      title: source.title,
+      sourceName: source.sourceName,
+      url: source.url,
+    }));
 }
 
 async function getEvidenceScopeContext(
@@ -581,6 +655,7 @@ async function saveRecommendations(
 function parseRecommendations(
   text: string,
   sourceOptions: RecommendationSourceOption[],
+  researchSources: RecommendationSource[],
 ): ActivityRecommendation[] {
   const jsonText = text
     .trim()
@@ -648,6 +723,7 @@ function parseRecommendations(
               ? recommendation.safetyNote
               : "This is a non-clinical creative activity, not art therapy or medical care.",
           sources,
+          researchSources,
         };
       })
       .filter(
@@ -993,6 +1069,10 @@ export async function POST(request: Request) {
     [...activityContext, ...safetyContext],
     (profile ?? null) as UserProfileContext | null,
   );
+  const researchSources = await getResearchSources(supabase, [
+    ...activityContext,
+    ...safetyContext,
+  ]);
 
   let response;
 
@@ -1044,6 +1124,7 @@ export async function POST(request: Request) {
   const recommendations = parseRecommendations(
     response.output_text,
     recommendationSources,
+    researchSources,
   );
 
   if (recommendations.length === 0) {
