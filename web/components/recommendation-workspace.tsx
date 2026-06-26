@@ -32,6 +32,7 @@ type Recommendation = {
 type RecommendationResponse = {
   recommendations?: Recommendation[];
   error?: string;
+  requiresCrisisAcknowledgement?: boolean;
 };
 
 type EnergyPreference = "surprise_me" | "low" | "medium";
@@ -118,6 +119,7 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
     string | null
   >(null);
   const [error, setError] = useState<string | null>(null);
+  const [crisisWarning, setCrisisWarning] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [energyPreference, setEnergyPreference] =
     useState<EnergyPreference>("surprise_me");
@@ -126,9 +128,12 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
   const [directionPreference, setDirectionPreference] =
     useState<DirectionPreference>("surprise_me");
 
-  async function handleGenerate() {
+  async function handleGenerate(crisisAcknowledged = false) {
     setIsGenerating(true);
     setError(null);
+    if (!crisisAcknowledged) {
+      setCrisisWarning(null);
+    }
 
     let response: Response;
 
@@ -139,6 +144,7 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          crisisAcknowledged,
           preferences: {
             energy: energyPreference,
             medium: mediumPreference,
@@ -166,11 +172,21 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
     }
 
     if (!response.ok) {
+      if (result.requiresCrisisAcknowledgement) {
+        setCrisisWarning(
+          result.error ??
+            "Recent reflections may need extra support. You can review crisis resources or choose to continue.",
+        );
+        setError(null);
+        setIsGenerating(false);
+        return;
+      }
       setError(result.error ?? "Unable to generate recommendations.");
       setIsGenerating(false);
       return;
     }
 
+    setCrisisWarning(null);
     setRecommendations(result.recommendations ?? []);
     setSelectedRecommendation(null);
     setExpandedRecommendationId(null);
@@ -311,7 +327,7 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
           <Button
             type="button"
             className="w-fit"
-            onClick={handleGenerate}
+            onClick={() => handleGenerate()}
             disabled={isGenerating}
           >
             {isGenerating ? "Creating..." : "Create suggestions"}
@@ -323,6 +339,33 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
             <Link href="/crisis">Crisis resources</Link>
           </Button>
         </div>
+        {crisisWarning && (
+          <div className="grid gap-3 rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+            <div className="grid gap-1">
+              <p className="font-medium">A safety note came up.</p>
+              <p>{crisisWarning}</p>
+              <p>
+                If you might harm yourself or feel in immediate danger, please
+                use urgent local support instead of continuing here.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild variant="outline" className="w-fit">
+                <Link href="/crisis">Review crisis resources</Link>
+              </Button>
+              <Button
+                type="button"
+                className="w-fit"
+                onClick={() => handleGenerate(true)}
+                disabled={isGenerating}
+              >
+                {isGenerating
+                  ? "Creating..."
+                  : "I do not need crisis support. Continue."}
+              </Button>
+            </div>
+          </div>
+        )}
         {error && <p className="text-sm text-red-500">{error}</p>}
       </div>
 

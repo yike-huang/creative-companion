@@ -606,6 +606,10 @@ export async function POST(request: Request) {
       ? (requestBody as Record<string, unknown>).preferences
       : null,
   );
+  const crisisAcknowledged =
+    typeof requestBody === "object" &&
+    requestBody !== null &&
+    (requestBody as Record<string, unknown>).crisisAcknowledged === true;
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -649,11 +653,12 @@ export async function POST(request: Request) {
     );
   }
 
-  if (latestSummary.safety_level === "elevated") {
+  if (latestSummary.safety_level === "elevated" && !crisisAcknowledged) {
     return NextResponse.json(
       {
         error:
           "Recent reflections may need extra support. Please review crisis resources before using activity recommendations.",
+        requiresCrisisAcknowledgement: true,
       },
       { status: 409 },
     );
