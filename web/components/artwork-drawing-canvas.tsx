@@ -12,9 +12,11 @@ import {
   Paintbrush,
   PenLine,
   Plus,
+  Redo2,
   Square,
   SprayCan,
   Trash2,
+  Undo2,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -35,6 +37,14 @@ type Layer = {
   name: string;
   visible: boolean;
 };
+type LayerSnapshot = {
+  layerId: string;
+  imageData: ImageData;
+};
+type HistoryAction = {
+  before: LayerSnapshot[];
+  after: LayerSnapshot[];
+};
 
 function createLayerCanvas() {
   const layer = document.createElement("canvas");
@@ -51,6 +61,9 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
   const startPointRef = useRef<Point | null>(null);
   const lastPointRef = useRef<Point | null>(null);
   const activeLayerIdRef = useRef("layer-1");
+  const pendingHistoryRef = useRef<LayerSnapshot[] | null>(null);
+  const undoStackRef = useRef<HistoryAction[]>([]);
+  const redoStackRef = useRef<HistoryAction[]>([]);
 
   const [layers, setLayers] = useState<Layer[]>([
     { id: "layer-1", name: "Layer 1", visible: true },
@@ -59,6 +72,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
   const [title, setTitle] = useState("");
   const [reflection, setReflection] = useState("");
   const [brushColor, setBrushColor] = useState("#2f3a3d");
+  const [brushColorText, setBrushColorText] = useState("#2f3a3d");
   const [brushSize, setBrushSize] = useState("8");
   const [brushOpacity, setBrushOpacity] = useState("100");
   const [brushStyle, setBrushStyle] = useState<BrushStyle>("pencil");
@@ -67,6 +81,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [, setHistoryVersion] = useState(0);
   const router = useRouter();
 
   const renderCanvas = useCallback((currentLayers = layers) => {
@@ -130,6 +145,77 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
     return layerCanvas?.getContext("2d") ?? null;
   }
 
+  function captureLayerSnapshot(layerId: string): LayerSnapshot | null {
+    const layerCanvas = layersRef.current.get(layerId);
+    const context = layerCanvas?.getContext("2d");
+
+    if (!layerCanvas || !context) {
+      return null;
+    }
+
+    return {
+      layerId,
+      imageData: context.getImageData(0, 0, layerCanvas.width, layerCanvas.height),
+    };
+  }
+
+  function captureAllLayerSnapshots() {
+    return layers
+      .map((layer) => captureLayerSnapshot(layer.id))
+      .filter((snapshot): snapshot is LayerSnapshot => snapshot !== null);
+  }
+
+  function captureAfterSnapshots(before: LayerSnapshot[]) {
+    return before
+      .map((snapshot) => captureLayerSnapshot(snapshot.layerId))
+      .filter((snapshot): snapshot is LayerSnapshot => snapshot !== null);
+  }
+
+  function pushHistory(before: LayerSnapshot[]) {
+    if (before.length === 0) {
+      return;
+    }
+
+    undoStackRef.current.push({
+      before,
+      after: captureAfterSnapshots(before),
+    });
+    redoStackRef.current = [];
+    setHistoryVersion((version) => version + 1);
+  }
+
+  function restoreSnapshots(snapshots: LayerSnapshot[]) {
+    snapshots.forEach((snapshot) => {
+      const layerCanvas = layersRef.current.get(snapshot.layerId);
+      const context = layerCanvas?.getContext("2d");
+      context?.putImageData(snapshot.imageData, 0, 0);
+    });
+    renderCanvas();
+    setHistoryVersion((version) => version + 1);
+  }
+
+  function undo() {
+    const action = undoStackRef.current.pop();
+
+    if (!action) {
+      return;
+    }
+
+    restoreSnapshots(action.before);
+    redoStackRef.current.push(action);
+  }
+
+  function redo() {
+    const action = redoStackRef.current.pop();
+
+    if (!action) {
+      return;
+    }
+
+    restoreSnapshots(action.after);
+    undoStackRef.current.push(action);
+  }
+
   function getCanvasPoint(event: React.PointerEvent<HTMLCanvasElement>) {
     const canvas = canvasRef.current;
 
@@ -149,17 +235,23 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
 
     context.lineCap = "round";
     context.lineJoin = "round";
-    context.lineWidth = Number(brushSize);
+    context.lineWidth =
+      brushStyle === "soft" && tool !== "eraser"
+        ? Number(brushSize) * 1.35
+        : Number(brushSize);
     context.strokeStyle = brushColor;
-    context.globalAlpha = brushStyle === "soft" ? opacity * 0.35 : opacity;
+    context.globalAlpha = brushStyle === "soft" ? opacity * 0.22 : opacity;
     context.globalCompositeOperation =
       tool === "eraser" ? "destination-out" : "source-over";
+    context.shadowBlur = 0;
+    context.shadowColor = "transparent";
 
     if (brushStyle === "marker") {
       context.lineCap = "butt";
       context.lineJoin = "round";
       context.globalAlpha = opacity * 0.75;
     }
+
   }
 
   function sprayAt(context: CanvasRenderingContext2D, point: Point) {
@@ -214,6 +306,8 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
     context.stroke();
     context.globalAlpha = 1;
     context.globalCompositeOperation = "source-over";
+    context.shadowBlur = 0;
+    context.shadowColor = "transparent";
   }
 
   function drawShape(
@@ -265,17 +359,26 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
     const point = getCanvasPoint(event);
 
     if (tool === "fill") {
+      const before = captureLayerSnapshot(activeLayerIdRef.current);
       fillLayer(context);
       renderCanvas();
+      if (before) {
+        pushHistory([before]);
+      }
       return;
     }
 
     isDrawingRef.current = true;
     startPointRef.current = point;
     lastPointRef.current = point;
+    const before = captureLayerSnapshot(activeLayerIdRef.current);
+    pendingHistoryRef.current = before ? [before] : null;
     canvas.setPointerCapture(event.pointerId);
 
-    if (tool === "brush" || tool === "eraser") {
+    if (
+      (tool === "brush" && brushStyle !== "soft") ||
+      tool === "eraser"
+    ) {
       strokeBetween(context, point, point);
       renderCanvas();
     }
@@ -330,9 +433,14 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
       renderCanvas();
     }
 
+    if (pendingHistoryRef.current) {
+      pushHistory(pendingHistoryRef.current);
+    }
+
     isDrawingRef.current = false;
     startPointRef.current = null;
     lastPointRef.current = null;
+    pendingHistoryRef.current = null;
   }
 
   function addLayer() {
@@ -374,6 +482,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
   }
 
   function clearLayer(id = activeLayerId) {
+    const before = captureLayerSnapshot(id);
     const layerCanvas = layersRef.current.get(id);
     const context = layerCanvas?.getContext("2d");
 
@@ -385,9 +494,13 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
     setMessage(null);
     setError(null);
     renderCanvas();
+    if (before) {
+      pushHistory([before]);
+    }
   }
 
   function clearAllLayers() {
+    const before = captureAllLayerSnapshots();
     layersRef.current.forEach((layerCanvas) => {
       const context = layerCanvas.getContext("2d");
       context?.clearRect(0, 0, layerCanvas.width, layerCanvas.height);
@@ -395,6 +508,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
     setMessage(null);
     setError(null);
     renderCanvas();
+    pushHistory(before);
   }
 
   function exportCanvas() {
@@ -505,18 +619,28 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
     { id: "rectangle", label: "Rectangle", icon: <Square /> },
     { id: "ellipse", label: "Ellipse", icon: <Circle /> },
   ];
+  const activeToolLabel =
+    tools.find((item) => item.id === tool)?.label ?? "Brush";
 
   return (
     <div
       ref={rootRef}
-      className="grid gap-5 rounded-md border bg-background p-5"
+      className={
+        isFullscreen
+          ? "grid h-screen gap-5 overflow-auto bg-background p-5"
+          : "grid gap-5 rounded-md border bg-background p-5"
+      }
     >
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div className="grid gap-2">
           <h2 className="text-xl font-semibold">Draw online</h2>
           <p className="text-sm text-muted-foreground">
-            Create a digital drawing with layers, brush styles, lines, and
+            Create a digital drawing with layers, brush styles, color, and
             simple shapes, then save it privately with a reflection.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Current tool: {activeToolLabel} · {brushStyle} · {brushSize}px ·{" "}
+            {brushOpacity}% opacity
           </p>
         </div>
         <Button
@@ -552,6 +676,29 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
         </div>
 
         <div className="grid content-start gap-5">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={undo}
+              disabled={undoStackRef.current.length === 0}
+            >
+              <Undo2 />
+              Undo
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={redo}
+              disabled={redoStackRef.current.length === 0}
+            >
+              <Redo2 />
+              Redo
+            </Button>
+          </div>
+
           <div className="grid gap-2">
             <Label>Tools</Label>
             <div className="grid grid-cols-6 gap-2 xl:grid-cols-3">
@@ -591,13 +738,34 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
 
           <div className="grid gap-2">
             <Label htmlFor="brush_color">Color</Label>
-            <Input
-              id="brush_color"
-              type="color"
-              value={brushColor}
-              onChange={(event) => setBrushColor(event.target.value)}
-              className="h-10 p-1"
-            />
+            <div className="grid grid-cols-[4rem_1fr] gap-2">
+              <Input
+                id="brush_color"
+                type="color"
+                value={brushColor}
+                onChange={(event) => {
+                  setBrushColor(event.target.value);
+                  setBrushColorText(event.target.value);
+                }}
+                className="h-10 p-1"
+              />
+              <Input
+                aria-label="Color hex value"
+                value={brushColorText}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  const nextValue = value.startsWith("#") ? value : `#${value}`;
+                  setBrushColorText(nextValue);
+                  if (/^#[0-9a-fA-F]{6}$/.test(nextValue)) {
+                    setBrushColor(nextValue);
+                  }
+                }}
+                onBlur={() => {
+                  setBrushColorText(brushColor);
+                }}
+                placeholder="#2f3a3d"
+              />
+            </div>
           </div>
 
           <div className="grid gap-2">
