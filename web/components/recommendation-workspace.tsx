@@ -34,6 +34,10 @@ type Recommendation = {
   }[];
 };
 
+function getResearchSources(recommendation: Recommendation) {
+  return recommendation.researchSources ?? [];
+}
+
 type RecommendationResponse = {
   recommendations?: Recommendation[];
   error?: string;
@@ -473,7 +477,7 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                         about art activities; others are broader support or
                         safety background.
                       </p>
-                      {recommendation.researchSources.length > 0 && (
+                      {getResearchSources(recommendation).length > 0 && (
                         <div className="grid gap-1">
                           <p className="font-medium text-foreground">
                             Optional research links
@@ -483,7 +487,7 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                             You do not need to read them to use the activity.
                           </p>
                           <ul className="grid list-disc gap-1 pl-5">
-                            {recommendation.researchSources.map((source) => (
+                            {getResearchSources(recommendation).map((source) => (
                               <li key={`${source.sourceName}-${source.title}`}>
                                 {source.url ? (
                                   <a
