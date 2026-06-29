@@ -12,9 +12,15 @@ type FeatureCardProps = {
   href: string;
   title: string;
   description: string;
+  openLabel: string;
 };
 
-export function FeatureCard({ href, title, description }: FeatureCardProps) {
+export function FeatureCard({
+  href,
+  title,
+  description,
+  openLabel,
+}: FeatureCardProps) {
   return (
     <Link href={href} className="block">
       <Card className="h-full transition-colors hover:bg-accent">
@@ -23,7 +29,7 @@ export function FeatureCard({ href, title, description }: FeatureCardProps) {
           <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm font-medium">Open</p>
+          <p className="text-sm font-medium">{openLabel}</p>
         </CardContent>
       </Card>
     </Link>

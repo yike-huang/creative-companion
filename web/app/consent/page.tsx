@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { AppShell } from "@/components/app-shell";
 import { ConsentSettingsForm } from "@/components/consent-settings-form";
 import { CreateConsentButton } from "@/components/create-consent-button";
+import { getDictionary, normalizeLanguage } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 
 async function ConsentDetails() {
@@ -23,28 +24,60 @@ async function ConsentDetails() {
     .single();
 
   if (consentError || !consent) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("preferred_language")
+      .eq("id", data.user.id)
+      .single();
+    const t = getDictionary(normalizeLanguage(profile?.preferred_language));
+
     return (
       <div className="grid gap-4 rounded-md border p-5">
-        <h2 className="text-xl font-semibold">No consent settings yet</h2>
+        <h2 className="text-xl font-semibold">{t.consent.missingTitle}</h2>
         <p className="text-sm text-muted-foreground">
-          Consent settings are needed before diary, AI, artwork, or optional
-          emergency contact features are used.
+          {t.consent.missingDescription}
         </p>
-        <CreateConsentButton userId={data.user.id} />
+        <CreateConsentButton userId={data.user.id} copy={t.consent} />
       </div>
     );
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("preferred_language")
+    .eq("id", data.user.id)
+    .single();
+  const t = getDictionary(normalizeLanguage(profile?.preferred_language));
+
   return (
     <div className="grid gap-6 rounded-md border p-5">
       <div className="grid gap-2">
-        <h2 className="text-xl font-semibold">Your choices</h2>
+        <h2 className="text-xl font-semibold">{t.consent.choicesTitle}</h2>
         <p className="text-sm text-muted-foreground">
-          You can change these settings later. Turning a setting off should
-          prevent future use of that data for the related feature.
+          {t.consent.choicesDescription}
         </p>
       </div>
-      <ConsentSettingsForm consent={consent} />
+      <ConsentSettingsForm consent={consent} copy={t.consent} />
+    </div>
+  );
+}
+
+async function ConsentHeader() {
+  const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getUser();
+  const { data: profile } = authData.user
+    ? await supabase
+        .from("profiles")
+        .select("preferred_language")
+        .eq("id", authData.user.id)
+        .single()
+    : { data: null };
+  const t = getDictionary(normalizeLanguage(profile?.preferred_language));
+
+  return (
+    <div className="grid gap-2">
+      <h1 className="text-3xl font-bold">{t.consent.pageTitle}</h1>
+      <p className="max-w-2xl text-muted-foreground">{t.consent.pageIntro}</p>
     </div>
   );
 }
@@ -53,14 +86,11 @@ export default function ConsentPage() {
   return (
     <AppShell>
       <div className="grid gap-8">
-        <div className="grid gap-2">
-          <h1 className="text-3xl font-bold">Consent settings</h1>
-          <p className="max-w-2xl text-muted-foreground">
-            Here you can decide how AI reflection, data storage, artwork
-            storage, and optional emergency contact preferences work for your
-            account.
-          </p>
-        </div>
+        <Suspense
+          fallback={<p className="text-sm text-muted-foreground">Loading...</p>}
+        >
+          <ConsentHeader />
+        </Suspense>
 
         <Suspense
           fallback={<p className="text-sm text-muted-foreground">Loading...</p>}

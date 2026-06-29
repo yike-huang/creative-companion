@@ -1,36 +1,41 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { Suspense } from "react";
 
 import { Button } from "@/components/ui/button";
+import { getDictionary, normalizeLanguage } from "@/lib/i18n";
 
-export default function CrisisPage() {
+async function CrisisContent() {
+  const cookieStore = await cookies();
+  const t = getDictionary(
+    normalizeLanguage(cookieStore.get("creative_companion_language")?.value),
+  );
+  const copy = t.publicPages;
+
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="w-full max-w-3xl p-5">
         <nav className="flex items-center justify-between py-4 text-sm">
           <Link href="/" className="font-semibold">
-            Creative Companion
+            {copy.brand}
           </Link>
           <Button asChild variant="outline" size="sm">
-            <Link href="/dashboard">Dashboard</Link>
+            <Link href="/dashboard">{copy.dashboard}</Link>
           </Button>
         </nav>
 
         <section className="grid gap-6 py-10">
           <div className="grid gap-3">
-            <h1 className="text-3xl font-bold">Crisis resources</h1>
+            <h1 className="text-3xl font-bold">{copy.crisisTitle}</h1>
             <p className="text-muted-foreground">
-              Creative Companion is not a crisis service. If you may harm
-              yourself or someone else, or if you are in immediate danger,
-              contact local emergency services now. If you are unsure but would
-              like extra support, the resources below may help.
+              {copy.crisisIntro}
             </p>
           </div>
 
           <div className="grid gap-4 rounded-md border p-5">
-            <h2 className="text-xl font-semibold">United States</h2>
+            <h2 className="text-xl font-semibold">{copy.unitedStates}</h2>
             <p className="text-sm text-muted-foreground">
-              Call or text 988 to reach the 988 Suicide & Crisis Lifeline. You
-              can also use their online chat.
+              {copy.usCrisisDescription}
             </p>
             <div className="flex flex-wrap gap-3">
               <Button asChild>
@@ -38,12 +43,12 @@ export default function CrisisPage() {
                   href="tel:988"
                   aria-label="Call the 988 Suicide and Crisis Lifeline"
                 >
-                  Call 988
+                  {copy.call988}
                 </a>
               </Button>
               <Button asChild variant="outline">
                 <a href="sms:988" aria-label="Text the 988 Lifeline">
-                  Text 988
+                  {copy.text988}
                 </a>
               </Button>
               <Button asChild variant="outline">
@@ -59,10 +64,9 @@ export default function CrisisPage() {
           </div>
 
           <div className="grid gap-4 rounded-md border p-5">
-            <h2 className="text-xl font-semibold">Outside the United States</h2>
+            <h2 className="text-xl font-semibold">{copy.outsideUS}</h2>
             <p className="text-sm text-muted-foreground">
-              Crisis and mental health resources vary by country and region.
-              Find A Helpline can help locate available support where you are.
+              {copy.outsideUSDescription}
             </p>
             <Button asChild className="w-fit" variant="outline">
               <a
@@ -70,17 +74,24 @@ export default function CrisisPage() {
                 target="_blank"
                 rel="noreferrer"
               >
-                Find A Helpline
+                {copy.findAHelpline}
               </a>
             </Button>
           </div>
 
           <div className="rounded-md border p-5 text-sm text-muted-foreground">
-            AI features in this project should never replace emergency care,
-            local crisis services, clinicians, or trusted support people.
+            {copy.crisisFooter}
           </div>
         </section>
       </div>
     </main>
+  );
+}
+
+export default function CrisisPage() {
+  return (
+    <Suspense>
+      <CrisisContent />
+    </Suspense>
   );
 }

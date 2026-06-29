@@ -6,7 +6,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
-export function CreateConsentButton({ userId }: { userId: string }) {
+export function CreateConsentButton({
+  userId,
+  copy,
+}: {
+  userId: string;
+  copy: { creating: string; create: string };
+}) {
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const router = useRouter();
@@ -32,7 +38,7 @@ export function CreateConsentButton({ userId }: { userId: string }) {
   return (
     <div className="grid gap-3">
       <Button type="button" className="w-fit" onClick={handleCreate} disabled={isCreating}>
-        {isCreating ? "Creating..." : "Create consent settings"}
+        {isCreating ? copy.creating : copy.create}
       </Button>
       {error && <p className="text-sm text-red-500">{error}</p>}
     </div>

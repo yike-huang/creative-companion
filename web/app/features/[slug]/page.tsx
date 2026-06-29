@@ -1,77 +1,108 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { AuthButton } from "@/components/auth-button";
 import { Button } from "@/components/ui/button";
+import { getDictionary, normalizeLanguage } from "@/lib/i18n";
 
 const featurePages = {
   "daily-emotional-reflection": {
-    title: "Daily emotional reflection",
-    description:
-      "A private diary space for naming emotions, choosing intensity, and writing what you want to remember about the day.",
-    details: [
-      "Choose up to three emotion labels to reduce the pressure of finding perfect words.",
-      "Use a simple intensity slider to notice how strong the feeling is.",
-      "Keep diary entries private and editable inside your account.",
-    ],
+    copyKey: "daily",
     appHref: "/diary",
-    cta: "Create an account to reflect",
   },
   "emotion-analysis": {
-    title: "Emotion analysis",
-    description:
-      "Optional AI-assisted reflections can help you notice recent emotional patterns across diary entries.",
-    details: [
-      "This feature is optional and controlled by consent settings.",
-      "Reflections are non-clinical and should not be treated as diagnosis or therapy.",
-      "You can choose whether AI analysis and summary storage are allowed.",
-    ],
+    copyKey: "analysis",
     appHref: "/diary",
-    cta: "Create an account to try reflection",
   },
   "art-inspired-coping-activities": {
-    title: "Personalized art-inspired coping activities",
-    description:
-      "Creative Companion will suggest gentle, art-inspired activities that can be completed with digital tools or physical materials.",
-    details: [
-      "Recommendations are intended as non-clinical creative coping support.",
-      "The workspace keeps activity steps visible while you create.",
-      "Suggestions are grounded in curated resources when a fitting source is available.",
-    ],
+    copyKey: "activities",
     appHref: "/recommendations",
-    cta: "Create an account to view activities",
   },
   "personal-art-gallery": {
-    title: "Personal art gallery",
-    description:
-      "A private space for saving digital drawings, uploading photos of physical artwork, and adding reflections.",
-    details: [
-      "Create directly on the digital canvas or upload a photo of paper artwork.",
-      "Artwork storage is controlled by consent settings.",
-      "Saved works are stored privately in your account.",
-    ],
+    copyKey: "gallery",
     appHref: "/artworks",
-    cta: "Create an account to use the gallery",
   },
   "consent-centered-ai-support": {
-    title: "Consent-centered AI support",
-    description:
-      "Sensitive features should stay under your control before diary, AI, or artwork storage is used.",
-    details: [
-      "Manage diary storage, AI analysis, emotion summary storage, and artwork storage.",
-      "Emergency contact information is optional and should remain user-initiated.",
-      "You can update consent settings after account creation.",
-    ],
+    copyKey: "consent",
     appHref: "/consent",
-    cta: "Create an account to manage consent",
   },
-};
+} as const;
 
 type FeatureSlug = keyof typeof featurePages;
 
 export function generateStaticParams() {
   return Object.keys(featurePages).map((slug) => ({ slug }));
+}
+
+async function FeatureContent({
+  slug,
+}: {
+  slug: FeatureSlug;
+}) {
+  const feature = featurePages[slug];
+  const cookieStore = await cookies();
+  const t = getDictionary(
+    normalizeLanguage(cookieStore.get("creative_companion_language")?.value),
+  );
+  const copy = t.publicPages;
+  const featureCopy = copy.features[feature.copyKey];
+
+  return (
+    <main className="min-h-screen flex flex-col items-center">
+      <div className="w-full max-w-4xl flex-1 p-5">
+        <nav className="flex flex-col gap-4 py-4 text-sm md:flex-row md:items-center md:justify-between">
+          <Link href="/" className="font-semibold">
+            {copy.brand}
+          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/crisis"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {copy.crisisResources}
+            </Link>
+            <Suspense>
+              <AuthButton />
+            </Suspense>
+          </div>
+        </nav>
+
+        <section className="grid gap-8 py-12">
+          <div className="grid gap-4">
+            <p className="text-sm font-medium text-muted-foreground">
+              {copy.featureOverview}
+            </p>
+            <h1 className="text-4xl font-bold">{featureCopy.title}</h1>
+            <p className="text-lg text-muted-foreground">
+              {featureCopy.description}
+            </p>
+          </div>
+
+          <div className="grid gap-3">
+            {featureCopy.details.map((detail) => (
+              <div key={detail} className="rounded-md border p-4 text-sm">
+                {detail}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Button asChild>
+              <Link href="/auth/sign-up">{featureCopy.cta}</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/auth/login">{copy.signInToTry}</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/">{copy.backHome}</Link>
+            </Button>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
 }
 
 export default async function FeaturePage({
@@ -87,57 +118,8 @@ export default async function FeaturePage({
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center">
-      <div className="w-full max-w-4xl flex-1 p-5">
-        <nav className="flex flex-col gap-4 py-4 text-sm md:flex-row md:items-center md:justify-between">
-          <Link href="/" className="font-semibold">
-            Creative Companion
-          </Link>
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/crisis"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Crisis Resources
-            </Link>
-            <Suspense>
-              <AuthButton />
-            </Suspense>
-          </div>
-        </nav>
-
-        <section className="grid gap-8 py-12">
-          <div className="grid gap-4">
-            <p className="text-sm font-medium text-muted-foreground">
-              Feature overview
-            </p>
-            <h1 className="text-4xl font-bold">{feature.title}</h1>
-            <p className="text-lg text-muted-foreground">
-              {feature.description}
-            </p>
-          </div>
-
-          <div className="grid gap-3">
-            {feature.details.map((detail) => (
-              <div key={detail} className="rounded-md border p-4 text-sm">
-                {detail}
-              </div>
-            ))}
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            <Button asChild>
-              <Link href="/auth/sign-up">{feature.cta}</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/auth/login">Sign in to try this feature</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/">Back home</Link>
-            </Button>
-          </div>
-        </section>
-      </div>
-    </main>
+    <Suspense>
+      <FeatureContent slug={slug as FeatureSlug} />
+    </Suspense>
   );
 }

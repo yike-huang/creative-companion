@@ -24,6 +24,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { dictionary } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/client";
 
 const canvasWidth = 900;
@@ -52,6 +53,7 @@ type HistoryAction = {
   before: LayerSnapshot[];
   after: LayerSnapshot[];
 };
+type ArtworkCopy = Record<keyof (typeof dictionary)["en"]["artworks"], string>;
 
 function createLayerCanvas() {
   const layer = document.createElement("canvas");
@@ -60,7 +62,13 @@ function createLayerCanvas() {
   return layer;
 }
 
-export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
+export function ArtworkDrawingCanvas({
+  userId,
+  copy,
+}: {
+  userId: string;
+  copy: ArtworkCopy;
+}) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const layersRef = useRef<Map<string, HTMLCanvasElement>>(new Map());
@@ -74,7 +82,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
   const redoStackRef = useRef<HistoryAction[]>([]);
 
   const [layers, setLayers] = useState<Layer[]>([
-    { id: "layer-1", name: "Layer 1", visible: true },
+    { id: "layer-1", name: `${copy.layerName} 1`, visible: true },
   ]);
   const [activeLayerId, setActiveLayerId] = useState("layer-1");
   const [title, setTitle] = useState("");
@@ -674,7 +682,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
     setLayers((current) => {
       const next = [
         ...current,
-        { id, name: `Layer ${current.length + 1}`, visible: true },
+        { id, name: `${copy.layerName} ${current.length + 1}`, visible: true },
       ];
       return next;
     });
@@ -764,7 +772,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
     const exportCanvasElement = exportCanvas();
 
     if (!exportCanvasElement) {
-      setError("Drawing canvas is not ready.");
+      setError(copy.canvasNotReady);
       return;
     }
 
@@ -777,7 +785,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
     });
 
     if (!blob) {
-      setError("Could not save the drawing image.");
+      setError(copy.drawingSaveFailed);
       setIsSaving(false);
       return;
     }
@@ -815,7 +823,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
 
     setTitle("");
     setReflection("");
-    setMessage("Drawing saved.");
+    setMessage(copy.drawingSaved);
     setIsSaving(false);
     router.refresh();
   }
@@ -837,15 +845,24 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
     label: string;
     icon: React.ReactNode;
   }> = [
-    { id: "brush", label: "Brush", icon: <Paintbrush /> },
-    { id: "eraser", label: "Eraser", icon: <Eraser /> },
-    { id: "fill", label: "Fill layer", icon: <PaintBucket /> },
-    { id: "line", label: "Line", icon: <Minus /> },
-    { id: "rectangle", label: "Rectangle", icon: <Square /> },
-    { id: "ellipse", label: "Ellipse", icon: <Circle /> },
+    { id: "brush", label: copy.toolBrush, icon: <Paintbrush /> },
+    { id: "eraser", label: copy.toolEraser, icon: <Eraser /> },
+    { id: "fill", label: copy.toolFill, icon: <PaintBucket /> },
+    { id: "line", label: copy.toolLine, icon: <Minus /> },
+    { id: "rectangle", label: copy.toolRectangle, icon: <Square /> },
+    { id: "ellipse", label: copy.toolEllipse, icon: <Circle /> },
   ];
   const activeToolLabel =
-    tools.find((item) => item.id === tool)?.label ?? "Brush";
+    tools.find((item) => item.id === tool)?.label ?? copy.toolBrush;
+  const brushStyleLabels: Record<BrushStyle, string> = {
+    pencil: copy.brushPencil,
+    soft: copy.brushSoft,
+    marker: copy.brushMarker,
+    airbrush: copy.brushAirbrush,
+    watercolor: copy.brushWatercolor,
+    oil: copy.brushOil,
+    blend: copy.brushBlend,
+  };
 
   return (
     <div
@@ -858,15 +875,14 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
     >
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div className="grid gap-2">
-          <h2 className="text-xl font-semibold">Draw online</h2>
+          <h2 className="text-xl font-semibold">{copy.drawTitle}</h2>
           <p className="text-sm text-muted-foreground">
-            Here you can make a digital drawing with layers, brush styles,
-            color, and simple shapes. If you want, you can save it privately
-            with a reflection.
+            {copy.drawDescription}
           </p>
           <p className="text-xs text-muted-foreground">
-            Current tool: {activeToolLabel} · {brushStyle} · {brushSize}px ·{" "}
-            {brushOpacity}% opacity
+            {copy.currentTool}: {activeToolLabel} ·{" "}
+            {brushStyleLabels[brushStyle]} · {brushSize}px · {brushOpacity}%{" "}
+            {copy.opacity}
           </p>
         </div>
         <Button
@@ -876,7 +892,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
           onClick={toggleFullscreen}
         >
           {isFullscreen ? <Minimize2 /> : <Maximize2 />}
-          {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+          {isFullscreen ? copy.exitFullscreen : copy.fullscreen}
         </Button>
       </div>
 
@@ -911,7 +927,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
               disabled={undoStackRef.current.length === 0}
             >
               <Undo2 />
-              Undo
+              {copy.undo}
             </Button>
             <Button
               type="button"
@@ -921,12 +937,12 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
               disabled={redoStackRef.current.length === 0}
             >
               <Redo2 />
-              Redo
+              {copy.redo}
             </Button>
           </div>
 
           <div className="grid gap-2">
-            <Label>Tools</Label>
+            <Label>{copy.tools}</Label>
             <div className="grid grid-cols-6 gap-2 xl:grid-cols-3">
               {tools.map((item) => (
                 <Button
@@ -945,7 +961,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
           </div>
 
           <div className="grid gap-2">
-            <Label>Brush style</Label>
+            <Label>{copy.brushStyle}</Label>
             <div className="grid grid-cols-2 gap-2">
               {(
                 [
@@ -966,14 +982,14 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
                   onClick={() => setBrushStyle(style)}
                 >
                   {style === "airbrush" && <SprayCan />}
-                  {style}
+                  {brushStyleLabels[style]}
                 </Button>
               ))}
             </div>
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="brush_color">Color</Label>
+            <Label htmlFor="brush_color">{copy.color}</Label>
             <div className="grid grid-cols-[4rem_1fr] gap-2">
               <Input
                 id="brush_color"
@@ -986,7 +1002,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
                 className="h-10 p-1"
               />
               <Input
-                aria-label="Color hex value"
+                aria-label={copy.colorHex}
                 value={brushColorText}
                 onChange={(event) => {
                   const value = event.target.value;
@@ -1005,7 +1021,9 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="brush_size">Brush size: {brushSize}</Label>
+            <Label htmlFor="brush_size">
+              {copy.brushSize}: {brushSize}
+            </Label>
             <input
               id="brush_size"
               type="range"
@@ -1018,7 +1036,9 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="brush_opacity">Opacity: {brushOpacity}%</Label>
+            <Label htmlFor="brush_opacity">
+              {copy.opacity}: {brushOpacity}%
+            </Label>
             <input
               id="brush_opacity"
               type="range"
@@ -1032,7 +1052,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
 
           <div className="grid gap-2">
             <div className="flex items-center justify-between gap-3">
-              <Label>Layers</Label>
+              <Label>{copy.layers}</Label>
               <Button
                 type="button"
                 variant="outline"
@@ -1040,7 +1060,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
                 onClick={addLayer}
               >
                 <Plus />
-                Add
+                {copy.add}
               </Button>
             </div>
             <div className="grid gap-2">
@@ -1066,8 +1086,10 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      title={layer.visible ? "Hide layer" : "Show layer"}
-                      aria-label={layer.visible ? "Hide layer" : "Show layer"}
+                      title={layer.visible ? copy.hideLayer : copy.showLayer}
+                      aria-label={
+                        layer.visible ? copy.hideLayer : copy.showLayer
+                      }
                       onClick={() => toggleLayerVisibility(layer.id)}
                     >
                       {layer.visible ? <Eye /> : <EyeOff />}
@@ -1076,8 +1098,8 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      title="Delete layer"
-                      aria-label="Delete layer"
+                      title={copy.deleteLayer}
+                      aria-label={copy.deleteLayer}
                       onClick={() => deleteLayer(layer.id)}
                     >
                       <Trash2 />
@@ -1093,30 +1115,30 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
               variant="outline"
               onClick={() => clearLayer()}
             >
-              Clear layer
+              {copy.clearLayer}
             </Button>
             <Button type="button" variant="outline" onClick={clearAllLayers}>
-              Clear all
+              {copy.clearAll}
             </Button>
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="digital_title">Title</Label>
+            <Label htmlFor="digital_title">{copy.title}</Label>
             <Input
               id="digital_title"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="Optional title"
+              placeholder={copy.optionalTitle}
             />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="digital_reflection">Reflection</Label>
+            <Label htmlFor="digital_reflection">{copy.reflection}</Label>
             <textarea
               id="digital_reflection"
               value={reflection}
               onChange={(event) => setReflection(event.target.value)}
-              placeholder="What would you like to remember about this drawing?"
+              placeholder={copy.drawingReflectionPlaceholder}
               className="min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
             />
           </div>
@@ -1130,7 +1152,7 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
             onClick={saveDrawing}
             disabled={isSaving}
           >
-            {isSaving ? "Saving..." : "Save drawing"}
+            {isSaving ? copy.saving : copy.saveDrawing}
           </Button>
         </div>
       </div>

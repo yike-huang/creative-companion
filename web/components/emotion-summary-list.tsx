@@ -15,31 +15,50 @@ type EmotionSummary = {
   created_at: string;
 };
 
-function getSafetyMessage(safetyLevel: string) {
+type EmotionSummaryCopy = {
+  latestReflectionTitle: string;
+  latestReflectionDescription: string;
+  supportNote: string;
+  averageIntensity: string;
+  noticedThemes: string;
+  viewCrisisResources: string;
+  deleteReflection: string;
+  deleting: string;
+  deleteReflectionConfirm: string;
+  showHistory: string;
+  hideHistory: string;
+  safetyElevated: string;
+  safetyLow: string;
+  safetyNone: string;
+};
+
+function getSafetyMessage(safetyLevel: string, copy: EmotionSummaryCopy) {
   if (safetyLevel === "elevated") {
-    return "Some parts of this reflection may deserve extra care. Crisis resources are available if you feel at risk or need urgent support.";
+    return copy.safetyElevated;
   }
 
   if (safetyLevel === "low") {
-    return "This reflection noticed some strain. Treat it as a gentle, non-clinical read of your recent entries.";
+    return copy.safetyLow;
   }
 
-  return "This is a gentle reflection, not a diagnosis.";
+  return copy.safetyNone;
 }
 
 function EmotionSummaryCard({
   summary,
   onDeleted,
+  copy,
 }: {
   summary: EmotionSummary;
   onDeleted: () => void;
+  copy: EmotionSummaryCopy;
 }) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleDelete() {
-    const shouldDelete = window.confirm("Delete this reflection?");
+    const shouldDelete = window.confirm(copy.deleteReflectionConfirm);
 
     if (!shouldDelete) {
       return;
@@ -68,24 +87,28 @@ function EmotionSummaryCard({
     <article className="grid gap-3 rounded-md border p-5">
       <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
         <span>{new Date(summary.created_at).toLocaleString()}</span>
-        <span>Support note: {summary.safety_level}</span>
+        <span>
+          {copy.supportNote}: {summary.safety_level}
+        </span>
         {summary.average_intensity !== null && (
-          <span>Average intensity: {summary.average_intensity}/10</span>
+          <span>
+            {copy.averageIntensity}: {summary.average_intensity}/10
+          </span>
         )}
       </div>
       <p className="text-sm leading-6">{summary.summary_text}</p>
       <p className="text-sm text-muted-foreground">
-        {getSafetyMessage(summary.safety_level)}
+        {getSafetyMessage(summary.safety_level, copy)}
       </p>
       {summary.dominant_moods.length > 0 && (
         <p className="text-sm text-muted-foreground">
-          Noticed themes: {summary.dominant_moods.join(", ")}
+          {copy.noticedThemes}: {summary.dominant_moods.join(", ")}
         </p>
       )}
       <div className="flex flex-wrap gap-3">
         {summary.safety_level === "elevated" && (
           <Button asChild variant="outline" className="w-fit">
-            <a href="/crisis">View crisis resources</a>
+            <a href="/crisis">{copy.viewCrisisResources}</a>
           </Button>
         )}
         <Button
@@ -95,7 +118,7 @@ function EmotionSummaryCard({
           onClick={handleDelete}
           disabled={isDeleting}
         >
-          {isDeleting ? "Deleting..." : "Delete analysis"}
+          {isDeleting ? copy.deleting : copy.deleteReflection}
         </Button>
       </div>
       {error && <p className="text-sm text-red-500">{error}</p>}
@@ -105,8 +128,10 @@ function EmotionSummaryCard({
 
 export function EmotionSummaryList({
   summaries,
+  copy,
 }: {
   summaries: EmotionSummary[];
+  copy: EmotionSummaryCopy;
 }) {
   const [showHistory, setShowHistory] = useState(false);
   const [hiddenIds, setHiddenIds] = useState<string[]>([]);
@@ -127,10 +152,11 @@ export function EmotionSummaryList({
   return (
     <div className="grid gap-4">
       <div className="grid gap-2">
-        <h2 className="text-xl font-semibold">Latest reflection</h2>
+        <h2 className="text-xl font-semibold">
+          {copy.latestReflectionTitle}
+        </h2>
         <p className="text-sm text-muted-foreground">
-          A gentle read of your recent entries. You can keep it, delete it, or
-          create a new one later.
+          {copy.latestReflectionDescription}
         </p>
       </div>
 
@@ -138,6 +164,7 @@ export function EmotionSummaryList({
         <EmotionSummaryCard
           summary={latestSummary}
           onDeleted={() => hideSummary(latestSummary.id)}
+          copy={copy}
         />
       )}
 
@@ -149,7 +176,7 @@ export function EmotionSummaryList({
             className="w-fit"
             onClick={() => setShowHistory((current) => !current)}
           >
-            {showHistory ? "Hide reflection history" : "View reflection history"}
+            {showHistory ? copy.hideHistory : copy.showHistory}
           </Button>
 
           {showHistory && (
@@ -159,6 +186,7 @@ export function EmotionSummaryList({
                   key={summary.id}
                   summary={summary}
                   onDeleted={() => hideSummary(summary.id)}
+                  copy={copy}
                 />
               ))}
             </div>

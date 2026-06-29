@@ -4,17 +4,18 @@ import { Suspense } from "react";
 
 import { AuthButton } from "@/components/auth-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { getDictionary, normalizeLanguage } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/profile", label: "Profile" },
-  { href: "/diary", label: "Diary" },
-  { href: "/recommendations", label: "Recommendations" },
-  { href: "/artworks", label: "Artworks" },
-  { href: "/consent", label: "Consent" },
-  { href: "/crisis", label: "Crisis Resources" },
-];
+  { href: "/dashboard", labelKey: "dashboard" },
+  { href: "/profile", labelKey: "profile" },
+  { href: "/diary", labelKey: "diary" },
+  { href: "/recommendations", labelKey: "recommendations" },
+  { href: "/artworks", labelKey: "artworks" },
+  { href: "/consent", labelKey: "consent" },
+  { href: "/crisis", labelKey: "crisis" },
+] as const;
 
 async function AppShellContent({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -23,6 +24,13 @@ async function AppShellContent({ children }: { children: React.ReactNode }) {
   if (error || !data.user) {
     redirect("/auth/login");
   }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("preferred_language")
+    .eq("id", data.user.id)
+    .single();
+  const t = getDictionary(normalizeLanguage(profile?.preferred_language));
 
   return (
     <main className="min-h-screen flex flex-col items-center">
@@ -40,7 +48,7 @@ async function AppShellContent({ children }: { children: React.ReactNode }) {
                     href={item.href}
                     className="hover:text-foreground"
                   >
-                    {item.label}
+                    {t.appShell.nav[item.labelKey]}
                   </Link>
                 ))}
               </div>
@@ -54,11 +62,17 @@ async function AppShellContent({ children }: { children: React.ReactNode }) {
         <div className="w-full max-w-6xl flex-1 p-5">{children}</div>
 
         <footer className="w-full flex items-center justify-center border-t text-center text-xs gap-8 py-10">
-          <p>Creative Companion is a non-clinical support tool.</p>
+          <p>{t.appShell.footerNote}</p>
           <Link href="/crisis" className="font-medium hover:underline">
-            Crisis Resources
+            {t.appShell.crisisResources}
           </Link>
-          <ThemeSwitcher />
+          <ThemeSwitcher
+            copy={{
+              light: t.appShell.themeLight,
+              dark: t.appShell.themeDark,
+              system: t.appShell.themeSystem,
+            }}
+          />
         </footer>
       </div>
     </main>

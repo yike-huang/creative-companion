@@ -14,6 +14,12 @@ import { useState } from "react";
 
 import { ArtworkDrawingCanvas } from "@/components/artwork-drawing-canvas";
 import { Button } from "@/components/ui/button";
+import type { dictionary } from "@/lib/i18n";
+
+type RecommendationCopyKey = keyof (typeof dictionary)["en"]["recommendations"];
+type RecommendationCopy = Record<RecommendationCopyKey, string>;
+type ArtworkCopyKey = keyof (typeof dictionary)["en"]["artworks"];
+type ArtworkCopy = Record<ArtworkCopyKey, string>;
 
 type Recommendation = {
   id: string;
@@ -102,32 +108,32 @@ type DirectionPreference =
 
 type PreferenceOption<T extends string> = {
   value: T;
-  label: string;
+  labelKey: RecommendationCopyKey;
   icon: React.ComponentType<{ className?: string }>;
 };
 
 const energyOptions: PreferenceOption<EnergyPreference>[] = [
-  { value: "surprise_me", label: "Open to anything", icon: Shuffle },
-  { value: "low", label: "Low energy", icon: BatteryLow },
-  { value: "medium", label: "Some energy", icon: BatteryMedium },
+  { value: "surprise_me", labelKey: "openToAnything", icon: Shuffle },
+  { value: "low", labelKey: "lowEnergy", icon: BatteryLow },
+  { value: "medium", labelKey: "someEnergy", icon: BatteryMedium },
 ];
 
 const mediumOptions: PreferenceOption<MediumPreference>[] = [
-  { value: "surprise_me", label: "Either", icon: Shuffle },
-  { value: "digital", label: "Digital", icon: Laptop },
-  { value: "paper", label: "Paper", icon: Pencil },
+  { value: "surprise_me", labelKey: "either", icon: Shuffle },
+  { value: "digital", labelKey: "digital", icon: Laptop },
+  { value: "paper", labelKey: "paper", icon: Pencil },
 ];
 
 const directionOptions: PreferenceOption<DirectionPreference>[] = [
-  { value: "surprise_me", label: "Open to anything", icon: Shuffle },
+  { value: "surprise_me", labelKey: "openToAnything", icon: Shuffle },
   {
     value: "gently_engage",
-    label: "Express what I’m feeling",
+    labelKey: "expressFeeling",
     icon: Blend,
   },
   {
     value: "take_a_pause",
-    label: "Focus on something else",
+    labelKey: "focusElsewhere",
     icon: Sparkles,
   },
 ];
@@ -136,11 +142,13 @@ function PreferenceControl<T extends string>({
   label,
   value,
   options,
+  copy,
   onChange,
 }: {
   label: string;
   value: T;
   options: PreferenceOption<T>[];
+  copy: RecommendationCopy;
   onChange: (value: T) => void;
 }) {
   return (
@@ -160,7 +168,7 @@ function PreferenceControl<T extends string>({
               aria-pressed={value === option.value}
             >
               <Icon className="size-4" />
-              {option.label}
+              {copy[option.labelKey]}
             </Button>
           );
         })}
@@ -169,7 +177,15 @@ function PreferenceControl<T extends string>({
   );
 }
 
-export function RecommendationWorkspace({ userId }: { userId: string }) {
+export function RecommendationWorkspace({
+  userId,
+  copy,
+  artworkCopy,
+}: {
+  userId: string;
+  copy: RecommendationCopy;
+  artworkCopy: ArtworkCopy;
+}) {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [selectedRecommendation, setSelectedRecommendation] =
     useState<Recommendation | null>(null);
@@ -217,7 +233,7 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
         }),
       });
     } catch {
-      setError("Unable to reach the recommendation service.");
+      setError(copy.fetchError);
       setIsGenerating(false);
       return;
     }
@@ -229,23 +245,20 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
       result = responseText ? JSON.parse(responseText) : {};
     } catch {
       result = {
-        error:
-          responseText ||
-          "The recommendation service returned an unexpected response.",
+        error: responseText || copy.unexpectedResponse,
       };
     }
 
     if (!response.ok) {
       if (result.requiresCrisisAcknowledgement) {
         setCrisisWarning(
-          result.error ??
-            "Recent reflections may need extra support. You can review crisis resources or choose to continue.",
+          result.error ?? copy.crisisDefaultWarning,
         );
         setError(null);
         setIsGenerating(false);
         return;
       }
-      setError(result.error ?? "Unable to generate recommendations.");
+      setError(result.error ?? copy.generationFailed);
       setIsGenerating(false);
       return;
     }
@@ -266,14 +279,14 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
           className="w-fit"
           onClick={() => setSelectedRecommendation(null)}
         >
-          Back to recommendations
+          {copy.backToRecommendations}
         </Button>
 
         <div className="grid gap-5 xl:grid-cols-[22rem_1fr]">
           <aside className="grid content-start gap-4 rounded-md border p-5">
             <div className="grid gap-2">
               <p className="text-sm font-medium text-muted-foreground">
-                Selected activity
+                {copy.selectedActivity}
               </p>
               <h2 className="text-2xl font-semibold">
                 {selectedRecommendation.title}
@@ -282,21 +295,19 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                 {selectedRecommendation.reason}
               </p>
               <p className="text-xs text-muted-foreground">
-                This is one creative option, not a prescribed match for a
-                feeling. Change it, pause, or choose something else at any
-                point.
+                {copy.oneCreativeOption}
               </p>
             </div>
 
             <div className="rounded-md border p-3 text-sm">
-              <h3 className="font-semibold">Why this might fit</h3>
+              <h3 className="font-semibold">{copy.whyThisMightFit}</h3>
               <p className="mt-2 text-muted-foreground">
                 {selectedRecommendation.whyThisFits}
               </p>
             </div>
 
             <div className="grid gap-3">
-              <h3 className="font-semibold">Steps</h3>
+              <h3 className="font-semibold">{copy.steps}</h3>
               <ol className="grid list-decimal gap-2 pl-5 text-sm">
                 {selectedRecommendation.steps.map((step) => (
                   <li key={step}>{step}</li>
@@ -314,7 +325,7 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                 {getReadingSources(selectedRecommendation).length > 0 && (
                   <div className="grid gap-1">
                     <h3 className="font-semibold text-foreground">
-                      Gentle background
+                      {copy.gentleBackground}
                     </h3>
                     <ul className="grid list-disc gap-1 pl-5">
                       {getReadingSources(selectedRecommendation).map(
@@ -330,12 +341,9 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                 {getConnectionSources(selectedRecommendation).length > 0 && (
                   <div className="grid gap-1">
                     <h3 className="font-semibold text-foreground">
-                      Connection resources
+                      {copy.connectionResources}
                     </h3>
-                    <p>
-                      These links are places to connect with people or support
-                      programs, not just articles to read.
-                    </p>
+                    <p>{copy.connectionResourcesDescription}</p>
                     <ul className="grid list-disc gap-1 pl-5">
                       {getConnectionSources(selectedRecommendation).map(
                         (source) => (
@@ -351,7 +359,7 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
             )}
           </aside>
 
-          <ArtworkDrawingCanvas userId={userId} />
+          <ArtworkDrawingCanvas userId={userId} copy={artworkCopy} />
         </div>
       </div>
     );
@@ -361,26 +369,18 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
     <div className="grid gap-5">
       <div className="grid gap-3 rounded-md border p-5">
         <div className="grid gap-2">
-          <h2 className="text-xl font-semibold">
-            A few creative ideas for right now
-          </h2>
+          <h2 className="text-xl font-semibold">{copy.workspaceTitle}</h2>
           <p className="text-sm text-muted-foreground">
-            Here you can ask for gentle art-inspired options based on your
-            latest reflection and curated resources. These are creative prompts,
-            not art therapy, medical care, or crisis support.
+            {copy.workspaceDescription}
           </p>
           <p className="text-sm text-muted-foreground">
-            Feelings do not map to one “right” art exercise. These suggestions
-            combine your reflection with curated research and support resources
-            to offer different possibilities. You can choose one, change it, or
-            skip both.
+            {copy.workspaceBoundary}
           </p>
         </div>
         <div className="grid gap-4 border-t pt-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <p className="text-sm text-muted-foreground">
-              These preferences are optional for this moment only. You can leave
-              them open if you would rather see a wider mix of ideas.
+              {copy.preferencesDescription}
             </p>
             <Button
               type="button"
@@ -389,26 +389,29 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
               className="w-fit"
               onClick={skipPreferences}
             >
-              Skip preferences
+              {copy.skipPreferences}
             </Button>
           </div>
           <div className="grid gap-4 lg:grid-cols-3">
             <PreferenceControl
-              label="How much energy feels available?"
+              label={copy.energyLabel}
               value={energyPreference}
               options={energyOptions}
+              copy={copy}
               onChange={setEnergyPreference}
             />
             <PreferenceControl
-              label="What would you like to use?"
+              label={copy.mediumLabel}
               value={mediumPreference}
               options={mediumOptions}
+              copy={copy}
               onChange={setMediumPreference}
             />
             <PreferenceControl
-              label="What would feel most helpful right now?"
+              label={copy.directionLabel}
               value={directionPreference}
               options={directionOptions}
+              copy={copy}
               onChange={setDirectionPreference}
             />
           </div>
@@ -420,13 +423,13 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
             onClick={() => handleGenerate()}
             disabled={isGenerating}
           >
-            {isGenerating ? "Creating..." : "Find activity ideas"}
+            {isGenerating ? copy.creating : copy.findActivityIdeas}
           </Button>
           <Button asChild variant="outline" className="w-fit">
-            <Link href="/diary">Review diary</Link>
+            <Link href="/diary">{copy.reviewDiary}</Link>
           </Button>
           <Button asChild variant="outline" className="w-fit">
-            <Link href="/crisis">Crisis resources</Link>
+            <Link href="/crisis">{copy.crisisResources}</Link>
           </Button>
           {recommendations.length > 0 && (
             <Button
@@ -436,24 +439,20 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
               onClick={() => handleGenerate()}
               disabled={isGenerating}
             >
-              {isGenerating ? "Creating..." : "Find different ideas"}
+              {isGenerating ? copy.creating : copy.findDifferentIdeas}
             </Button>
           )}
         </div>
         {crisisWarning && (
           <div className="grid gap-3 rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
             <div className="grid gap-1">
-              <p className="font-medium">A support note came up.</p>
+              <p className="font-medium">{copy.supportNoteCameUp}</p>
               <p>{crisisWarning}</p>
-              <p>
-                If you might harm yourself or feel in immediate danger, please
-                use urgent local support now. If you feel safe right now, you
-                can continue.
-              </p>
+              <p>{copy.urgentSupportPrompt}</p>
             </div>
             <div className="flex flex-wrap gap-3">
               <Button asChild variant="outline" className="w-fit">
-                <Link href="/crisis">Review crisis resources</Link>
+                <Link href="/crisis">{copy.reviewCrisisResources}</Link>
               </Button>
               <Button
                 type="button"
@@ -461,9 +460,7 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                 onClick={() => handleGenerate(true)}
                 disabled={isGenerating}
               >
-                {isGenerating
-                  ? "Creating..."
-                  : "I feel safe right now. Continue."}
+                {isGenerating ? copy.creating : copy.feelSafeContinue}
               </Button>
             </div>
           </div>
@@ -500,7 +497,7 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                   className="w-fit"
                   onClick={() => setSelectedRecommendation(recommendation)}
                 >
-                  Create with this idea
+                  {copy.createWithThisIdea}
                 </Button>
                 <Button
                   type="button"
@@ -513,20 +510,19 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                   }
                 >
                   {expandedRecommendationId === recommendation.id
-                    ? "Hide details"
-                    : "Learn more"}
+                    ? copy.hideDetails
+                    : copy.learnMore}
                 </Button>
               </div>
               {expandedRecommendationId === recommendation.id && (
                 <div className="grid gap-3 rounded-md border p-3 text-sm">
                   <div className="grid gap-1">
-                    <p className="font-medium">Why this might fit</p>
+                    <p className="font-medium">{copy.whyThisMightFit}</p>
                     <p className="text-muted-foreground">
                       {recommendation.whyThisFits}
                     </p>
                     <p className="text-muted-foreground">
-                      This is one possible fit, not a rule. Please change or
-                      skip anything that does not feel right.
+                      {copy.possibleFitNote}
                     </p>
                   </div>
                   {(getReadingSources(recommendation).length > 0 ||
@@ -535,12 +531,9 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                       {getReadingSources(recommendation).length > 0 && (
                         <div className="grid gap-1">
                           <p className="font-medium text-foreground">
-                            Gentle background
+                            {copy.gentleBackground}
                           </p>
-                          <p>
-                            These links are optional starting points if you want
-                            to understand the idea behind the suggestion.
-                          </p>
+                          <p>{copy.optionalBackgroundIntro}</p>
                           <ul className="grid list-disc gap-1 pl-5">
                             {getReadingSources(recommendation).map((source) => (
                               <li key={`${source.sourceName}-${source.title}`}>
@@ -553,12 +546,9 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                       {getConnectionSources(recommendation).length > 0 && (
                         <div className="grid gap-1">
                           <p className="font-medium text-foreground">
-                            Connection resources
+                            {copy.connectionResources}
                           </p>
-                          <p>
-                            These are optional places to connect with people,
-                            peer support, or community programs.
-                          </p>
+                          <p>{copy.connectionResourcesIntro}</p>
                           <ul className="grid list-disc gap-1 pl-5">
                             {getConnectionSources(recommendation).map(
                               (source) => (
@@ -576,24 +566,16 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                   )}
                   <details className="rounded-md border p-3 text-muted-foreground">
                     <summary className="cursor-pointer font-medium text-foreground">
-                      Evidence notes
+                      {copy.evidenceNotes}
                     </summary>
                     <div className="mt-2 grid gap-2">
-                      <p>
-                        These ideas are generated from your reflection and a
-                        small set of curated sources. Some sources are directly
-                        about art activities; others are broader support or
-                        safety background.
-                      </p>
+                      <p>{copy.evidenceNotesDescription}</p>
                       {getResearchSources(recommendation).length > 0 && (
                         <div className="grid gap-1">
                           <p className="font-medium text-foreground">
-                            Optional research links
+                            {copy.optionalResearchLinks}
                           </p>
-                          <p>
-                            These are more technical papers used as background.
-                            You do not need to read them to use the activity.
-                          </p>
+                          <p>{copy.researchLinksDescription}</p>
                           <ul className="grid list-disc gap-1 pl-5">
                             {getResearchSources(recommendation).map((source) => (
                               <li key={`${source.sourceName}-${source.title}`}>
@@ -603,18 +585,8 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
                           </ul>
                         </div>
                       )}
-                      <p>
-                        Research links may be detailed or technical, so they
-                        live here instead of in the lighter background section.
-                        They are context for transparency, not homework or a
-                        promise that the activity will work a certain way.
-                      </p>
-                      <p>
-                        A source may inform the general direction without
-                        proving that this exact activity will work for you.
-                        That is why each suggestion stays optional and easy to
-                        adjust.
-                      </p>
+                      <p>{copy.researchLinksNote}</p>
+                      <p>{copy.sourceLimitNote}</p>
                     </div>
                   </details>
                 </div>

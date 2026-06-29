@@ -3,6 +3,7 @@ import { Suspense } from "react";
 
 import { AppShell } from "@/components/app-shell";
 import { ProfileOnboardingForm } from "@/components/profile-onboarding-form";
+import { getDictionary, normalizeLanguage } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 
 async function ProfileDetails() {
@@ -22,26 +23,49 @@ async function ProfileDetails() {
     .single();
 
   if (profileError || !profile) {
+    const t = getDictionary("en");
+
     return (
       <div className="rounded-md border p-5">
-        <h2 className="text-xl font-semibold">Profile not found</h2>
+        <h2 className="text-xl font-semibold">{t.profile.missingTitle}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Your account exists, but a matching profile row was not found yet.
+          {t.profile.missingDescription}
         </p>
       </div>
     );
   }
 
+  const t = getDictionary(normalizeLanguage(profile.preferred_language));
+
   return (
     <div className="grid gap-6 rounded-md border p-5">
       <div className="grid gap-2">
-        <h2 className="text-xl font-semibold">Your background</h2>
+        <h2 className="text-xl font-semibold">{t.profile.backgroundTitle}</h2>
         <p className="text-sm text-muted-foreground">
-          These fields are optional and should stay limited to what helps the
-          app personalize supportive, art-inspired coping suggestions.
+          {t.profile.backgroundDescription}
         </p>
       </div>
-      <ProfileOnboardingForm profile={profile} />
+      <ProfileOnboardingForm profile={profile} copy={t.profile} />
+    </div>
+  );
+}
+
+async function ProfileHeader() {
+  const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getUser();
+  const { data: profile } = authData.user
+    ? await supabase
+        .from("profiles")
+        .select("preferred_language")
+        .eq("id", authData.user.id)
+        .single()
+    : { data: null };
+  const t = getDictionary(normalizeLanguage(profile?.preferred_language));
+
+  return (
+    <div className="grid gap-2">
+      <h1 className="text-3xl font-bold">{t.profile.pageTitle}</h1>
+      <p className="max-w-2xl text-muted-foreground">{t.profile.pageIntro}</p>
     </div>
   );
 }
@@ -50,13 +74,11 @@ export default function ProfilePage() {
   return (
     <AppShell>
       <div className="grid gap-8">
-        <div className="grid gap-2">
-          <h1 className="text-3xl font-bold">Profile</h1>
-          <p className="max-w-2xl text-muted-foreground">
-            Here you can update the limited background details used for
-            personalization. You can keep any optional field blank.
-          </p>
-        </div>
+        <Suspense
+          fallback={<p className="text-sm text-muted-foreground">Loading...</p>}
+        >
+          <ProfileHeader />
+        </Suspense>
 
         <Suspense
           fallback={<p className="text-sm text-muted-foreground">Loading...</p>}

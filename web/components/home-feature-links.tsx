@@ -2,28 +2,33 @@ import Link from "next/link";
 
 const features = [
   {
-    title: "Daily emotional reflection",
+    key: "daily",
     introHref: "/features/daily-emotional-reflection",
   },
   {
-    title: "Emotion analysis",
+    key: "analysis",
     introHref: "/features/emotion-analysis",
   },
   {
-    title: "Personalized art-inspired coping activities",
+    key: "activities",
     introHref: "/features/art-inspired-coping-activities",
   },
   {
-    title: "Personal art gallery",
+    key: "gallery",
     introHref: "/features/personal-art-gallery",
   },
   {
-    title: "Consent-centered AI support",
+    key: "consent",
     introHref: "/features/consent-centered-ai-support",
   },
-];
+] as const;
 
-export function HomeFeatureLinks() {
+type HomeFeatureCopy = Record<
+  (typeof features)[number]["key"],
+  { title: string }
+>;
+
+export function HomeFeatureLinks({ copy }: { copy: HomeFeatureCopy }) {
   return (
     <div className="grid gap-3 md:grid-cols-5">
       {features.map((feature) => (
@@ -32,7 +37,7 @@ export function HomeFeatureLinks() {
           href={feature.introHref}
           className="rounded-md border p-4 text-sm transition-colors hover:bg-accent"
         >
-          {feature.title}
+          {copy[feature.key].title}
         </Link>
       ))}
     </div>

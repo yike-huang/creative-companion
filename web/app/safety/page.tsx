@@ -1,61 +1,70 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { Suspense } from "react";
 
 import { Button } from "@/components/ui/button";
+import { getDictionary, normalizeLanguage } from "@/lib/i18n";
 
-export default function SafetyPage() {
+async function SafetyContent() {
+  const cookieStore = await cookies();
+  const t = getDictionary(
+    normalizeLanguage(cookieStore.get("creative_companion_language")?.value),
+  );
+  const copy = t.publicPages;
+
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="w-full max-w-3xl p-5">
         <nav className="flex items-center justify-between py-4 text-sm">
           <Link href="/" className="font-semibold">
-            Creative Companion
+            {copy.brand}
           </Link>
           <Button asChild variant="outline" size="sm">
-            <Link href="/auth/sign-up">Back to sign up</Link>
+            <Link href="/auth/sign-up">{copy.backToSignUp}</Link>
           </Button>
         </nav>
 
         <section className="grid gap-6 py-10">
           <div className="grid gap-3">
-            <h1 className="text-3xl font-bold">Safety and consent basics</h1>
+            <h1 className="text-3xl font-bold">{copy.safetyTitle}</h1>
             <p className="text-muted-foreground">
-              Creative Companion is designed for private reflection and gentle
-              creative coping support. It can sit alongside professional care,
-              but it does not replace it.
+              {copy.safetyIntro}
             </p>
           </div>
 
           <div className="grid gap-4 rounded-md border p-5">
-            <h2 className="text-xl font-semibold">What this app is not</h2>
+            <h2 className="text-xl font-semibold">{copy.notMedicalTitle}</h2>
             <p className="text-sm text-muted-foreground">
-              Creative Companion is not a medical, diagnostic, psychotherapy,
-              art therapy, emergency, or crisis intervention service. AI
-              responses should not be treated as clinical advice.
+              {copy.notMedicalDescription}
             </p>
           </div>
 
           <div className="grid gap-4 rounded-md border p-5">
-            <h2 className="text-xl font-semibold">AI and data choices</h2>
+            <h2 className="text-xl font-semibold">{copy.aiDataTitle}</h2>
             <p className="text-sm text-muted-foreground">
-              Some features use AI to reflect on emotional patterns or suggest
-              art-inspired activities. Consent settings let you manage AI use
-              and data storage before these features are used.
+              {copy.aiDataDescription}
             </p>
           </div>
 
           <div className="grid gap-4 rounded-md border p-5">
-            <h2 className="text-xl font-semibold">If you need urgent help</h2>
+            <h2 className="text-xl font-semibold">{copy.urgentHelpTitle}</h2>
             <p className="text-sm text-muted-foreground">
-              If you may harm yourself or someone else, or if you are in
-              immediate danger, contact local emergency services now. You can
-              also review crisis resources.
+              {copy.urgentHelpDescription}
             </p>
             <Button asChild className="w-fit" variant="outline">
-              <Link href="/crisis">View crisis resources</Link>
+              <Link href="/crisis">{copy.viewCrisisResources}</Link>
             </Button>
           </div>
         </section>
       </div>
     </main>
+  );
+}
+
+export default function SafetyPage() {
+  return (
+    <Suspense>
+      <SafetyContent />
+    </Suspense>
   );
 }

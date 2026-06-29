@@ -22,42 +22,64 @@ type ConsentSettings = {
 
 type ConsentSettingsFormProps = {
   consent: ConsentSettings;
+  copy: {
+    allowDiaryStorage: string;
+    allowDiaryStorageDescription: string;
+    allowAiAnalysis: string;
+    allowAiAnalysisDescription: string;
+    allowSummaryStorage: string;
+    allowSummaryStorageDescription: string;
+    allowArtworkStorage: string;
+    allowArtworkStorageDescription: string;
+    allowEmergencyContact: string;
+    allowEmergencyContactDescription: string;
+    emergencyContactName: string;
+    emergencyContactEmail: string;
+    emergencyContactNote: string;
+    optional: string;
+    saved: string;
+    saving: string;
+    save: string;
+  };
 };
 
 const consentOptions = [
   {
     key: "allow_diary_storage",
-    label: "Allow diary storage",
-    description: "Save daily check-ins and diary entries to your account.",
+    labelKey: "allowDiaryStorage",
+    descriptionKey: "allowDiaryStorageDescription",
   },
   {
     key: "allow_ai_analysis",
-    label: "Allow AI-assisted reflection",
-    description:
-      "Allow AI to review diary entries for gentle, non-clinical emotional pattern reflections.",
+    labelKey: "allowAiAnalysis",
+    descriptionKey: "allowAiAnalysisDescription",
   },
   {
     key: "allow_emotion_summary_storage",
-    label: "Allow reflection summary storage",
-    description:
-      "Save generated emotional reflections so you can review them later.",
+    labelKey: "allowSummaryStorage",
+    descriptionKey: "allowSummaryStorageDescription",
   },
   {
     key: "allow_artwork_storage",
-    label: "Allow artwork storage",
-    description: "Save uploaded artwork photos and reflections in your account.",
+    labelKey: "allowArtworkStorage",
+    descriptionKey: "allowArtworkStorageDescription",
   },
   {
     key: "allow_emergency_contact",
-    label: "Allow optional emergency contact information",
-    description:
-      "Store contact details for future user-initiated safety actions. The app should not contact anyone automatically.",
+    labelKey: "allowEmergencyContact",
+    descriptionKey: "allowEmergencyContactDescription",
   },
 ] as const;
 
 type ConsentKey = (typeof consentOptions)[number]["key"];
+type ConsentOptionCopyKey = (typeof consentOptions)[number][
+  | "labelKey"
+  | "descriptionKey"];
 
-export function ConsentSettingsForm({ consent }: ConsentSettingsFormProps) {
+export function ConsentSettingsForm({
+  consent,
+  copy,
+}: ConsentSettingsFormProps) {
   const [values, setValues] = useState({
     allow_ai_analysis: consent.allow_ai_analysis,
     allow_diary_storage: consent.allow_diary_storage,
@@ -104,7 +126,7 @@ export function ConsentSettingsForm({ consent }: ConsentSettingsFormProps) {
     if (error) {
       setError(error.message);
     } else {
-      setMessage("Your consent settings have been saved.");
+      setMessage(copy.saved);
       router.refresh();
     }
 
@@ -124,9 +146,11 @@ export function ConsentSettingsForm({ consent }: ConsentSettingsFormProps) {
               }
             />
             <div className="grid gap-1.5">
-              <Label htmlFor={option.key}>{option.label}</Label>
+              <Label htmlFor={option.key}>
+                {copy[option.labelKey as ConsentOptionCopyKey]}
+              </Label>
               <p className="text-sm text-muted-foreground">
-                {option.description}
+                {copy[option.descriptionKey as ConsentOptionCopyKey]}
               </p>
             </div>
           </div>
@@ -137,7 +161,7 @@ export function ConsentSettingsForm({ consent }: ConsentSettingsFormProps) {
         <div className="grid gap-4 rounded-md border p-4">
           <div className="grid gap-2">
             <Label htmlFor="emergency_contact_name">
-              Emergency contact name
+              {copy.emergencyContactName}
             </Label>
             <Input
               id="emergency_contact_name"
@@ -148,12 +172,12 @@ export function ConsentSettingsForm({ consent }: ConsentSettingsFormProps) {
                   emergency_contact_name: event.target.value,
                 }))
               }
-              placeholder="Optional"
+              placeholder={copy.optional}
             />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="emergency_contact_email">
-              Emergency contact email
+              {copy.emergencyContactEmail}
             </Label>
             <Input
               id="emergency_contact_email"
@@ -165,12 +189,11 @@ export function ConsentSettingsForm({ consent }: ConsentSettingsFormProps) {
                   emergency_contact_email: event.target.value,
                 }))
               }
-              placeholder="Optional"
+              placeholder={copy.optional}
             />
           </div>
           <p className="text-sm text-muted-foreground">
-            Emergency contact actions should remain user-initiated and manually
-            confirmed.
+            {copy.emergencyContactNote}
           </p>
         </div>
       )}
@@ -179,7 +202,7 @@ export function ConsentSettingsForm({ consent }: ConsentSettingsFormProps) {
       {error && <p className="text-sm text-red-500">{error}</p>}
 
       <Button type="submit" className="w-fit" disabled={isSaving}>
-        {isSaving ? "Saving..." : "Save consent settings"}
+        {isSaving ? copy.saving : copy.save}
       </Button>
     </form>
   );

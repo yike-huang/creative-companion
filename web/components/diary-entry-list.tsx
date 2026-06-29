@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { getMoodDisplays, moodOptions } from "@/components/mood-options";
+import { moodOptions } from "@/components/mood-options";
 import { createClient } from "@/lib/supabase/client";
 
 type DiaryEntry = {
@@ -16,13 +16,51 @@ type DiaryEntry = {
   created_at: string;
 };
 
-export function DiaryEntryList({ entries }: { entries: DiaryEntry[] }) {
+type DiaryListCopy = {
+  pastEntries: string;
+  noEntries: string;
+  moodLabels: string;
+  moodHelper: string;
+  intensityLabel: string;
+  intensityLow: string;
+  intensityHigh: string;
+  diaryEntry: string;
+  saving: string;
+  saveChanges: string;
+  cancel: string;
+  edit: string;
+  delete: string;
+  deleting: string;
+  deleteEntryConfirm: string;
+  noMoodSelected: string;
+  moods: Record<string, string>;
+};
+
+function getMoodDisplays(values: string[], copy: DiaryListCopy) {
+  if (!values || values.length === 0) {
+    return [copy.noMoodSelected];
+  }
+
+  return values.map((value) => {
+    const option = moodOptions.find((mood) => mood.value === value);
+    const label = copy.moods[value] ?? value;
+    return option ? `${option.emoji} ${label}` : label;
+  });
+}
+
+export function DiaryEntryList({
+  entries,
+  copy,
+}: {
+  entries: DiaryEntry[];
+  copy: DiaryListCopy;
+}) {
   if (entries.length === 0) {
     return (
       <div className="rounded-md border p-5">
-        <h2 className="text-xl font-semibold">Past entries</h2>
+        <h2 className="text-xl font-semibold">{copy.pastEntries}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          No diary entries yet.
+          {copy.noEntries}
         </p>
       </div>
     );
@@ -30,15 +68,21 @@ export function DiaryEntryList({ entries }: { entries: DiaryEntry[] }) {
 
   return (
     <div className="grid gap-4">
-      <h2 className="text-xl font-semibold">Past entries</h2>
+      <h2 className="text-xl font-semibold">{copy.pastEntries}</h2>
       {entries.map((entry) => (
-        <DiaryEntryItem key={entry.id} entry={entry} />
+        <DiaryEntryItem key={entry.id} entry={entry} copy={copy} />
       ))}
     </div>
   );
 }
 
-function DiaryEntryItem({ entry }: { entry: DiaryEntry }) {
+function DiaryEntryItem({
+  entry,
+  copy,
+}: {
+  entry: DiaryEntry;
+  copy: DiaryListCopy;
+}) {
   const [isEditing, setIsEditing] = useState(false);
   const [moodLabels, setMoodLabels] = useState<string[]>(entry.mood_labels);
   const [moodIntensity, setMoodIntensity] = useState(
@@ -92,7 +136,7 @@ function DiaryEntryItem({ entry }: { entry: DiaryEntry }) {
   }
 
   async function handleDelete() {
-    const shouldDelete = window.confirm("Delete this diary entry?");
+    const shouldDelete = window.confirm(copy.deleteEntryConfirm);
 
     if (!shouldDelete) {
       return;
@@ -121,10 +165,8 @@ function DiaryEntryItem({ entry }: { entry: DiaryEntry }) {
       <form onSubmit={handleUpdate} className="grid gap-4 rounded-md border p-5">
         <div className="grid gap-3">
           <div className="grid gap-1">
-            <Label>Mood labels</Label>
-            <p className="text-sm text-muted-foreground">
-              You can choose up to 3 feelings, if any fit.
-            </p>
+            <Label>{copy.moodLabels}</Label>
+            <p className="text-sm text-muted-foreground">{copy.moodHelper}</p>
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {moodOptions.map((mood) => (
@@ -141,14 +183,14 @@ function DiaryEntryItem({ entry }: { entry: DiaryEntry }) {
                 className="justify-start"
               >
                 <span aria-hidden="true">{mood.emoji}</span>
-                {mood.value}
+                {copy.moods[mood.value] ?? mood.value}
               </Button>
             ))}
           </div>
         </div>
         <div className="grid gap-3">
           <Label htmlFor={`mood_intensity_${entry.id}`}>
-            Mood intensity, 1 to 10
+            {copy.intensityLabel}
           </Label>
           <input
             id={`mood_intensity_${entry.id}`}
@@ -162,15 +204,15 @@ function DiaryEntryItem({ entry }: { entry: DiaryEntry }) {
             className="w-full accent-primary"
           />
           <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>Gentle</span>
+            <span>{copy.intensityLow}</span>
             <span className="font-medium text-foreground">
               {moodIntensity}/10
             </span>
-            <span>Strong</span>
+            <span>{copy.intensityHigh}</span>
           </div>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor={`diary_text_${entry.id}`}>Diary entry</Label>
+          <Label htmlFor={`diary_text_${entry.id}`}>{copy.diaryEntry}</Label>
           <textarea
             id={`diary_text_${entry.id}`}
             required
@@ -182,7 +224,7 @@ function DiaryEntryItem({ entry }: { entry: DiaryEntry }) {
         {error && <p className="text-sm text-red-500">{error}</p>}
         <div className="flex flex-wrap gap-3">
           <Button type="submit" disabled={isSaving || isDeleting}>
-            {isSaving ? "Saving..." : "Save changes"}
+            {isSaving ? copy.saving : copy.saveChanges}
           </Button>
           <Button
             type="button"
@@ -190,7 +232,7 @@ function DiaryEntryItem({ entry }: { entry: DiaryEntry }) {
             onClick={() => setIsEditing(false)}
             disabled={isSaving || isDeleting}
           >
-            Cancel
+            {copy.cancel}
           </Button>
         </div>
       </form>
@@ -204,7 +246,7 @@ function DiaryEntryItem({ entry }: { entry: DiaryEntry }) {
           {new Date(entry.created_at).toLocaleString()}
         </p>
         <h3 className="font-semibold">
-          {getMoodDisplays(entry.mood_labels).join(" · ")}
+          {getMoodDisplays(entry.mood_labels, copy).join(" · ")}
           {entry.mood_intensity ? ` · ${entry.mood_intensity}/10` : ""}
         </h3>
       </div>
@@ -212,7 +254,7 @@ function DiaryEntryItem({ entry }: { entry: DiaryEntry }) {
       {error && <p className="text-sm text-red-500">{error}</p>}
       <div className="flex flex-wrap gap-3">
         <Button type="button" variant="outline" onClick={() => setIsEditing(true)}>
-          Edit
+          {copy.edit}
         </Button>
         <Button
           type="button"
@@ -220,7 +262,7 @@ function DiaryEntryItem({ entry }: { entry: DiaryEntry }) {
           onClick={handleDelete}
           disabled={isDeleting}
         >
-          {isDeleting ? "Deleting..." : "Delete"}
+          {isDeleting ? copy.deleting : copy.delete}
         </Button>
       </div>
     </article>

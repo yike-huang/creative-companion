@@ -7,6 +7,7 @@ import { ArtworkDrawingCanvas } from "@/components/artwork-drawing-canvas";
 import { ArtworkGallery } from "@/components/artwork-gallery";
 import { ArtworkUploadForm } from "@/components/artwork-upload-form";
 import { Button } from "@/components/ui/button";
+import { getDictionary, normalizeLanguage } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 
 async function ArtworkDetails() {
@@ -24,15 +25,21 @@ async function ArtworkDetails() {
     .single();
 
   if (!consent?.allow_artwork_storage) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("preferred_language")
+      .eq("id", data.user.id)
+      .single();
+    const t = getDictionary(normalizeLanguage(profile?.preferred_language));
+
     return (
       <div className="grid gap-4 rounded-md border p-5">
-        <h2 className="text-xl font-semibold">Artwork storage is off</h2>
+        <h2 className="text-xl font-semibold">{t.artworks.storageOffTitle}</h2>
         <p className="text-sm text-muted-foreground">
-          Please enable artwork storage in consent settings before saving
-          artwork photos.
+          {t.artworks.storageOffDescription}
         </p>
         <Button asChild className="w-fit" variant="outline">
-          <Link href="/consent">Open consent settings</Link>
+          <Link href="/consent">{t.artworks.openConsent}</Link>
         </Button>
       </div>
     );
@@ -56,12 +63,40 @@ async function ArtworkDetails() {
       };
     }),
   );
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("preferred_language")
+    .eq("id", data.user.id)
+    .single();
+  const t = getDictionary(normalizeLanguage(profile?.preferred_language));
 
   return (
     <div className="grid gap-8">
-      <ArtworkDrawingCanvas userId={data.user.id} />
-      <ArtworkUploadForm userId={data.user.id} />
-      <ArtworkGallery artworks={artworksWithUrls} />
+      <ArtworkDrawingCanvas userId={data.user.id} copy={t.artworks} />
+      <ArtworkUploadForm userId={data.user.id} copy={t.artworks} />
+      <ArtworkGallery artworks={artworksWithUrls} copy={t.artworks} />
+    </div>
+  );
+}
+
+async function ArtworksHeader() {
+  const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getUser();
+  const { data: profile } = authData.user
+    ? await supabase
+        .from("profiles")
+        .select("preferred_language")
+        .eq("id", authData.user.id)
+        .single()
+    : { data: null };
+  const t = getDictionary(normalizeLanguage(profile?.preferred_language));
+
+  return (
+    <div className="grid gap-2">
+      <h1 className="text-3xl font-bold">{t.artworks.pageTitle}</h1>
+      <p className="max-w-2xl text-muted-foreground">
+        {t.artworks.pageIntro}
+      </p>
     </div>
   );
 }
@@ -70,14 +105,11 @@ export default function ArtworksPage() {
   return (
     <AppShell>
       <div className="grid gap-8">
-        <div className="grid gap-2">
-          <h1 className="text-3xl font-bold">Independent artwork space</h1>
-          <p className="max-w-2xl text-muted-foreground">
-            Here you can make artwork on your own, separate from a specific
-            recommendation. You can draw online, upload a photo of offline
-            artwork, and keep private reflections about your creative process.
-          </p>
-        </div>
+        <Suspense
+          fallback={<p className="text-sm text-muted-foreground">Loading...</p>}
+        >
+          <ArtworksHeader />
+        </Suspense>
 
         <Suspense
           fallback={<p className="text-sm text-muted-foreground">Loading...</p>}

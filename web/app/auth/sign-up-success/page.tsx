@@ -1,3 +1,6 @@
+import { cookies } from "next/headers";
+import { Suspense } from "react";
+
 import {
   Card,
   CardContent,
@@ -5,8 +8,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getDictionary, normalizeLanguage } from "@/lib/i18n";
 
-export default function Page() {
+async function SignUpSuccessContent() {
+  const cookieStore = await cookies();
+  const t = getDictionary(
+    normalizeLanguage(cookieStore.get("creative_companion_language")?.value),
+  );
+  const copy = t.auth;
+
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-sm">
@@ -14,19 +24,26 @@ export default function Page() {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">
-                Thank you for signing up!
+                {copy.signUpSuccessTitle}
               </CardTitle>
-              <CardDescription>Check your email to confirm</CardDescription>
+              <CardDescription>{copy.signUpSuccessDescription}</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                You&apos;ve successfully signed up. Please check your email to
-                confirm your account before signing in.
+                {copy.signUpSuccessBody}
               </p>
             </CardContent>
           </Card>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense>
+      <SignUpSuccessContent />
+    </Suspense>
   );
 }

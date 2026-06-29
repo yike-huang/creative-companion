@@ -6,7 +6,19 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 
-export function AnalyzeDiaryButton() {
+type AnalyzeDiaryCopy = {
+  reflectTitle: string;
+  reflectDescription: string;
+  reflecting: string;
+  reflectAction: string;
+  analysisTimeout: string;
+  analysisUnavailable: string;
+  analysisUnexpected: string;
+  analysisFailed: string;
+  openConsent: string;
+};
+
+export function AnalyzeDiaryButton({ copy }: { copy: AnalyzeDiaryCopy }) {
   const [error, setError] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const router = useRouter();
@@ -29,8 +41,8 @@ export function AnalyzeDiaryButton() {
     } catch (error) {
       setError(
         error instanceof Error && error.name === "AbortError"
-          ? "The analysis request took too long. Please try again."
-          : "Unable to reach the analysis service.",
+          ? copy.analysisTimeout
+          : copy.analysisUnavailable,
       );
       setIsAnalyzing(false);
       window.clearTimeout(timeoutId);
@@ -47,12 +59,12 @@ export function AnalyzeDiaryButton() {
       result = {
         error:
           responseText ||
-          "The analysis service returned an unexpected response.",
+          copy.analysisUnexpected,
       };
     }
 
     if (!response.ok) {
-      setError(result.error ?? "Unable to analyze diary entries.");
+      setError(result.error ?? copy.analysisFailed);
       setIsAnalyzing(false);
       return;
     }
@@ -64,12 +76,8 @@ export function AnalyzeDiaryButton() {
   return (
     <div className="grid gap-3 rounded-md border p-5">
       <div className="grid gap-2">
-        <h2 className="text-xl font-semibold">Reflect on recent entries</h2>
-        <p className="text-sm text-muted-foreground">
-          Here you can use AI to notice gentle, non-clinical emotional patterns
-          in your recent diary entries. This is not a diagnosis, and it will not
-          create activity suggestions yet.
-        </p>
+        <h2 className="text-xl font-semibold">{copy.reflectTitle}</h2>
+        <p className="text-sm text-muted-foreground">{copy.reflectDescription}</p>
       </div>
       <Button
         type="button"
@@ -77,13 +85,13 @@ export function AnalyzeDiaryButton() {
         onClick={handleAnalyze}
         disabled={isAnalyzing}
       >
-        {isAnalyzing ? "Reflecting..." : "Reflect on recent entries"}
+        {isAnalyzing ? copy.reflecting : copy.reflectAction}
       </Button>
       {error && (
         <p className="text-sm text-red-500">
           {error}{" "}
           <Link href="/consent" className="underline underline-offset-4">
-            Open consent settings
+            {copy.openConsent}
           </Link>
         </p>
       )}

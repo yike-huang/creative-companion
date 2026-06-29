@@ -1,0 +1,1418 @@
+export const supportedLanguages = [
+  { code: "en", label: "English" },
+  { code: "zh-Hans", label: "简体中文" },
+  { code: "es", label: "Español" },
+] as const;
+
+export type LanguageCode = (typeof supportedLanguages)[number]["code"];
+
+export function normalizeLanguage(value: string | null | undefined): LanguageCode {
+  if (value === "zh" || value === "zh-CN" || value === "zh-Hans") {
+    return "zh-Hans";
+  }
+
+  if (value === "es") {
+    return "es";
+  }
+
+  return "en";
+}
+
+export const dictionary = {
+  en: {
+    common: {
+      loading: "Loading...",
+    },
+    appShell: {
+      nav: {
+        dashboard: "Dashboard",
+        profile: "Profile",
+        diary: "Diary",
+        recommendations: "Recommendations",
+        artworks: "Artworks",
+        consent: "Consent",
+        crisis: "Crisis Resources",
+      },
+      footerNote: "Creative Companion is a non-clinical support tool.",
+      crisisResources: "Crisis Resources",
+      themeLight: "Light",
+      themeDark: "Dark",
+      themeSystem: "System",
+    },
+    publicPages: {
+      brand: "Creative Companion",
+      crisisResources: "Crisis Resources",
+      dashboard: "Dashboard",
+      goToDashboard: "Go to dashboard",
+      recommendations: "Recommendations",
+      artworkSpace: "Artwork space",
+      createAccount: "Create an account",
+      signIn: "Sign in",
+      signUp: "Sign up",
+      signedInGreeting: "Signed in as",
+      logout: "Logout",
+      homeTitle:
+        "A creative reflection space for cancer patients and survivors",
+      homeIntro:
+        "Creative Companion offers a private, non-clinical place to check in with emotions, reflect through art, and explore gentle AI-assisted activity ideas when you choose.",
+      featureOverview: "Feature overview",
+      signInToTry: "Sign in to try this feature",
+      backHome: "Back home",
+      features: {
+        daily: {
+          title: "Daily emotional reflection",
+          description:
+            "A private diary space for naming emotions, choosing intensity, and writing what you want to remember about the day.",
+          details: [
+            "Choose up to three emotion labels to reduce the pressure of finding perfect words.",
+            "Use a simple intensity slider to notice how strong the feeling is.",
+            "Keep diary entries private and editable inside your account.",
+          ],
+          cta: "Create an account to reflect",
+        },
+        analysis: {
+          title: "Emotion analysis",
+          description:
+            "Optional AI-assisted reflections can help you notice recent emotional patterns across diary entries.",
+          details: [
+            "This feature is optional and controlled by consent settings.",
+            "Reflections are non-clinical and should not be treated as diagnosis or therapy.",
+            "You can choose whether AI analysis and summary storage are allowed.",
+          ],
+          cta: "Create an account to try reflection",
+        },
+        activities: {
+          title: "Personalized art-inspired coping activities",
+          description:
+            "Creative Companion can suggest gentle, art-inspired activities that can be completed with digital tools or physical materials.",
+          details: [
+            "Recommendations are intended as non-clinical creative coping support.",
+            "The workspace keeps activity steps visible while you create.",
+            "Suggestions are grounded in curated resources when a fitting source is available.",
+          ],
+          cta: "Create an account to view activities",
+        },
+        gallery: {
+          title: "Personal art gallery",
+          description:
+            "A private space for saving digital drawings, uploading photos of physical artwork, and adding reflections.",
+          details: [
+            "Create directly on the digital canvas or upload a photo of paper artwork.",
+            "Artwork storage is controlled by consent settings.",
+            "Saved works are stored privately in your account.",
+          ],
+          cta: "Create an account to use the gallery",
+        },
+        consent: {
+          title: "Consent-centered AI support",
+          description:
+            "Sensitive features should stay under your control before diary, AI, or artwork storage is used.",
+          details: [
+            "Manage diary storage, AI analysis, emotion summary storage, and artwork storage.",
+            "Emergency contact information is optional and should remain user-initiated.",
+            "You can update consent settings after account creation.",
+          ],
+          cta: "Create an account to manage consent",
+        },
+      },
+      safetyTitle: "Safety and consent basics",
+      safetyIntro:
+        "Creative Companion is designed for private reflection and gentle creative coping support. It can sit alongside professional care, but it does not replace it.",
+      backToSignUp: "Back to sign up",
+      notMedicalTitle: "What this app is not",
+      notMedicalDescription:
+        "Creative Companion is not a medical, diagnostic, psychotherapy, art therapy, emergency, or crisis intervention service. AI responses should not be treated as clinical advice.",
+      aiDataTitle: "AI and data choices",
+      aiDataDescription:
+        "Some features use AI to reflect on emotional patterns or suggest art-inspired activities. Consent settings let you manage AI use and data storage before these features are used.",
+      urgentHelpTitle: "If you need urgent help",
+      urgentHelpDescription:
+        "If you may harm yourself or someone else, or if you are in immediate danger, contact local emergency services now. You can also review crisis resources.",
+      viewCrisisResources: "View crisis resources",
+      crisisTitle: "Crisis resources",
+      crisisIntro:
+        "Creative Companion is not a crisis service. If you may harm yourself or someone else, or if you are in immediate danger, contact local emergency services now. If you are unsure but would like extra support, the resources below may help.",
+      unitedStates: "United States",
+      usCrisisDescription:
+        "Call or text 988 to reach the 988 Suicide & Crisis Lifeline. You can also use their online chat.",
+      call988: "Call 988",
+      text988: "Text 988",
+      outsideUS: "Outside the United States",
+      outsideUSDescription:
+        "Crisis and mental health resources vary by country and region. Find A Helpline can help locate available support where you are.",
+      findAHelpline: "Find A Helpline",
+      crisisFooter:
+        "AI features in this project should never replace emergency care, local crisis services, clinicians, or trusted support people.",
+    },
+    auth: {
+      loginTitle: "Sign in",
+      loginDescription: "Enter your email and password to continue.",
+      email: "Email",
+      password: "Password",
+      forgotPassword: "Forgot your password?",
+      loggingIn: "Signing in...",
+      loginAction: "Sign in",
+      noAccount: "Do not have an account?",
+      signUp: "Create an account",
+      signUpTitle: "Create an account",
+      signUpDescription:
+        "Create a private account before using diary, AI, or artwork features.",
+      repeatPassword: "Repeat password",
+      safetyTitle: "I understand the safety boundaries",
+      safetyDescription:
+        "Creative Companion is a non-clinical support tool, not a medical, psychotherapy, crisis, or emergency service. Please review consent settings before using diary or AI features.",
+      safetyLink: "Safety and consent basics",
+      crisisLink: "Crisis resources",
+      creatingAccount: "Creating an account...",
+      alreadyAccount: "Already have an account?",
+      passwordMismatch: "Passwords do not match.",
+      safetyRequired:
+        "Please review and accept the safety acknowledgement.",
+      fallbackError: "Something went wrong. Please try again.",
+      resetTitle: "Reset your password",
+      resetDescription:
+        "Enter your email and we will send a password reset link.",
+      sending: "Sending...",
+      saving: "Saving...",
+      sendResetEmail: "Send reset email",
+      checkEmailTitle: "Check your email",
+      resetSentTitle: "Password reset instructions sent",
+      resetSentDescription:
+        "If you registered using your email and password, you will receive a password reset email.",
+      newPassword: "New password",
+      updatePasswordDescription: "Please enter your new password below.",
+      saveNewPassword: "Save new password",
+      signUpSuccessTitle: "Thank you for signing up.",
+      signUpSuccessDescription: "Check your email to confirm",
+      signUpSuccessBody:
+        "You have successfully signed up. Please check your email to confirm your account before signing in.",
+      authErrorTitle: "Sorry, something went wrong.",
+      authErrorCode: "Error code",
+      authErrorFallback: "An unspecified error occurred.",
+    },
+    dashboard: {
+      title: "Your companion space",
+      intro:
+        "Here you can choose what feels useful today. Each area will keep growing as the diary, consent, recommendation, and artwork features become more complete.",
+      profileTitle: "Profile",
+      profileDescription:
+        "You can update the limited background information used for personalization.",
+      diaryTitle: "Emotion diary",
+      diaryDescription:
+        "You can record emotions and private reflections in a protected space.",
+      recommendationsTitle: "Personalized art-inspired coping activities",
+      recommendationsDescription:
+        "You can explore activity suggestions and create while keeping the guidance visible.",
+      artworksTitle: "Independent artwork space",
+      artworksDescription:
+        "You can draw or upload artwork that is not tied to a specific recommendation.",
+      consentTitle: "Consent settings",
+      consentDescription:
+        "You can control AI reflection, data storage, and optional safety preferences.",
+      open: "Open",
+    },
+    profile: {
+      pageTitle: "Profile",
+      pageIntro:
+        "Here you can update the limited background details used for personalization. You can keep any optional field blank.",
+      missingTitle: "Profile not found",
+      missingDescription:
+        "Your account exists, but a matching profile row was not found yet.",
+      backgroundTitle: "Your background",
+      backgroundDescription:
+        "These fields are optional and should stay limited to what helps the app personalize supportive, art-inspired coping suggestions.",
+      displayName: "Display name",
+      displayNamePlaceholder: "How should Creative Companion address you?",
+      ageRange: "Age range",
+      ageRangePlaceholder: "Example: 18-24, 25-34, 35-44",
+      cancerType: "Cancer type",
+      journeyStage: "Cancer journey stage",
+      journeyStagePlaceholder:
+        "Example: treatment, survivorship, recurrence monitoring",
+      country: "Current country of residence",
+      countryPlaceholder: "Example: United States",
+      preferredLanguage: "Preferred language",
+      optional: "Optional",
+      saved: "Profile saved.",
+      saving: "Saving...",
+      save: "Save profile",
+    },
+    diary: {
+      pageTitle: "Emotion diary",
+      pageIntro:
+        "Here you can make private check-ins at your own pace. You choose what to write, what to save, and whether AI reflection is allowed.",
+      storageOffTitle: "Diary storage is off",
+      storageOffDescription:
+        "Diary entries are saved only when you allow diary storage in consent settings.",
+      openConsent: "Open consent settings",
+      reflectTitle: "Reflect on recent entries",
+      reflectDescription:
+        "Here you can use AI to notice gentle, non-clinical emotional patterns in your recent diary entries. This is not a diagnosis, and it will not create activity suggestions yet.",
+      reflecting: "Reflecting...",
+      reflectAction: "Reflect on recent entries",
+      analysisTimeout: "The reflection request took too long. Please try again.",
+      analysisUnavailable: "Unable to reach the reflection service.",
+      analysisUnexpected:
+        "The reflection service returned an unexpected response.",
+      analysisFailed: "Unable to reflect on diary entries.",
+      latestReflectionTitle: "Latest reflection",
+      latestReflectionDescription:
+        "A gentle read of your recent entries. You can keep it, delete it, or create a new one later.",
+      supportNote: "Support note",
+      averageIntensity: "Average intensity",
+      noticedThemes: "Noticed themes",
+      viewCrisisResources: "View crisis resources",
+      deleteReflection: "Delete reflection",
+      deleting: "Deleting...",
+      deleteReflectionConfirm: "Delete this reflection?",
+      showHistory: "View reflection history",
+      hideHistory: "Hide reflection history",
+      safetyElevated:
+        "Some parts of this reflection may deserve extra care. Crisis resources are available if you feel at risk or need urgent support.",
+      safetyLow:
+        "This reflection noticed some strain. Treat it as a gentle, non-clinical read of your recent entries.",
+      safetyNone: "This is a gentle reflection, not a diagnosis.",
+      newEntryTitle: "New diary entry",
+      newEntryDescription:
+        "This can be a private check-in for today. You can write a little, a lot, or only what feels useful.",
+      moodLabels: "Mood labels",
+      moodHelper: "You can choose up to 3 feelings, if any fit.",
+      intensityLabel: "Mood intensity, 1 to 10",
+      intensityLow: "Gentle",
+      intensityHigh: "Strong",
+      diaryEntry: "Diary entry",
+      diaryPlaceholder: "Write whatever feels useful to remember today.",
+      entrySaved: "Diary entry saved.",
+      saveEntry: "Save diary entry",
+      saving: "Saving...",
+      pastEntries: "Past entries",
+      noEntries: "No diary entries yet.",
+      edit: "Edit",
+      delete: "Delete",
+      deleteEntryConfirm: "Delete this diary entry?",
+      saveChanges: "Save changes",
+      cancel: "Cancel",
+      noMoodSelected: "No mood selected",
+      moods: {
+        Happy: "Happy",
+        Hopeful: "Hopeful",
+        Calm: "Calm",
+        Grateful: "Grateful",
+        Anxious: "Anxious",
+        Sad: "Sad",
+        Angry: "Angry",
+        Afraid: "Afraid",
+        Lonely: "Lonely",
+        Tired: "Tired",
+        Numb: "Numb",
+      },
+    },
+    recommendations: {
+      pageTitle: "Recommendations",
+      pageIntro:
+        "Here you can explore non-clinical, art-inspired activity ideas from your latest emotion reflection and curated resources. If an idea feels useful, you can open a side-by-side space and keep it visible while you create.",
+      backToRecommendations: "Back to recommendations",
+      selectedActivity: "Selected activity",
+      oneCreativeOption:
+        "This is one creative option, not a prescribed match for a feeling. Change it, pause, or choose something else at any point.",
+      whyThisMightFit: "Why this might fit",
+      steps: "Steps",
+      gentleBackground: "Gentle background",
+      connectionResources: "Connection resources",
+      connectionResourcesDescription:
+        "These links are places to connect with people or support programs, not just articles to read.",
+      workspaceTitle: "A few creative ideas for right now",
+      workspaceDescription:
+        "Here you can ask for gentle art-inspired options based on your latest reflection and curated resources. These are creative prompts, not art therapy, medical care, or crisis support.",
+      workspaceBoundary:
+        "Feelings do not map to one right art exercise. These suggestions offer different possibilities. You can choose one, change it, or skip both.",
+      preferencesDescription:
+        "These preferences are optional for this moment only. You can leave them open if you would rather see a wider mix of ideas.",
+      skipPreferences: "Skip preferences",
+      energyLabel: "How much energy feels available?",
+      mediumLabel: "What would you like to use?",
+      directionLabel: "What would feel most helpful right now?",
+      openToAnything: "Open to anything",
+      lowEnergy: "Low energy",
+      someEnergy: "Some energy",
+      either: "Either",
+      digital: "Digital",
+      paper: "Paper",
+      expressFeeling: "Express what I’m feeling",
+      focusElsewhere: "Focus on something else",
+      creating: "Creating...",
+      findActivityIdeas: "Find activity ideas",
+      reviewDiary: "Review diary",
+      crisisResources: "Crisis resources",
+      findDifferentIdeas: "Find different ideas",
+      supportNoteCameUp: "A support note came up.",
+      urgentSupportPrompt:
+        "If you might harm yourself or feel in immediate danger, please use urgent local support now. If you feel safe right now, you can continue.",
+      reviewCrisisResources: "Review crisis resources",
+      feelSafeContinue: "I feel safe right now. Continue.",
+      createWithThisIdea: "Create with this idea",
+      hideDetails: "Hide details",
+      learnMore: "Learn more",
+      possibleFitNote:
+        "This is one possible fit, not a rule. Please change or skip anything that does not feel right.",
+      optionalBackgroundIntro:
+        "These links are optional starting points if you want to understand the idea behind the suggestion.",
+      connectionResourcesIntro:
+        "These are optional places to connect with people, peer support, or community programs.",
+      evidenceNotes: "Evidence notes",
+      evidenceNotesDescription:
+        "These ideas are generated from your reflection and a small set of curated sources. Some sources are directly about art activities; others are broader support or safety background.",
+      optionalResearchLinks: "Optional research links",
+      researchLinksDescription:
+        "These are more technical papers used as background. You do not need to read them to use the activity.",
+      researchLinksNote:
+        "Research links may be detailed or technical, so they live here instead of in the lighter background section. They are context for transparency, not homework or a promise that the activity will work a certain way.",
+      sourceLimitNote:
+        "A source may inform the general direction without proving that this exact activity will work for you. That is why each suggestion stays optional and easy to adjust.",
+      fetchError: "Unable to reach the recommendation service.",
+      unexpectedResponse:
+        "The recommendation service returned an unexpected response.",
+      crisisDefaultWarning:
+        "Recent reflections may need extra support. You can review crisis resources or choose to continue.",
+      generationFailed: "Unable to generate recommendations.",
+    },
+    artworks: {
+      pageTitle: "Independent artwork space",
+      pageIntro:
+        "Here you can make artwork on your own, separate from a specific recommendation. You can draw online, upload a photo of offline artwork, and keep private reflections about your creative process.",
+      storageOffTitle: "Artwork storage is off",
+      storageOffDescription:
+        "Please enable artwork storage in consent settings before saving artwork photos.",
+      openConsent: "Open consent settings",
+      drawTitle: "Draw online",
+      drawDescription:
+        "Here you can make a digital drawing with layers, brush styles, color, and simple shapes. If you want, you can save it privately with a reflection.",
+      currentTool: "Current tool",
+      opacity: "opacity",
+      fullscreen: "Fullscreen",
+      exitFullscreen: "Exit fullscreen",
+      undo: "Undo",
+      redo: "Redo",
+      tools: "Tools",
+      brushStyle: "Brush style",
+      color: "Color",
+      colorHex: "Color hex value",
+      brushSize: "Brush size",
+      layers: "Layers",
+      add: "Add",
+      hideLayer: "Hide layer",
+      showLayer: "Show layer",
+      deleteLayer: "Delete layer",
+      clearLayer: "Clear layer",
+      clearAll: "Clear all",
+      title: "Title",
+      optionalTitle: "Optional title",
+      reflection: "Reflection",
+      drawingReflectionPlaceholder:
+        "What would you like to remember about this drawing?",
+      saveDrawing: "Save drawing",
+      saving: "Saving...",
+      drawingSaved: "Drawing saved.",
+      canvasNotReady: "Drawing canvas is not ready.",
+      drawingSaveFailed: "Could not save the drawing image.",
+      layerName: "Layer",
+      toolBrush: "Brush",
+      toolEraser: "Eraser",
+      toolFill: "Fill layer",
+      toolLine: "Line",
+      toolRectangle: "Rectangle",
+      toolEllipse: "Ellipse",
+      brushPencil: "pencil",
+      brushSoft: "soft",
+      brushMarker: "marker",
+      brushAirbrush: "airbrush",
+      brushWatercolor: "watercolor",
+      brushOil: "oil",
+      brushBlend: "blend",
+      uploadTitle: "Upload physical artwork",
+      uploadDescription:
+        "Here you can add a photo of artwork you made offline, with an optional private note or reflection.",
+      artworkImage: "Artwork image",
+      fileHint: "JPG, PNG, or WEBP. Maximum 5 MB.",
+      uploadReflectionPlaceholder:
+        "What would you like to remember about this artwork?",
+      saveArtwork: "Save artwork",
+      artworkSaved: "Artwork saved.",
+      invalidFileType: "Please choose a JPG, PNG, or WEBP image.",
+      fileTooLarge: "Please choose an image smaller than 5 MB.",
+      missingArtworkImage: "Please choose an artwork image.",
+      pastArtworks: "Past artworks",
+      noArtworks: "No saved artworks yet.",
+      deleteArtworkConfirm: "Delete this artwork?",
+      uploadedArtworkAlt: "Uploaded artwork",
+      untitledArtwork: "Untitled artwork",
+      digitalDrawing: "Digital drawing",
+      physicalArtworkUpload: "Physical artwork upload",
+      deleting: "Deleting...",
+      delete: "Delete",
+    },
+    consent: {
+      pageTitle: "Consent settings",
+      pageIntro:
+        "Here you can decide how AI reflection, data storage, artwork storage, and optional emergency contact preferences work for your account.",
+      missingTitle: "No consent settings yet",
+      missingDescription:
+        "Consent settings are needed before diary, AI, artwork, or optional emergency contact features are used.",
+      choicesTitle: "Your choices",
+      choicesDescription:
+        "You can change these settings later. Turning a setting off should prevent future use of that data for the related feature.",
+      allowDiaryStorage: "Allow diary storage",
+      allowDiaryStorageDescription:
+        "Save daily check-ins and diary entries to your account.",
+      allowAiAnalysis: "Allow AI-assisted reflection",
+      allowAiAnalysisDescription:
+        "Allow AI to review diary entries for gentle, non-clinical emotional pattern reflections.",
+      allowSummaryStorage: "Allow reflection summary storage",
+      allowSummaryStorageDescription:
+        "Save generated emotional reflections so you can review them later.",
+      allowArtworkStorage: "Allow artwork storage",
+      allowArtworkStorageDescription:
+        "Save uploaded artwork photos and reflections in your account.",
+      allowEmergencyContact: "Allow optional emergency contact information",
+      allowEmergencyContactDescription:
+        "Store contact details for future user-initiated safety actions. The app should not contact anyone automatically.",
+      emergencyContactName: "Emergency contact name",
+      emergencyContactEmail: "Emergency contact email",
+      emergencyContactNote:
+        "Emergency contact actions should remain user-initiated and manually confirmed.",
+      optional: "Optional",
+      saved: "Your consent settings have been saved.",
+      saving: "Saving...",
+      save: "Save consent settings",
+      creating: "Creating...",
+      create: "Create consent settings",
+    },
+  },
+  "zh-Hans": {
+    common: {
+      loading: "正在加载...",
+    },
+    appShell: {
+      nav: {
+        dashboard: "首页",
+        profile: "个人资料",
+        diary: "情绪日记",
+        recommendations: "活动建议",
+        artworks: "作品空间",
+        consent: "同意设置",
+        crisis: "危机资源",
+      },
+      footerNote: "Creative Companion 提供的是非临床支持。",
+      crisisResources: "危机资源",
+      themeLight: "浅色",
+      themeDark: "深色",
+      themeSystem: "跟随系统",
+    },
+    publicPages: {
+      brand: "Creative Companion",
+      crisisResources: "危机资源",
+      dashboard: "首页",
+      goToDashboard: "进入首页",
+      recommendations: "活动建议",
+      artworkSpace: "作品空间",
+      createAccount: "创建账号",
+      signIn: "登录",
+      signUp: "注册",
+      signedInGreeting: "已登录账号",
+      logout: "退出登录",
+      homeTitle: "为癌症患者和康复者准备的创作与反思空间",
+      homeIntro:
+        "Creative Companion 提供一个私人的、非临床的空间。你可以在这里记录情绪，用创作整理感受，并在愿意的时候看看 AI 辅助生成的温和活动想法。",
+      featureOverview: "功能简介",
+      signInToTry: "登录后试用这个功能",
+      backHome: "回到主页",
+      features: {
+        daily: {
+          title: "每日情绪记录",
+          description:
+            "一个私人的日记空间，可以选择情绪、标记强度，也可以写下今天想记住的内容。",
+          details: [
+            "最多选择 3 个情绪标签，减少必须精准表达的压力。",
+            "用简单的滑杆记录感受的大致强度。",
+            "日记内容会保存在你的账户里，也可以之后编辑。",
+          ],
+          cta: "创建账号后开始记录",
+        },
+        analysis: {
+          title: "情绪反思",
+          description:
+            "可选的 AI 反思可以帮助你温和地回看最近日记里的情绪线索。",
+          details: [
+            "这个功能是可选的，并由同意设置控制。",
+            "反思内容是非临床的，不应被当作诊断或治疗。",
+            "你可以决定是否允许 AI 分析，以及是否保存反思摘要。",
+          ],
+          cta: "创建账号后试用反思",
+        },
+        activities: {
+          title: "艺术启发活动建议",
+          description:
+            "Creative Companion 可以提供一些温和的艺术启发活动，可以在线创作，也可以用纸笔或其他材料完成。",
+          details: [
+            "活动建议是非临床的创作支持。",
+            "创作空间可以让步骤保持可见，方便边看边做。",
+            "如果有合适资料，建议会尽量参考已整理的来源。",
+          ],
+          cta: "创建账号后查看活动",
+        },
+        gallery: {
+          title: "个人作品空间",
+          description:
+            "一个私人空间，可以保存线上绘画、上传线下作品照片，也可以添加创作反思。",
+          details: [
+            "可以直接在画板创作，也可以上传纸上作品的照片。",
+            "作品储存由同意设置控制。",
+            "保存的作品会放在你的私人账户里。",
+          ],
+          cta: "创建账号后使用作品空间",
+        },
+        consent: {
+          title: "以同意为中心的 AI 支持",
+          description:
+            "日记、AI 和作品储存等敏感功能，都应该先由你决定是否开启。",
+          details: [
+            "管理日记储存、AI 分析、情绪摘要储存和作品储存。",
+            "紧急联系人信息是可选的，并且应由用户主动发起使用。",
+            "创建账号后，你仍然可以随时修改同意设置。",
+          ],
+          cta: "创建账号后管理同意设置",
+        },
+      },
+      safetyTitle: "安全与同意基础",
+      safetyIntro:
+        "Creative Companion 是为私人反思和温和创作支持而设计的。它可以和专业照护并行使用，但不能替代专业照护。",
+      backToSignUp: "回到注册",
+      notMedicalTitle: "这个应用不是什么",
+      notMedicalDescription:
+        "Creative Companion 不是医疗、诊断、心理治疗、艺术治疗、紧急或危机干预服务。AI 回复不应被当作临床建议。",
+      aiDataTitle: "AI 与数据选择",
+      aiDataDescription:
+        "部分功能会使用 AI 来整理情绪线索或生成艺术启发活动。同意设置可以让你在使用前管理 AI 和数据储存。",
+      urgentHelpTitle: "如果你现在需要紧急帮助",
+      urgentHelpDescription:
+        "如果你可能伤害自己或他人，或现在处于立即危险中，请立刻联系当地紧急服务。你也可以查看危机资源。",
+      viewCrisisResources: "查看危机资源",
+      crisisTitle: "危机资源",
+      crisisIntro:
+        "Creative Companion 不是危机服务。如果你可能伤害自己或他人，或现在处于立即危险中，请立刻联系当地紧急服务。如果你不确定但想获得更多支持，下面的资源可能有帮助。",
+      unitedStates: "美国",
+      usCrisisDescription:
+        "在美国，可以拨打或发送短信到 988，联系 988 Suicide & Crisis Lifeline。也可以使用他们的在线聊天。",
+      call988: "拨打 988",
+      text988: "发送短信到 988",
+      outsideUS: "美国以外",
+      outsideUSDescription:
+        "危机和心理健康资源会因国家和地区而不同。Find A Helpline 可以帮助你寻找所在地可用的支持。",
+      findAHelpline: "查找当地热线",
+      crisisFooter:
+        "本项目中的 AI 功能永远不能替代紧急照护、当地危机服务、临床人员或可信任的支持者。",
+    },
+    auth: {
+      loginTitle: "登录",
+      loginDescription: "输入邮箱和密码后继续。",
+      email: "邮箱",
+      password: "密码",
+      forgotPassword: "忘记密码？",
+      loggingIn: "正在登录...",
+      loginAction: "登录",
+      noAccount: "还没有账号？",
+      signUp: "创建账号",
+      signUpTitle: "创建账号",
+      signUpDescription: "使用日记、AI 或作品功能前，请先创建私人账号。",
+      repeatPassword: "再次输入密码",
+      safetyTitle: "我理解这个应用的安全边界",
+      safetyDescription:
+        "Creative Companion 是非临床支持工具，不是医疗、心理治疗、危机或紧急服务。使用日记或 AI 功能前，请先查看同意设置。",
+      safetyLink: "安全与同意基础",
+      crisisLink: "危机资源",
+      creatingAccount: "正在创建账号...",
+      alreadyAccount: "已经有账号？",
+      passwordMismatch: "两次输入的密码不一致。",
+      safetyRequired: "请先阅读并同意安全说明。",
+      fallbackError: "出了一点问题。请稍后再试。",
+      resetTitle: "重置密码",
+      resetDescription: "输入邮箱后，我们会发送一个重置密码的链接。",
+      sending: "正在发送...",
+      saving: "正在保存...",
+      sendResetEmail: "发送重置邮件",
+      checkEmailTitle: "请查看邮箱",
+      resetSentTitle: "密码重置说明已发送",
+      resetSentDescription:
+        "如果你是用邮箱和密码注册的，将会收到一封重置密码邮件。",
+      newPassword: "新密码",
+      updatePasswordDescription: "请在下方输入新密码。",
+      saveNewPassword: "保存新密码",
+      signUpSuccessTitle: "谢谢你注册。",
+      signUpSuccessDescription: "请查看邮箱完成确认",
+      signUpSuccessBody:
+        "你已经成功注册。登录前，请先查看邮箱并确认账号。",
+      authErrorTitle: "抱歉，出现了一点问题。",
+      authErrorCode: "错误代码",
+      authErrorFallback: "发生了未指定的错误。",
+    },
+    dashboard: {
+      title: "今天想从哪里开始？",
+      intro:
+        "你可以按照今天的状态，选择一个合适的入口。日记、同意设置、活动建议和作品空间都会继续慢慢完善。",
+      profileTitle: "个人资料",
+      profileDescription: "这里可以更新少量背景信息，帮助系统更贴近你的情况。",
+      diaryTitle: "情绪日记",
+      diaryDescription: "这里可以记录当天的情绪和想法，内容只保存在你的账户里。",
+      recommendationsTitle: "艺术启发活动建议",
+      recommendationsDescription:
+        "这里可以看看一些温和的创作建议，也可以边看步骤边创作。",
+      artworksTitle: "独立作品空间",
+      artworksDescription: "这里可以自由画画，或上传自己在线下完成的作品。",
+      consentTitle: "同意设置",
+      consentDescription: "这里可以决定哪些内容可以被保存，哪些功能可以使用 AI。",
+      open: "打开",
+    },
+    profile: {
+      pageTitle: "个人资料",
+      pageIntro:
+        "这里可以更新少量背景信息，帮助系统更贴近你的情况。所有可选内容都可以留空。",
+      missingTitle: "没有找到个人资料",
+      missingDescription: "你的账号已经存在，但暂时还没有对应的个人资料。",
+      backgroundTitle: "关于你的少量信息",
+      backgroundDescription:
+        "这些内容都是可选的，只需要填写你觉得有助于个性化建议的部分。",
+      displayName: "显示名称",
+      displayNamePlaceholder: "你希望 Creative Companion 怎么称呼你？",
+      ageRange: "年龄范围",
+      ageRangePlaceholder: "例如：18-24, 25-34, 35-44",
+      cancerType: "癌症类型",
+      journeyStage: "癌症经历阶段",
+      journeyStagePlaceholder: "例如：治疗中、康复期、复发监测",
+      country: "当前居住国家",
+      countryPlaceholder: "例如：United States",
+      preferredLanguage: "偏好语言",
+      optional: "可选",
+      saved: "个人资料已保存。",
+      saving: "正在保存...",
+      save: "保存个人资料",
+    },
+    diary: {
+      pageTitle: "情绪日记",
+      pageIntro:
+        "这里可以按自己的节奏做私人记录。写多少、保存什么、是否允许 AI 反思，都由你决定。",
+      storageOffTitle: "日记储存目前是关闭的",
+      storageOffDescription:
+        "只有在同意设置里允许日记储存后，日记内容才会被保存。",
+      openConsent: "打开同意设置",
+      reflectTitle: "回看最近的记录",
+      reflectDescription:
+        "这里可以让 AI 帮你温和地整理最近日记里的情绪线索。这不是诊断，也不会直接生成活动建议。",
+      reflecting: "正在整理...",
+      reflectAction: "回看最近的记录",
+      analysisTimeout: "这次整理等得有点久。可以稍后再试一次。",
+      analysisUnavailable: "暂时无法连接到 AI 反思服务。",
+      analysisUnexpected: "AI 反思服务返回了无法识别的结果。",
+      analysisFailed: "暂时无法整理这些日记记录。",
+      latestReflectionTitle: "最近一次反思",
+      latestReflectionDescription:
+        "这是对最近记录的一次温和整理。你可以保留、删除，或之后再生成新的反思。",
+      supportNote: "支持提示",
+      averageIntensity: "平均强度",
+      noticedThemes: "留意到的主题",
+      viewCrisisResources: "查看危机资源",
+      deleteReflection: "删除这次反思",
+      deleting: "正在删除...",
+      deleteReflectionConfirm: "要删除这次反思吗？",
+      showHistory: "查看历史反思",
+      hideHistory: "收起历史反思",
+      safetyElevated:
+        "这次记录里有些内容可能需要多一点照顾。如果你现在有危险感，或需要紧急支持，可以查看危机资源。",
+      safetyLow:
+        "这次反思留意到一些压力感。请把它当作温和的非临床整理，而不是判断。",
+      safetyNone: "这只是一次温和的反思，不是诊断。",
+      newEntryTitle: "新的日记记录",
+      newEntryDescription:
+        "这里可以作为今天的一次私人 check-in。你可以写很多，也可以只写一点点。",
+      moodLabels: "情绪标签",
+      moodHelper: "如果有合适的，可以选择最多 3 个感受。",
+      intensityLabel: "情绪强度，1 到 10",
+      intensityLow: "轻一点",
+      intensityHigh: "强一点",
+      diaryEntry: "日记内容",
+      diaryPlaceholder: "写下今天你觉得值得记住的内容。",
+      entrySaved: "日记已保存。",
+      saveEntry: "保存日记",
+      saving: "正在保存...",
+      pastEntries: "过去的记录",
+      noEntries: "还没有日记记录。",
+      edit: "编辑",
+      delete: "删除",
+      deleteEntryConfirm: "要删除这条日记吗？",
+      saveChanges: "保存修改",
+      cancel: "取消",
+      noMoodSelected: "还没有选择情绪",
+      moods: {
+        Happy: "开心",
+        Hopeful: "有希望",
+        Calm: "平静",
+        Grateful: "感激",
+        Anxious: "焦虑",
+        Sad: "难过",
+        Angry: "生气",
+        Afraid: "害怕",
+        Lonely: "孤独",
+        Tired: "疲惫",
+        Numb: "麻木",
+      },
+    },
+    recommendations: {
+      pageTitle: "活动建议",
+      pageIntro:
+        "这里可以根据最近的情绪反思和已整理的资料，看看一些非临床、艺术启发的活动想法。如果某个想法感觉合适，你可以打开左右分屏，一边看步骤一边创作。",
+      backToRecommendations: "回到活动建议",
+      selectedActivity: "当前选择的活动",
+      oneCreativeOption:
+        "这只是一个创作方向，不是某种情绪的标准答案。你可以调整、暂停，或换一个更合适的做法。",
+      whyThisMightFit: "为什么它可能适合",
+      steps: "步骤",
+      gentleBackground: "温和的背景资料",
+      connectionResources: "连接与支持资源",
+      connectionResourcesDescription:
+        "这些链接更像是可以联系他人或支持项目的入口，不只是阅读材料。",
+      workspaceTitle: "此刻可以试试的创作想法",
+      workspaceDescription:
+        "这里可以根据最近的反思和已整理的资料，生成一些温和的艺术启发活动。这些只是创作提示，不是艺术治疗、医疗建议或危机支持。",
+      workspaceBoundary:
+        "情绪和创作练习之间没有唯一正确的对应关系。这里会提供不同可能性，你可以选择、调整，或者两个都不做。",
+      preferencesDescription:
+        "这些偏好只用于这一次生成，也可以不选。保持开放时，系统会给出更宽一点的想法。",
+      skipPreferences: "跳过偏好选择",
+      energyLabel: "现在大概有多少精力？",
+      mediumLabel: "想用什么方式创作？",
+      directionLabel: "此刻什么可能更合适？",
+      openToAnything: "都可以",
+      lowEnergy: "精力较低",
+      someEnergy: "有一点精力",
+      either: "都可以",
+      digital: "数字创作",
+      paper: "纸上创作",
+      expressFeeling: "表达现在的感受",
+      focusElsewhere: "先把注意力放到别处",
+      creating: "正在生成...",
+      findActivityIdeas: "看看活动想法",
+      reviewDiary: "回看日记",
+      crisisResources: "危机资源",
+      findDifferentIdeas: "换一组想法",
+      supportNoteCameUp: "出现了一条支持提示。",
+      urgentSupportPrompt:
+        "如果你可能伤害自己，或现在有立即的危险感，请先使用当地紧急支持。如果你现在是安全的，也可以继续。",
+      reviewCrisisResources: "查看危机资源",
+      feelSafeContinue: "我现在是安全的，继续",
+      createWithThisIdea: "用这个想法开始创作",
+      hideDetails: "收起详情",
+      learnMore: "了解更多",
+      possibleFitNote:
+        "这只是一个可能适合的方向，不是规则。任何不合适的部分都可以跳过或调整。",
+      optionalBackgroundIntro:
+        "如果你想了解这个建议背后的想法，可以从这些资料开始看。",
+      connectionResourcesIntro:
+        "这些是可选的连接入口，例如同伴支持或社区项目。",
+      evidenceNotes: "证据说明",
+      evidenceNotesDescription:
+        "这些想法来自你的反思和一小组整理过的资料。有些资料直接关于艺术活动，有些是更宽泛的支持或安全背景。",
+      optionalResearchLinks: "可选研究链接",
+      researchLinksDescription:
+        "这些是更技术性的研究资料，只作为背景参考。使用活动时不需要阅读它们。",
+      researchLinksNote:
+        "研究资料可能比较细或比较学术，所以放在这里，而不是放进轻量的背景资料里。它们用于透明说明，不是作业，也不是效果承诺。",
+      sourceLimitNote:
+        "资料可以支持一个大方向，但不代表这个具体活动一定会对你产生某种效果。所以每个建议都保留为可选、可调整。",
+      fetchError: "暂时无法连接到活动建议服务。",
+      unexpectedResponse: "活动建议服务返回了无法识别的结果。",
+      crisisDefaultWarning:
+        "最近的反思可能需要多一点支持。你可以先查看危机资源，也可以在确认安全后继续。",
+      generationFailed: "暂时无法生成活动建议。",
+    },
+    artworks: {
+      pageTitle: "独立作品空间",
+      pageIntro:
+        "这里可以自由创作，不需要绑定某一条活动建议。你可以在线画画，也可以上传线下作品的照片，并为它留下私人记录。",
+      storageOffTitle: "作品储存目前是关闭的",
+      storageOffDescription:
+        "只有在同意设置里允许作品储存后，作品照片才会被保存。",
+      openConsent: "打开同意设置",
+      drawTitle: "在线画画",
+      drawDescription:
+        "这里可以用图层、不同笔刷、颜色和简单形状进行数字创作。如果愿意，也可以把作品和一段私人反思一起保存。",
+      currentTool: "当前工具",
+      opacity: "不透明度",
+      fullscreen: "全屏",
+      exitFullscreen: "退出全屏",
+      undo: "撤销",
+      redo: "重做",
+      tools: "工具",
+      brushStyle: "笔刷",
+      color: "颜色",
+      colorHex: "颜色十六进制值",
+      brushSize: "笔刷大小",
+      layers: "图层",
+      add: "添加",
+      hideLayer: "隐藏图层",
+      showLayer: "显示图层",
+      deleteLayer: "删除图层",
+      clearLayer: "清空当前图层",
+      clearAll: "清空全部",
+      title: "标题",
+      optionalTitle: "可选标题",
+      reflection: "反思",
+      drawingReflectionPlaceholder: "你想记住这幅画里的什么？",
+      saveDrawing: "保存绘画",
+      saving: "正在保存...",
+      drawingSaved: "绘画已保存。",
+      canvasNotReady: "画布还没有准备好。",
+      drawingSaveFailed: "暂时无法保存这张绘画图片。",
+      layerName: "图层",
+      toolBrush: "画笔",
+      toolEraser: "橡皮擦",
+      toolFill: "填充图层",
+      toolLine: "直线",
+      toolRectangle: "矩形",
+      toolEllipse: "椭圆",
+      brushPencil: "铅笔",
+      brushSoft: "柔软",
+      brushMarker: "马克笔",
+      brushAirbrush: "喷枪",
+      brushWatercolor: "水彩",
+      brushOil: "油画",
+      brushBlend: "混色",
+      uploadTitle: "上传线下作品",
+      uploadDescription:
+        "这里可以添加线下完成作品的照片，也可以附上一段可选的私人记录或反思。",
+      artworkImage: "作品图片",
+      fileHint: "支持 JPG、PNG 或 WEBP，最大 5 MB。",
+      uploadReflectionPlaceholder: "你想记住这件作品里的什么？",
+      saveArtwork: "保存作品",
+      artworkSaved: "作品已保存。",
+      invalidFileType: "请选择 JPG、PNG 或 WEBP 图片。",
+      fileTooLarge: "请选择小于 5 MB 的图片。",
+      missingArtworkImage: "请先选择一张作品图片。",
+      pastArtworks: "过去的作品",
+      noArtworks: "还没有保存的作品。",
+      deleteArtworkConfirm: "要删除这件作品吗？",
+      uploadedArtworkAlt: "上传的作品",
+      untitledArtwork: "未命名作品",
+      digitalDrawing: "数字绘画",
+      physicalArtworkUpload: "线下作品上传",
+      deleting: "正在删除...",
+      delete: "删除",
+    },
+    consent: {
+      pageTitle: "同意设置",
+      pageIntro:
+        "这里可以决定 AI 反思、数据储存、作品储存和可选紧急联系人信息如何用于你的账户。",
+      missingTitle: "还没有同意设置",
+      missingDescription:
+        "在使用日记、AI、作品储存或可选紧急联系人功能前，需要先建立同意设置。",
+      choicesTitle: "你的选择",
+      choicesDescription:
+        "这些设置之后都可以修改。关闭某个设置后，相关功能之后就不应该继续使用对应的数据。",
+      allowDiaryStorage: "允许储存日记",
+      allowDiaryStorageDescription: "把每日 check-in 和日记内容保存到你的账户里。",
+      allowAiAnalysis: "允许 AI 辅助反思",
+      allowAiAnalysisDescription:
+        "允许 AI 查看日记内容，用于生成温和、非临床的情绪线索整理。",
+      allowSummaryStorage: "允许储存反思摘要",
+      allowSummaryStorageDescription: "保存生成的情绪反思，方便之后回看。",
+      allowArtworkStorage: "允许储存作品",
+      allowArtworkStorageDescription: "保存上传的作品照片和相关反思。",
+      allowEmergencyContact: "允许保存可选紧急联系人信息",
+      allowEmergencyContactDescription:
+        "保存联系人信息，以便未来由你主动发起安全相关操作。应用不应自动联系任何人。",
+      emergencyContactName: "紧急联系人姓名",
+      emergencyContactEmail: "紧急联系人邮箱",
+      emergencyContactNote:
+        "任何紧急联系人操作都应该由你主动发起，并经过手动确认。",
+      optional: "可选",
+      saved: "同意设置已保存。",
+      saving: "正在保存...",
+      save: "保存同意设置",
+      creating: "正在创建...",
+      create: "创建同意设置",
+    },
+  },
+  es: {
+    common: {
+      loading: "Cargando...",
+    },
+    appShell: {
+      nav: {
+        dashboard: "Inicio",
+        profile: "Perfil",
+        diary: "Diario",
+        recommendations: "Recomendaciones",
+        artworks: "Obras",
+        consent: "Consentimiento",
+        crisis: "Recursos de crisis",
+      },
+      footerNote: "Creative Companion es una herramienta de apoyo no clínico.",
+      crisisResources: "Recursos de crisis",
+      themeLight: "Claro",
+      themeDark: "Oscuro",
+      themeSystem: "Sistema",
+    },
+    publicPages: {
+      brand: "Creative Companion",
+      crisisResources: "Recursos de crisis",
+      dashboard: "Inicio",
+      goToDashboard: "Ir al inicio",
+      recommendations: "Recomendaciones",
+      artworkSpace: "Espacio de arte",
+      createAccount: "Crear una cuenta",
+      signIn: "Iniciar sesión",
+      signUp: "Registrarse",
+      signedInGreeting: "Sesión iniciada como",
+      logout: "Cerrar sesión",
+      homeTitle:
+        "Un espacio creativo de reflexión para pacientes y sobrevivientes de cáncer",
+      homeIntro:
+        "Creative Companion ofrece un lugar privado y no clínico para registrar emociones, reflexionar mediante el arte y explorar ideas suaves de actividades asistidas por IA cuando tú lo elijas.",
+      featureOverview: "Resumen de la función",
+      signInToTry: "Iniciar sesión para probar esta función",
+      backHome: "Volver al inicio",
+      features: {
+        daily: {
+          title: "Reflexión emocional diaria",
+          description:
+            "Un espacio privado de diario para nombrar emociones, elegir intensidad y escribir lo que quieras recordar del día.",
+          details: [
+            "Elige hasta tres etiquetas emocionales para reducir la presión de encontrar palabras perfectas.",
+            "Usa un control simple de intensidad para notar qué tan fuerte se siente.",
+            "Mantén tus entradas privadas y editables dentro de tu cuenta.",
+          ],
+          cta: "Crear una cuenta para reflexionar",
+        },
+        analysis: {
+          title: "Análisis emocional",
+          description:
+            "Las reflexiones opcionales con IA pueden ayudarte a notar patrones emocionales recientes en tus entradas.",
+          details: [
+            "Esta función es opcional y se controla desde los ajustes de consentimiento.",
+            "Las reflexiones son no clínicas y no deben tratarse como diagnóstico o terapia.",
+            "Puedes elegir si permites el análisis con IA y el almacenamiento de resúmenes.",
+          ],
+          cta: "Crear una cuenta para probar la reflexión",
+        },
+        activities: {
+          title: "Actividades personalizadas inspiradas en el arte",
+          description:
+            "Creative Companion puede sugerir actividades suaves inspiradas en el arte que se pueden hacer con herramientas digitales o materiales físicos.",
+          details: [
+            "Las recomendaciones son apoyo creativo no clínico.",
+            "El espacio de trabajo mantiene los pasos visibles mientras creas.",
+            "Las sugerencias se apoyan en recursos curados cuando hay una fuente adecuada.",
+          ],
+          cta: "Crear una cuenta para ver actividades",
+        },
+        gallery: {
+          title: "Galería personal de arte",
+          description:
+            "Un espacio privado para guardar dibujos digitales, subir fotos de obras físicas y añadir reflexiones.",
+          details: [
+            "Crea directamente en el lienzo digital o sube una foto de una obra en papel.",
+            "El almacenamiento de obras se controla desde los ajustes de consentimiento.",
+            "Las obras guardadas se mantienen privadas en tu cuenta.",
+          ],
+          cta: "Crear una cuenta para usar la galería",
+        },
+        consent: {
+          title: "Apoyo de IA centrado en el consentimiento",
+          description:
+            "Las funciones sensibles deben permanecer bajo tu control antes de usar diario, IA o almacenamiento de arte.",
+          details: [
+            "Gestiona almacenamiento del diario, análisis con IA, resúmenes emocionales y almacenamiento de obras.",
+            "La información de contacto de emergencia es opcional y debe ser iniciada por la persona usuaria.",
+            "Puedes actualizar los ajustes de consentimiento después de crear la cuenta.",
+          ],
+          cta: "Crear una cuenta para gestionar consentimiento",
+        },
+      },
+      safetyTitle: "Bases de seguridad y consentimiento",
+      safetyIntro:
+        "Creative Companion está diseñado para reflexión privada y apoyo creativo suave. Puede acompañar la atención profesional, pero no la reemplaza.",
+      backToSignUp: "Volver al registro",
+      notMedicalTitle: "Lo que esta app no es",
+      notMedicalDescription:
+        "Creative Companion no es un servicio médico, diagnóstico, psicoterapia, arteterapia, emergencia ni intervención de crisis. Las respuestas de IA no deben tratarse como consejo clínico.",
+      aiDataTitle: "Opciones de IA y datos",
+      aiDataDescription:
+        "Algunas funciones usan IA para reflexionar sobre patrones emocionales o sugerir actividades inspiradas en el arte. Los ajustes de consentimiento te permiten gestionar el uso de IA y el almacenamiento antes de usar estas funciones.",
+      urgentHelpTitle: "Si necesitas ayuda urgente",
+      urgentHelpDescription:
+        "Si podrías hacerte daño o hacer daño a alguien más, o si estás en peligro inmediato, contacta ahora a los servicios locales de emergencia. También puedes revisar recursos de crisis.",
+      viewCrisisResources: "Ver recursos de crisis",
+      crisisTitle: "Recursos de crisis",
+      crisisIntro:
+        "Creative Companion no es un servicio de crisis. Si podrías hacerte daño o hacer daño a alguien más, o si estás en peligro inmediato, contacta ahora a los servicios locales de emergencia. Si no estás seguro pero quieres apoyo adicional, los recursos de abajo pueden ayudar.",
+      unitedStates: "Estados Unidos",
+      usCrisisDescription:
+        "Llama o envía un mensaje de texto al 988 para contactar la 988 Suicide & Crisis Lifeline. También puedes usar su chat en línea.",
+      call988: "Llamar al 988",
+      text988: "Enviar texto al 988",
+      outsideUS: "Fuera de Estados Unidos",
+      outsideUSDescription:
+        "Los recursos de crisis y salud mental varían según país y región. Find A Helpline puede ayudarte a encontrar apoyo disponible donde estés.",
+      findAHelpline: "Buscar una línea de ayuda",
+      crisisFooter:
+        "Las funciones de IA de este proyecto nunca deben reemplazar atención de emergencia, servicios locales de crisis, profesionales clínicos o personas de apoyo de confianza.",
+    },
+    auth: {
+      loginTitle: "Iniciar sesión",
+      loginDescription: "Ingresa tu correo y contraseña para continuar.",
+      email: "Correo electrónico",
+      password: "Contraseña",
+      forgotPassword: "¿Olvidaste tu contraseña?",
+      loggingIn: "Iniciando sesión...",
+      loginAction: "Iniciar sesión",
+      noAccount: "¿No tienes una cuenta?",
+      signUp: "Crear una cuenta",
+      signUpTitle: "Crear una cuenta",
+      signUpDescription:
+        "Crea una cuenta privada antes de usar diario, IA u obras.",
+      repeatPassword: "Repetir contraseña",
+      safetyTitle: "Entiendo los límites de seguridad",
+      safetyDescription:
+        "Creative Companion es una herramienta de apoyo no clínico, no un servicio médico, de psicoterapia, crisis o emergencia. Revisa los ajustes de consentimiento antes de usar diario o IA.",
+      safetyLink: "Bases de seguridad y consentimiento",
+      crisisLink: "Recursos de crisis",
+      creatingAccount: "Creando una cuenta...",
+      alreadyAccount: "¿Ya tienes una cuenta?",
+      passwordMismatch: "Las contraseñas no coinciden.",
+      safetyRequired:
+        "Revisa y acepta el reconocimiento de seguridad.",
+      fallbackError: "Algo salió mal. Inténtalo de nuevo.",
+      resetTitle: "Restablecer contraseña",
+      resetDescription:
+        "Ingresa tu correo y te enviaremos un enlace para restablecer la contraseña.",
+      sending: "Enviando...",
+      saving: "Guardando...",
+      sendResetEmail: "Enviar correo de restablecimiento",
+      checkEmailTitle: "Revisa tu correo",
+      resetSentTitle: "Instrucciones enviadas",
+      resetSentDescription:
+        "Si te registraste con correo y contraseña, recibirás un correo para restablecerla.",
+      newPassword: "Nueva contraseña",
+      updatePasswordDescription: "Ingresa tu nueva contraseña abajo.",
+      saveNewPassword: "Guardar nueva contraseña",
+      signUpSuccessTitle: "Gracias por registrarte.",
+      signUpSuccessDescription: "Revisa tu correo para confirmar",
+      signUpSuccessBody:
+        "Te registraste correctamente. Revisa tu correo para confirmar tu cuenta antes de iniciar sesión.",
+      authErrorTitle: "Lo sentimos, algo salió mal.",
+      authErrorCode: "Código de error",
+      authErrorFallback: "Ocurrió un error no especificado.",
+    },
+    dashboard: {
+      title: "Tu espacio de acompañamiento",
+      intro:
+        "Aquí puedes elegir lo que se sienta útil hoy. Cada área seguirá creciendo a medida que se completen las funciones de diario, consentimiento, recomendaciones y arte.",
+      profileTitle: "Perfil",
+      profileDescription:
+        "Puedes actualizar la información limitada que se usa para la personalización.",
+      diaryTitle: "Diario emocional",
+      diaryDescription:
+        "Puedes registrar emociones y reflexiones privadas en un espacio protegido.",
+      recommendationsTitle: "Actividades personalizadas inspiradas en el arte",
+      recommendationsDescription:
+        "Puedes explorar sugerencias de actividades y crear mientras mantienes la guía visible.",
+      artworksTitle: "Espacio independiente de arte",
+      artworksDescription:
+        "Puedes dibujar o subir obras que no estén vinculadas a una recomendación específica.",
+      consentTitle: "Ajustes de consentimiento",
+      consentDescription:
+        "Puedes controlar la reflexión con IA, el almacenamiento de datos y las preferencias opcionales de seguridad.",
+      open: "Abrir",
+    },
+    profile: {
+      pageTitle: "Perfil",
+      pageIntro:
+        "Aquí puedes actualizar los detalles limitados que se usan para la personalización. Puedes dejar en blanco cualquier campo opcional.",
+      missingTitle: "No se encontró el perfil",
+      missingDescription:
+        "Tu cuenta existe, pero todavía no se encontró una fila de perfil correspondiente.",
+      backgroundTitle: "Tu información de contexto",
+      backgroundDescription:
+        "Estos campos son opcionales y deben limitarse a lo que ayude a personalizar sugerencias de apoyo inspiradas en el arte.",
+      displayName: "Nombre para mostrar",
+      displayNamePlaceholder: "¿Cómo debería llamarte Creative Companion?",
+      ageRange: "Rango de edad",
+      ageRangePlaceholder: "Ejemplo: 18-24, 25-34, 35-44",
+      cancerType: "Tipo de cáncer",
+      journeyStage: "Etapa del proceso de cáncer",
+      journeyStagePlaceholder:
+        "Ejemplo: tratamiento, supervivencia, seguimiento de recurrencia",
+      country: "País actual de residencia",
+      countryPlaceholder: "Ejemplo: United States",
+      preferredLanguage: "Idioma preferido",
+      optional: "Opcional",
+      saved: "Perfil guardado.",
+      saving: "Guardando...",
+      save: "Guardar perfil",
+    },
+    diary: {
+      pageTitle: "Diario emocional",
+      pageIntro:
+        "Aquí puedes hacer registros privados a tu propio ritmo. Tú eliges qué escribir, qué guardar y si se permite la reflexión con IA.",
+      storageOffTitle: "El almacenamiento del diario está desactivado",
+      storageOffDescription:
+        "Las entradas del diario solo se guardan si permites el almacenamiento del diario en los ajustes de consentimiento.",
+      openConsent: "Abrir ajustes de consentimiento",
+      reflectTitle: "Reflexionar sobre entradas recientes",
+      reflectDescription:
+        "Aquí puedes usar IA para notar patrones emocionales suaves y no clínicos en tus entradas recientes. No es un diagnóstico y todavía no crea sugerencias de actividades.",
+      reflecting: "Reflexionando...",
+      reflectAction: "Reflexionar sobre entradas recientes",
+      analysisTimeout:
+        "La solicitud de reflexión tardó demasiado. Inténtalo de nuevo.",
+      analysisUnavailable: "No se pudo conectar con el servicio de reflexión.",
+      analysisUnexpected:
+        "El servicio de reflexión devolvió una respuesta inesperada.",
+      analysisFailed: "No se pudo reflexionar sobre las entradas del diario.",
+      latestReflectionTitle: "Reflexión más reciente",
+      latestReflectionDescription:
+        "Una lectura suave de tus entradas recientes. Puedes guardarla, eliminarla o crear una nueva más adelante.",
+      supportNote: "Nota de apoyo",
+      averageIntensity: "Intensidad promedio",
+      noticedThemes: "Temas notados",
+      viewCrisisResources: "Ver recursos de crisis",
+      deleteReflection: "Eliminar reflexión",
+      deleting: "Eliminando...",
+      deleteReflectionConfirm: "¿Eliminar esta reflexión?",
+      showHistory: "Ver historial de reflexiones",
+      hideHistory: "Ocultar historial de reflexiones",
+      safetyElevated:
+        "Algunas partes de esta reflexión pueden merecer cuidado adicional. Hay recursos de crisis disponibles si te sientes en riesgo o necesitas apoyo urgente.",
+      safetyLow:
+        "Esta reflexión notó algo de tensión. Tómala como una lectura suave y no clínica de tus entradas recientes.",
+      safetyNone: "Esta es una reflexión suave, no un diagnóstico.",
+      newEntryTitle: "Nueva entrada del diario",
+      newEntryDescription:
+        "Esto puede ser un registro privado para hoy. Puedes escribir poco, mucho o solo lo que se sienta útil.",
+      moodLabels: "Etiquetas emocionales",
+      moodHelper: "Puedes elegir hasta 3 sentimientos, si alguno encaja.",
+      intensityLabel: "Intensidad emocional, 1 a 10",
+      intensityLow: "Suave",
+      intensityHigh: "Fuerte",
+      diaryEntry: "Entrada del diario",
+      diaryPlaceholder: "Escribe lo que se sienta útil recordar hoy.",
+      entrySaved: "Entrada guardada.",
+      saveEntry: "Guardar entrada",
+      saving: "Guardando...",
+      pastEntries: "Entradas anteriores",
+      noEntries: "Todavía no hay entradas.",
+      edit: "Editar",
+      delete: "Eliminar",
+      deleteEntryConfirm: "¿Eliminar esta entrada del diario?",
+      saveChanges: "Guardar cambios",
+      cancel: "Cancelar",
+      noMoodSelected: "No se seleccionó ningún estado de ánimo",
+      moods: {
+        Happy: "Feliz",
+        Hopeful: "Con esperanza",
+        Calm: "En calma",
+        Grateful: "Con gratitud",
+        Anxious: "Con ansiedad",
+        Sad: "Triste",
+        Angry: "Con enojo",
+        Afraid: "Con miedo",
+        Lonely: "Con soledad",
+        Tired: "Con cansancio",
+        Numb: "Con desconexión",
+      },
+    },
+    recommendations: {
+      pageTitle: "Recomendaciones",
+      pageIntro:
+        "Aquí puedes explorar ideas de actividades no clínicas inspiradas en el arte a partir de tu reflexión emocional más reciente y recursos curados. Si una idea se siente útil, puedes abrir un espacio lado a lado y mantenerla visible mientras creas.",
+      backToRecommendations: "Volver a recomendaciones",
+      selectedActivity: "Actividad seleccionada",
+      oneCreativeOption:
+        "Esta es una opción creativa, no una respuesta prescrita para un sentimiento. Puedes cambiarla, pausarla o elegir otra cosa en cualquier momento.",
+      whyThisMightFit: "Por qué podría encajar",
+      steps: "Pasos",
+      gentleBackground: "Contexto amable",
+      connectionResources: "Recursos de conexión",
+      connectionResourcesDescription:
+        "Estos enlaces son lugares para conectar con personas o programas de apoyo, no solo artículos para leer.",
+      workspaceTitle: "Algunas ideas creativas para este momento",
+      workspaceDescription:
+        "Aquí puedes pedir opciones suaves inspiradas en el arte a partir de tu reflexión más reciente y recursos curados. Son invitaciones creativas, no arteterapia, atención médica ni apoyo de crisis.",
+      workspaceBoundary:
+        "Los sentimientos no tienen un único ejercicio de arte correcto. Estas sugerencias ofrecen distintas posibilidades. Puedes elegir una, cambiarla o no usar ninguna.",
+      preferencesDescription:
+        "Estas preferencias son opcionales y solo para este momento. Puedes dejarlas abiertas si prefieres ver una mezcla más amplia de ideas.",
+      skipPreferences: "Omitir preferencias",
+      energyLabel: "¿Cuánta energía sientes disponible?",
+      mediumLabel: "¿Qué te gustaría usar?",
+      directionLabel: "¿Qué se sentiría más útil ahora?",
+      openToAnything: "Abierto a cualquier opción",
+      lowEnergy: "Poca energía",
+      someEnergy: "Algo de energía",
+      either: "Cualquiera",
+      digital: "Digital",
+      paper: "Papel",
+      expressFeeling: "Expresar lo que siento",
+      focusElsewhere: "Enfocarme en otra cosa",
+      creating: "Creando...",
+      findActivityIdeas: "Buscar ideas de actividades",
+      reviewDiary: "Revisar diario",
+      crisisResources: "Recursos de crisis",
+      findDifferentIdeas: "Buscar ideas distintas",
+      supportNoteCameUp: "Apareció una nota de apoyo.",
+      urgentSupportPrompt:
+        "Si podrías hacerte daño o sientes peligro inmediato, usa apoyo urgente local ahora. Si te sientes a salvo en este momento, puedes continuar.",
+      reviewCrisisResources: "Revisar recursos de crisis",
+      feelSafeContinue: "Me siento a salvo ahora. Continuar.",
+      createWithThisIdea: "Crear con esta idea",
+      hideDetails: "Ocultar detalles",
+      learnMore: "Ver más",
+      possibleFitNote:
+        "Esto es una posibilidad, no una regla. Cambia u omite cualquier parte que no se sienta bien.",
+      optionalBackgroundIntro:
+        "Estos enlaces son puntos de partida opcionales si quieres entender la idea detrás de la sugerencia.",
+      connectionResourcesIntro:
+        "Estos son lugares opcionales para conectar con personas, apoyo entre pares o programas comunitarios.",
+      evidenceNotes: "Notas sobre la evidencia",
+      evidenceNotesDescription:
+        "Estas ideas se generan a partir de tu reflexión y un conjunto pequeño de fuentes curadas. Algunas fuentes tratan directamente actividades artísticas; otras ofrecen contexto más amplio de apoyo o seguridad.",
+      optionalResearchLinks: "Enlaces de investigación opcionales",
+      researchLinksDescription:
+        "Estos son artículos más técnicos usados como contexto. No necesitas leerlos para usar la actividad.",
+      researchLinksNote:
+        "Los enlaces de investigación pueden ser detallados o técnicos, así que viven aquí en lugar de la sección de contexto ligero. Son contexto para transparencia, no tarea ni promesa de que la actividad tendrá un efecto específico.",
+      sourceLimitNote:
+        "Una fuente puede orientar la dirección general sin demostrar que esta actividad exacta funcionará para ti. Por eso cada sugerencia sigue siendo opcional y fácil de ajustar.",
+      fetchError: "No se pudo conectar con el servicio de recomendaciones.",
+      unexpectedResponse:
+        "El servicio de recomendaciones devolvió una respuesta inesperada.",
+      crisisDefaultWarning:
+        "Las reflexiones recientes pueden necesitar apoyo adicional. Puedes revisar recursos de crisis o elegir continuar.",
+      generationFailed: "No se pudieron generar recomendaciones.",
+    },
+    artworks: {
+      pageTitle: "Espacio independiente de arte",
+      pageIntro:
+        "Aquí puedes crear arte por tu cuenta, separado de una recomendación específica. Puedes dibujar en línea, subir una foto de una obra hecha fuera de línea y guardar reflexiones privadas sobre tu proceso creativo.",
+      storageOffTitle: "El almacenamiento de obras está desactivado",
+      storageOffDescription:
+        "Activa el almacenamiento de obras en los ajustes de consentimiento antes de guardar fotos de obras.",
+      openConsent: "Abrir ajustes de consentimiento",
+      drawTitle: "Dibujar en línea",
+      drawDescription:
+        "Aquí puedes hacer un dibujo digital con capas, estilos de pincel, color y formas simples. Si quieres, puedes guardarlo en privado con una reflexión.",
+      currentTool: "Herramienta actual",
+      opacity: "opacidad",
+      fullscreen: "Pantalla completa",
+      exitFullscreen: "Salir de pantalla completa",
+      undo: "Deshacer",
+      redo: "Rehacer",
+      tools: "Herramientas",
+      brushStyle: "Estilo de pincel",
+      color: "Color",
+      colorHex: "Valor hexadecimal del color",
+      brushSize: "Tamaño del pincel",
+      layers: "Capas",
+      add: "Añadir",
+      hideLayer: "Ocultar capa",
+      showLayer: "Mostrar capa",
+      deleteLayer: "Eliminar capa",
+      clearLayer: "Limpiar capa",
+      clearAll: "Limpiar todo",
+      title: "Título",
+      optionalTitle: "Título opcional",
+      reflection: "Reflexión",
+      drawingReflectionPlaceholder:
+        "¿Qué te gustaría recordar de este dibujo?",
+      saveDrawing: "Guardar dibujo",
+      saving: "Guardando...",
+      drawingSaved: "Dibujo guardado.",
+      canvasNotReady: "El lienzo aún no está listo.",
+      drawingSaveFailed: "No se pudo guardar la imagen del dibujo.",
+      layerName: "Capa",
+      toolBrush: "Pincel",
+      toolEraser: "Borrador",
+      toolFill: "Rellenar capa",
+      toolLine: "Línea",
+      toolRectangle: "Rectángulo",
+      toolEllipse: "Elipse",
+      brushPencil: "lápiz",
+      brushSoft: "suave",
+      brushMarker: "marcador",
+      brushAirbrush: "aerógrafo",
+      brushWatercolor: "acuarela",
+      brushOil: "óleo",
+      brushBlend: "mezclar",
+      uploadTitle: "Subir obra física",
+      uploadDescription:
+        "Aquí puedes añadir una foto de una obra que hiciste fuera de línea, con una nota o reflexión privada opcional.",
+      artworkImage: "Imagen de la obra",
+      fileHint: "JPG, PNG o WEBP. Máximo 5 MB.",
+      uploadReflectionPlaceholder:
+        "¿Qué te gustaría recordar de esta obra?",
+      saveArtwork: "Guardar obra",
+      artworkSaved: "Obra guardada.",
+      invalidFileType: "Elige una imagen JPG, PNG o WEBP.",
+      fileTooLarge: "Elige una imagen menor de 5 MB.",
+      missingArtworkImage: "Elige una imagen de la obra.",
+      pastArtworks: "Obras anteriores",
+      noArtworks: "Todavía no hay obras guardadas.",
+      deleteArtworkConfirm: "¿Eliminar esta obra?",
+      uploadedArtworkAlt: "Obra subida",
+      untitledArtwork: "Obra sin título",
+      digitalDrawing: "Dibujo digital",
+      physicalArtworkUpload: "Subida de obra física",
+      deleting: "Eliminando...",
+      delete: "Eliminar",
+    },
+    consent: {
+      pageTitle: "Ajustes de consentimiento",
+      pageIntro:
+        "Aquí puedes decidir cómo funcionan la reflexión con IA, el almacenamiento de datos, el almacenamiento de obras y las preferencias opcionales de contacto de emergencia para tu cuenta.",
+      missingTitle: "Todavía no hay ajustes de consentimiento",
+      missingDescription:
+        "Los ajustes de consentimiento son necesarios antes de usar el diario, la IA, las obras o las funciones opcionales de contacto de emergencia.",
+      choicesTitle: "Tus decisiones",
+      choicesDescription:
+        "Puedes cambiar estos ajustes más adelante. Al desactivar un ajuste, se debe impedir el uso futuro de esos datos para la función relacionada.",
+      allowDiaryStorage: "Permitir almacenamiento del diario",
+      allowDiaryStorageDescription:
+        "Guardar registros diarios y entradas del diario en tu cuenta.",
+      allowAiAnalysis: "Permitir reflexión asistida por IA",
+      allowAiAnalysisDescription:
+        "Permitir que la IA revise entradas del diario para reflexiones emocionales suaves y no clínicas.",
+      allowSummaryStorage: "Permitir almacenamiento de resúmenes",
+      allowSummaryStorageDescription:
+        "Guardar reflexiones emocionales generadas para revisarlas después.",
+      allowArtworkStorage: "Permitir almacenamiento de obras",
+      allowArtworkStorageDescription:
+        "Guardar fotos de obras subidas y reflexiones en tu cuenta.",
+      allowEmergencyContact:
+        "Permitir información opcional de contacto de emergencia",
+      allowEmergencyContactDescription:
+        "Guardar datos de contacto para futuras acciones de seguridad iniciadas por la persona usuaria. La app no debe contactar automáticamente a nadie.",
+      emergencyContactName: "Nombre del contacto de emergencia",
+      emergencyContactEmail: "Correo del contacto de emergencia",
+      emergencyContactNote:
+        "Las acciones con contactos de emergencia deben ser iniciadas por la persona usuaria y confirmadas manualmente.",
+      optional: "Opcional",
+      saved: "Tus ajustes de consentimiento se han guardado.",
+      saving: "Guardando...",
+      save: "Guardar ajustes de consentimiento",
+      creating: "Creando...",
+      create: "Crear ajustes de consentimiento",
+    },
+  },
+} as const;
+
+export function getDictionary(language: string | null | undefined) {
+  return dictionary[normalizeLanguage(language)];
+}

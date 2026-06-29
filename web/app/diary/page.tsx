@@ -8,6 +8,7 @@ import { DiaryEntryForm } from "@/components/diary-entry-form";
 import { DiaryEntryList } from "@/components/diary-entry-list";
 import { EmotionSummaryList } from "@/components/emotion-summary-list";
 import { Button } from "@/components/ui/button";
+import { getDictionary, normalizeLanguage } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 
 async function DiaryDetails() {
@@ -25,19 +26,32 @@ async function DiaryDetails() {
     .single();
 
   if (!consent?.allow_diary_storage) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("preferred_language")
+      .eq("id", data.user.id)
+      .single();
+    const t = getDictionary(normalizeLanguage(profile?.preferred_language));
+
     return (
       <div className="grid gap-4 rounded-md border p-5">
-        <h2 className="text-xl font-semibold">Diary storage is off</h2>
+        <h2 className="text-xl font-semibold">{t.diary.storageOffTitle}</h2>
         <p className="text-sm text-muted-foreground">
-          Diary entries are saved only when you allow diary storage in consent
-          settings.
+          {t.diary.storageOffDescription}
         </p>
         <Button asChild className="w-fit" variant="outline">
-          <Link href="/consent">Open consent settings</Link>
+          <Link href="/consent">{t.diary.openConsent}</Link>
         </Button>
       </div>
     );
   }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("preferred_language")
+    .eq("id", data.user.id)
+    .single();
+  const t = getDictionary(normalizeLanguage(profile?.preferred_language));
 
   const { data: entries } = await supabase
     .from("diary_entries")
@@ -56,10 +70,30 @@ async function DiaryDetails() {
 
   return (
     <div className="grid gap-8">
-      <AnalyzeDiaryButton />
-      <EmotionSummaryList summaries={summaries ?? []} />
-      <DiaryEntryForm userId={data.user.id} />
-      <DiaryEntryList entries={entries ?? []} />
+      <AnalyzeDiaryButton copy={t.diary} />
+      <EmotionSummaryList summaries={summaries ?? []} copy={t.diary} />
+      <DiaryEntryForm userId={data.user.id} copy={t.diary} />
+      <DiaryEntryList entries={entries ?? []} copy={t.diary} />
+    </div>
+  );
+}
+
+async function DiaryHeader() {
+  const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getUser();
+  const { data: profile } = authData.user
+    ? await supabase
+        .from("profiles")
+        .select("preferred_language")
+        .eq("id", authData.user.id)
+        .single()
+    : { data: null };
+  const t = getDictionary(normalizeLanguage(profile?.preferred_language));
+
+  return (
+    <div className="grid gap-2">
+      <h1 className="text-3xl font-bold">{t.diary.pageTitle}</h1>
+      <p className="max-w-2xl text-muted-foreground">{t.diary.pageIntro}</p>
     </div>
   );
 }
@@ -68,13 +102,11 @@ export default function DiaryPage() {
   return (
     <AppShell>
       <div className="grid gap-8">
-        <div className="grid gap-2">
-          <h1 className="text-3xl font-bold">Emotion diary</h1>
-          <p className="max-w-2xl text-muted-foreground">
-            Here you can make private check-ins at your own pace. You choose
-            what to write, what to save, and whether AI reflection is allowed.
-          </p>
-        </div>
+        <Suspense
+          fallback={<p className="text-sm text-muted-foreground">Loading...</p>}
+        >
+          <DiaryHeader />
+        </Suspense>
 
         <Suspense
           fallback={<p className="text-sm text-muted-foreground">Loading...</p>}

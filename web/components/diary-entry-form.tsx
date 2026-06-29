@@ -8,7 +8,29 @@ import { Label } from "@/components/ui/label";
 import { moodOptions } from "@/components/mood-options";
 import { createClient } from "@/lib/supabase/client";
 
-export function DiaryEntryForm({ userId }: { userId: string }) {
+type DiaryCopy = {
+  newEntryTitle: string;
+  newEntryDescription: string;
+  moodLabels: string;
+  moodHelper: string;
+  intensityLabel: string;
+  intensityLow: string;
+  intensityHigh: string;
+  diaryEntry: string;
+  diaryPlaceholder: string;
+  entrySaved: string;
+  saveEntry: string;
+  saving: string;
+  moods: Record<string, string>;
+};
+
+export function DiaryEntryForm({
+  userId,
+  copy,
+}: {
+  userId: string;
+  copy: DiaryCopy;
+}) {
   const [moodLabels, setMoodLabels] = useState<string[]>([]);
   const [moodIntensity, setMoodIntensity] = useState("5");
   const [diaryText, setDiaryText] = useState("");
@@ -52,7 +74,7 @@ export function DiaryEntryForm({ userId }: { userId: string }) {
       setMoodLabels([]);
       setMoodIntensity("5");
       setDiaryText("");
-      setMessage("Diary entry saved.");
+      setMessage(copy.entrySaved);
       router.refresh();
     }
 
@@ -62,19 +84,16 @@ export function DiaryEntryForm({ userId }: { userId: string }) {
   return (
     <form onSubmit={handleSubmit} className="grid gap-4 rounded-md border p-5">
       <div className="grid gap-2">
-        <h2 className="text-xl font-semibold">New diary entry</h2>
+        <h2 className="text-xl font-semibold">{copy.newEntryTitle}</h2>
         <p className="text-sm text-muted-foreground">
-          This can be a private check-in for today. You can write a little, a
-          lot, or only what feels useful.
+          {copy.newEntryDescription}
         </p>
       </div>
 
       <div className="grid gap-3">
         <div className="grid gap-1">
-          <Label>Mood labels</Label>
-          <p className="text-sm text-muted-foreground">
-            You can choose up to 3 feelings, if any fit.
-          </p>
+          <Label>{copy.moodLabels}</Label>
+          <p className="text-sm text-muted-foreground">{copy.moodHelper}</p>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {moodOptions.map((mood) => (
@@ -89,14 +108,14 @@ export function DiaryEntryForm({ userId }: { userId: string }) {
               className="justify-start"
             >
               <span aria-hidden="true">{mood.emoji}</span>
-              {mood.value}
+              {copy.moods[mood.value] ?? mood.value}
             </Button>
           ))}
         </div>
       </div>
 
       <div className="grid gap-3">
-        <Label htmlFor="mood_intensity">Mood intensity, 1 to 10</Label>
+        <Label htmlFor="mood_intensity">{copy.intensityLabel}</Label>
         <input
           id="mood_intensity"
           type="range"
@@ -109,20 +128,20 @@ export function DiaryEntryForm({ userId }: { userId: string }) {
           className="w-full accent-primary"
         />
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>Gentle</span>
+          <span>{copy.intensityLow}</span>
           <span className="font-medium text-foreground">{moodIntensity}/10</span>
-          <span>Strong</span>
+          <span>{copy.intensityHigh}</span>
         </div>
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="diary_text">Diary entry</Label>
+        <Label htmlFor="diary_text">{copy.diaryEntry}</Label>
         <textarea
           id="diary_text"
           required
           value={diaryText}
           onChange={(event) => setDiaryText(event.target.value)}
-          placeholder="Write whatever feels useful to remember today."
+          placeholder={copy.diaryPlaceholder}
           className="min-h-36 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
         />
       </div>
@@ -131,7 +150,7 @@ export function DiaryEntryForm({ userId }: { userId: string }) {
       {error && <p className="text-sm text-red-500">{error}</p>}
 
       <Button type="submit" className="w-fit" disabled={isSaving}>
-        {isSaving ? "Saving..." : "Save diary entry"}
+        {isSaving ? copy.saving : copy.saveEntry}
       </Button>
     </form>
   );

@@ -6,12 +6,20 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { dictionary } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/client";
 
 const maxFileSize = 5 * 1024 * 1024;
 const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp"];
+type ArtworkCopy = Record<keyof (typeof dictionary)["en"]["artworks"], string>;
 
-export function ArtworkUploadForm({ userId }: { userId: string }) {
+export function ArtworkUploadForm({
+  userId,
+  copy,
+}: {
+  userId: string;
+  copy: ArtworkCopy;
+}) {
   const [title, setTitle] = useState("");
   const [reflection, setReflection] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -30,12 +38,12 @@ export function ArtworkUploadForm({ userId }: { userId: string }) {
     }
 
     if (!allowedMimeTypes.includes(selectedFile.type)) {
-      setError("Please choose a JPG, PNG, or WEBP image.");
+      setError(copy.invalidFileType);
       return;
     }
 
     if (selectedFile.size > maxFileSize) {
-      setError("Please choose an image smaller than 5 MB.");
+      setError(copy.fileTooLarge);
       return;
     }
 
@@ -46,7 +54,7 @@ export function ArtworkUploadForm({ userId }: { userId: string }) {
     event.preventDefault();
 
     if (!file) {
-      setError("Please choose an artwork image.");
+      setError(copy.missingArtworkImage);
       return;
     }
 
@@ -89,7 +97,7 @@ export function ArtworkUploadForm({ userId }: { userId: string }) {
     setTitle("");
     setReflection("");
     setFile(null);
-    setMessage("Artwork saved.");
+    setMessage(copy.artworkSaved);
     setIsSaving(false);
     router.refresh();
   }
@@ -97,15 +105,14 @@ export function ArtworkUploadForm({ userId }: { userId: string }) {
   return (
     <form onSubmit={handleSubmit} className="grid gap-4 rounded-md border p-5">
       <div className="grid gap-2">
-        <h2 className="text-xl font-semibold">Upload physical artwork</h2>
+        <h2 className="text-xl font-semibold">{copy.uploadTitle}</h2>
         <p className="text-sm text-muted-foreground">
-          Here you can add a photo of artwork you made offline, with an optional
-          private note or reflection.
+          {copy.uploadDescription}
         </p>
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="artwork_image">Artwork image</Label>
+        <Label htmlFor="artwork_image">{copy.artworkImage}</Label>
         <Input
           id="artwork_image"
           type="file"
@@ -113,27 +120,27 @@ export function ArtworkUploadForm({ userId }: { userId: string }) {
           onChange={handleFileChange}
         />
         <p className="text-xs text-muted-foreground">
-          JPG, PNG, or WEBP. Maximum 5 MB.
+          {copy.fileHint}
         </p>
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="artwork_title">Title</Label>
+        <Label htmlFor="artwork_title">{copy.title}</Label>
         <Input
           id="artwork_title"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
-          placeholder="Optional title"
+          placeholder={copy.optionalTitle}
         />
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="artwork_reflection">Reflection</Label>
+        <Label htmlFor="artwork_reflection">{copy.reflection}</Label>
         <textarea
           id="artwork_reflection"
           value={reflection}
           onChange={(event) => setReflection(event.target.value)}
-          placeholder="What would you like to remember about this artwork?"
+          placeholder={copy.uploadReflectionPlaceholder}
           className="min-h-28 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
         />
       </div>
@@ -142,7 +149,7 @@ export function ArtworkUploadForm({ userId }: { userId: string }) {
       {error && <p className="text-sm text-red-500">{error}</p>}
 
       <Button type="submit" className="w-fit" disabled={isSaving}>
-        {isSaving ? "Saving..." : "Save artwork"}
+        {isSaving ? copy.saving : copy.saveArtwork}
       </Button>
     </form>
   );
