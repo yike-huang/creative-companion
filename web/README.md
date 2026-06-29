@@ -19,6 +19,8 @@
 
 ## Features
 
+Project writing and AI-output tone should follow the [Creative Companion Tone Guide](docs/tone-guide.md).
+
 - Works across the entire [Next.js](https://nextjs.org) stack
   - App Router
   - Pages Router

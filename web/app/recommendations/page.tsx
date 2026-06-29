@@ -23,10 +23,10 @@ export default function RecommendationsPage() {
         <div className="grid gap-2">
           <h1 className="text-3xl font-bold">Recommendations</h1>
           <p className="max-w-2xl text-muted-foreground">
-            Generate non-clinical art-inspired activities from your latest
-            emotion reflection and curated resources, then open a side-by-side
-            creation space where you can keep the activity visible while
-            drawing.
+            Here you can explore non-clinical, art-inspired activity ideas from
+            your latest emotion reflection and curated resources. If an idea
+            feels useful, you can open a side-by-side space and keep it visible
+            while you create.
           </p>
         </div>
 

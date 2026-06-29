@@ -21,7 +21,8 @@ export default function CrisisPage() {
             <p className="text-muted-foreground">
               Creative Companion is not a crisis service. If you may harm
               yourself or someone else, or if you are in immediate danger,
-              contact local emergency services now.
+              contact local emergency services now. If you are unsure but would
+              like extra support, the resources below may help.
             </p>
           </div>
 

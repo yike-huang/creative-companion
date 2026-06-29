@@ -123,7 +123,7 @@ function DiaryEntryItem({ entry }: { entry: DiaryEntry }) {
           <div className="grid gap-1">
             <Label>Mood labels</Label>
             <p className="text-sm text-muted-foreground">
-              Choose up to 3 feelings.
+              You can choose up to 3 feelings, if any fit.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">

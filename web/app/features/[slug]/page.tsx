@@ -21,14 +21,14 @@ const featurePages = {
   "emotion-analysis": {
     title: "Emotion analysis",
     description:
-      "Optional AI-assisted summaries can help you notice recent emotional patterns across diary entries.",
+      "Optional AI-assisted reflections can help you notice recent emotional patterns across diary entries.",
     details: [
       "This feature is optional and controlled by consent settings.",
-      "Summaries are non-clinical and should not be treated as diagnosis or therapy.",
+      "Reflections are non-clinical and should not be treated as diagnosis or therapy.",
       "You can choose whether AI analysis and summary storage are allowed.",
     ],
     appHref: "/diary",
-    cta: "Create an account to manage analysis",
+    cta: "Create an account to try reflection",
   },
   "art-inspired-coping-activities": {
     title: "Personalized art-inspired coping activities",
@@ -37,7 +37,7 @@ const featurePages = {
     details: [
       "Recommendations are intended as non-clinical creative coping support.",
       "The workspace keeps activity steps visible while you create.",
-      "Future versions will ground recommendations in curated reliable resources.",
+      "Suggestions are grounded in curated resources when a fitting source is available.",
     ],
     appHref: "/recommendations",
     cta: "Create an account to view activities",
@@ -57,7 +57,7 @@ const featurePages = {
   "consent-centered-ai-support": {
     title: "Consent-centered AI support",
     description:
-      "Sensitive features should be controlled by clear user choices before diary, AI, or artwork storage is used.",
+      "Sensitive features should stay under your control before diary, AI, or artwork storage is used.",
     details: [
       "Manage diary storage, AI analysis, emotion summary storage, and artwork storage.",
       "Emergency contact information is optional and should remain user-initiated.",

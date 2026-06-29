@@ -64,8 +64,8 @@ export function DiaryEntryForm({ userId }: { userId: string }) {
       <div className="grid gap-2">
         <h2 className="text-xl font-semibold">New diary entry</h2>
         <p className="text-sm text-muted-foreground">
-          Save a private check-in for today. AI analysis will be handled later
-          and should depend on your consent settings.
+          This can be a private check-in for today. You can write a little, a
+          lot, or only what feels useful.
         </p>
       </div>
 
@@ -73,7 +73,7 @@ export function DiaryEntryForm({ userId }: { userId: string }) {
         <div className="grid gap-1">
           <Label>Mood labels</Label>
           <p className="text-sm text-muted-foreground">
-            Choose up to 3 feelings.
+            You can choose up to 3 feelings, if any fit.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -122,7 +122,7 @@ export function DiaryEntryForm({ userId }: { userId: string }) {
           required
           value={diaryText}
           onChange={(event) => setDiaryText(event.target.value)}
-          placeholder="Write what you would like to reflect on today."
+          placeholder="Write whatever feels useful to remember today."
           className="min-h-36 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
         />
       </div>

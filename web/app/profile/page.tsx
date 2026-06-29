@@ -53,7 +53,8 @@ export default function ProfilePage() {
         <div className="grid gap-2">
           <h1 className="text-3xl font-bold">Profile</h1>
           <p className="max-w-2xl text-muted-foreground">
-            Manage the background details connected to your account.
+            Here you can update the limited background details used for
+            personalization. You can keep any optional field blank.
           </p>
         </div>
 

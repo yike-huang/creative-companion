@@ -19,9 +19,9 @@ export default function SafetyPage() {
           <div className="grid gap-3">
             <h1 className="text-3xl font-bold">Safety and consent basics</h1>
             <p className="text-muted-foreground">
-              Creative Companion is designed as a non-clinical reflection and
-              creative coping support tool. It should complement, not replace,
-              professional care.
+              Creative Companion is designed for private reflection and gentle
+              creative coping support. It can sit alongside professional care,
+              but it does not replace it.
             </p>
           </div>
 
@@ -37,10 +37,9 @@ export default function SafetyPage() {
           <div className="grid gap-4 rounded-md border p-5">
             <h2 className="text-xl font-semibold">AI and data choices</h2>
             <p className="text-sm text-muted-foreground">
-              Some future features may use AI to summarize emotional patterns
-              or suggest art-inspired coping activities. Detailed consent
-              settings will let users manage AI analysis and data storage before
-              diary or recommendation features are used.
+              Some features use AI to reflect on emotional patterns or suggest
+              art-inspired activities. Consent settings let you manage AI use
+              and data storage before these features are used.
             </p>
           </div>
 

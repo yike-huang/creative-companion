@@ -99,8 +99,8 @@ export function ArtworkUploadForm({ userId }: { userId: string }) {
       <div className="grid gap-2">
         <h2 className="text-xl font-semibold">Upload physical artwork</h2>
         <p className="text-sm text-muted-foreground">
-          Upload a photo of artwork you made offline, then add a private note or
-          reflection.
+          Here you can add a photo of artwork you made offline, with an optional
+          private note or reflection.
         </p>
       </div>
 

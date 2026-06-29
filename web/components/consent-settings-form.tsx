@@ -32,15 +32,15 @@ const consentOptions = [
   },
   {
     key: "allow_ai_analysis",
-    label: "Allow AI analysis",
+    label: "Allow AI-assisted reflection",
     description:
-      "Allow AI-assisted review of diary entries for non-clinical emotional pattern summaries.",
+      "Allow AI to review diary entries for gentle, non-clinical emotional pattern reflections.",
   },
   {
     key: "allow_emotion_summary_storage",
-    label: "Allow emotion summary storage",
+    label: "Allow reflection summary storage",
     description:
-      "Save generated emotional pattern summaries so you can review them later.",
+      "Save generated emotional reflections so you can review them later.",
   },
   {
     key: "allow_artwork_storage",
@@ -104,7 +104,7 @@ export function ConsentSettingsForm({ consent }: ConsentSettingsFormProps) {
     if (error) {
       setError(error.message);
     } else {
-      setMessage("Consent settings saved.");
+      setMessage("Your consent settings have been saved.");
       router.refresh();
     }
 

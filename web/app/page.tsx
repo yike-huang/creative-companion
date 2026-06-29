@@ -69,9 +69,9 @@ export default function Home() {
               A creative reflection space for cancer patients and survivors
             </h1>
             <p className="text-lg text-muted-foreground md:text-xl">
-              Creative Companion offers non-clinical, art-inspired emotional
-              support through daily check-ins, private reflections, and careful
-              AI-assisted recommendations.
+              Creative Companion offers a private, non-clinical place to check
+              in with emotions, reflect through art, and explore gentle
+              AI-assisted activity ideas when you choose.
             </p>
             <Suspense>
               <HomeActions />

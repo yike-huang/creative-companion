@@ -107,7 +107,7 @@ type PreferenceOption<T extends string> = {
 };
 
 const energyOptions: PreferenceOption<EnergyPreference>[] = [
-  { value: "surprise_me", label: "No preference", icon: Shuffle },
+  { value: "surprise_me", label: "Open to anything", icon: Shuffle },
   { value: "low", label: "Low energy", icon: BatteryLow },
   { value: "medium", label: "Some energy", icon: BatteryMedium },
 ];
@@ -119,7 +119,7 @@ const mediumOptions: PreferenceOption<MediumPreference>[] = [
 ];
 
 const directionOptions: PreferenceOption<DirectionPreference>[] = [
-  { value: "surprise_me", label: "No preference", icon: Shuffle },
+  { value: "surprise_me", label: "Open to anything", icon: Shuffle },
   {
     value: "gently_engage",
     label: "Express what I’m feeling",
@@ -185,6 +185,12 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
     useState<MediumPreference>("surprise_me");
   const [directionPreference, setDirectionPreference] =
     useState<DirectionPreference>("surprise_me");
+
+  function skipPreferences() {
+    setEnergyPreference("surprise_me");
+    setMediumPreference("surprise_me");
+    setDirectionPreference("surprise_me");
+  }
 
   async function handleGenerate(crisisAcknowledged = false) {
     setIsGenerating(true);
@@ -359,22 +365,33 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
             A few creative ideas for right now
           </h2>
           <p className="text-sm text-muted-foreground">
-            Create gentle art-inspired options from your latest reflection.
-            These are creative prompts, not art therapy, medical care, or crisis
-            support.
+            Here you can ask for gentle art-inspired options based on your
+            latest reflection and curated resources. These are creative prompts,
+            not art therapy, medical care, or crisis support.
           </p>
           <p className="text-sm text-muted-foreground">
             Feelings do not map to one “right” art exercise. These suggestions
             combine your reflection with curated research and support resources
-            to offer different possibilities. You can choose, change, or skip
-            either one.
+            to offer different possibilities. You can choose one, change it, or
+            skip both.
           </p>
         </div>
         <div className="grid gap-4 border-t pt-4">
-          <p className="text-sm text-muted-foreground">
-            Optional for this moment only. These choices are not a wellbeing
-            assessment and are not saved to your profile.
-          </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <p className="text-sm text-muted-foreground">
+              These preferences are optional for this moment only. You can leave
+              them open if you would rather see a wider mix of ideas.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-fit"
+              onClick={skipPreferences}
+            >
+              Skip preferences
+            </Button>
+          </div>
           <div className="grid gap-4 lg:grid-cols-3">
             <PreferenceControl
               label="How much energy feels available?"
@@ -403,7 +420,7 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
             onClick={() => handleGenerate()}
             disabled={isGenerating}
           >
-            {isGenerating ? "Creating..." : "Create suggestions"}
+            {isGenerating ? "Creating..." : "Find activity ideas"}
           </Button>
           <Button asChild variant="outline" className="w-fit">
             <Link href="/diary">Review diary</Link>
@@ -411,15 +428,27 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
           <Button asChild variant="outline" className="w-fit">
             <Link href="/crisis">Crisis resources</Link>
           </Button>
+          {recommendations.length > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-fit"
+              onClick={() => handleGenerate()}
+              disabled={isGenerating}
+            >
+              {isGenerating ? "Creating..." : "Find different ideas"}
+            </Button>
+          )}
         </div>
         {crisisWarning && (
           <div className="grid gap-3 rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
             <div className="grid gap-1">
-              <p className="font-medium">A safety note came up.</p>
+              <p className="font-medium">A support note came up.</p>
               <p>{crisisWarning}</p>
               <p>
                 If you might harm yourself or feel in immediate danger, please
-                use urgent local support instead of continuing here.
+                use urgent local support now. If you feel safe right now, you
+                can continue.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -434,7 +463,7 @@ export function RecommendationWorkspace({ userId }: { userId: string }) {
               >
                 {isGenerating
                   ? "Creating..."
-                  : "I do not need crisis support. Continue."}
+                  : "I feel safe right now. Continue."}
               </Button>
             </div>
           </div>

@@ -17,11 +17,11 @@ type EmotionSummary = {
 
 function getSafetyMessage(safetyLevel: string) {
   if (safetyLevel === "elevated") {
-    return "Some words in this reflection may deserve extra care. Crisis resources are here if you feel at risk or need urgent support.";
+    return "Some parts of this reflection may deserve extra care. Crisis resources are available if you feel at risk or need urgent support.";
   }
 
   if (safetyLevel === "low") {
-    return "This reflection noticed some strain. It is only a gentle, non-clinical read of your recent entries.";
+    return "This reflection noticed some strain. Treat it as a gentle, non-clinical read of your recent entries.";
   }
 
   return "This is a gentle reflection, not a diagnosis.";
@@ -39,7 +39,7 @@ function EmotionSummaryCard({
   const [error, setError] = useState<string | null>(null);
 
   async function handleDelete() {
-    const shouldDelete = window.confirm("Delete this analysis?");
+    const shouldDelete = window.confirm("Delete this reflection?");
 
     if (!shouldDelete) {
       return;
@@ -68,7 +68,7 @@ function EmotionSummaryCard({
     <article className="grid gap-3 rounded-md border p-5">
       <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
         <span>{new Date(summary.created_at).toLocaleString()}</span>
-        <span>Safety: {summary.safety_level}</span>
+        <span>Support note: {summary.safety_level}</span>
         {summary.average_intensity !== null && (
           <span>Average intensity: {summary.average_intensity}/10</span>
         )}
@@ -127,10 +127,10 @@ export function EmotionSummaryList({
   return (
     <div className="grid gap-4">
       <div className="grid gap-2">
-        <h2 className="text-xl font-semibold">Latest analysis</h2>
+        <h2 className="text-xl font-semibold">Latest reflection</h2>
         <p className="text-sm text-muted-foreground">
-          A soft read of your recent entries. You can keep it, delete it, or
-          generate a new one later.
+          A gentle read of your recent entries. You can keep it, delete it, or
+          create a new one later.
         </p>
       </div>
 
@@ -149,7 +149,7 @@ export function EmotionSummaryList({
             className="w-fit"
             onClick={() => setShowHistory((current) => !current)}
           >
-            {showHistory ? "Hide analysis history" : "View analysis history"}
+            {showHistory ? "Hide reflection history" : "View reflection history"}
           </Button>
 
           {showHistory && (

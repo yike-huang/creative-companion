@@ -27,8 +27,8 @@ async function ConsentDetails() {
       <div className="grid gap-4 rounded-md border p-5">
         <h2 className="text-xl font-semibold">No consent settings yet</h2>
         <p className="text-sm text-muted-foreground">
-          Create consent settings before using diary, AI, artwork, or optional
-          emergency contact features.
+          Consent settings are needed before diary, AI, artwork, or optional
+          emergency contact features are used.
         </p>
         <CreateConsentButton userId={data.user.id} />
       </div>
@@ -56,8 +56,9 @@ export default function ConsentPage() {
         <div className="grid gap-2">
           <h1 className="text-3xl font-bold">Consent settings</h1>
           <p className="max-w-2xl text-muted-foreground">
-            Manage AI analysis, data storage, artwork storage, emotion summary
-            storage, and optional emergency contact preferences.
+            Here you can decide how AI reflection, data storage, artwork
+            storage, and optional emergency contact preferences work for your
+            account.
           </p>
         </div>
 

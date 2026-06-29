@@ -73,9 +73,9 @@ export default function ArtworksPage() {
         <div className="grid gap-2">
           <h1 className="text-3xl font-bold">Independent artwork space</h1>
           <p className="max-w-2xl text-muted-foreground">
-            Draw or upload artwork on your own, separate from a specific
-            recommendation, and keep private reflections about your creative
-            process.
+            Here you can make artwork on your own, separate from a specific
+            recommendation. You can draw online, upload a photo of offline
+            artwork, and keep private reflections about your creative process.
           </p>
         </div>
 

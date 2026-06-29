@@ -860,8 +860,9 @@ export function ArtworkDrawingCanvas({ userId }: { userId: string }) {
         <div className="grid gap-2">
           <h2 className="text-xl font-semibold">Draw online</h2>
           <p className="text-sm text-muted-foreground">
-            Create a digital drawing with layers, brush styles, color, and
-            simple shapes, then save it privately with a reflection.
+            Here you can make a digital drawing with layers, brush styles,
+            color, and simple shapes. If you want, you can save it privately
+            with a reflection.
           </p>
           <p className="text-xs text-muted-foreground">
             Current tool: {activeToolLabel} · {brushStyle} · {brushSize}px ·{" "}

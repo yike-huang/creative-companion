@@ -64,11 +64,11 @@ export function AnalyzeDiaryButton() {
   return (
     <div className="grid gap-3 rounded-md border p-5">
       <div className="grid gap-2">
-        <h2 className="text-xl font-semibold">AI-assisted reflection</h2>
+        <h2 className="text-xl font-semibold">Reflect on recent entries</h2>
         <p className="text-sm text-muted-foreground">
-          Analyze recent diary entries for non-clinical emotional patterns using
-          safety checks and curated context when available. This does not
-          generate coping recommendations yet.
+          Here you can use AI to notice gentle, non-clinical emotional patterns
+          in your recent diary entries. This is not a diagnosis, and it will not
+          create activity suggestions yet.
         </p>
       </div>
       <Button
@@ -77,7 +77,7 @@ export function AnalyzeDiaryButton() {
         onClick={handleAnalyze}
         disabled={isAnalyzing}
       >
-        {isAnalyzing ? "Analyzing..." : "Analyze recent entries"}
+        {isAnalyzing ? "Reflecting..." : "Reflect on recent entries"}
       </Button>
       {error && (
         <p className="text-sm text-red-500">
