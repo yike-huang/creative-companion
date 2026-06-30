@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 
+import { normalizeLanguage } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 
 const model = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
@@ -98,15 +99,71 @@ type RecommendationPreferences = {
 };
 
 function getOutputLanguageName(language: string | null | undefined) {
-  if (language === "zh" || language === "zh-CN" || language === "zh-Hans") {
+  const normalizedLanguage = normalizeLanguage(language);
+
+  if (normalizedLanguage === "zh-Hans") {
     return "Simplified Chinese";
   }
 
-  if (language === "es") {
+  if (normalizedLanguage === "zh-Hant") {
+    return "Traditional Chinese";
+  }
+
+  if (normalizedLanguage === "es") {
     return "Spanish";
   }
 
   return "English";
+}
+
+function getRecommendationApiCopy(language: string | null | undefined) {
+  const normalizedLanguage = normalizeLanguage(language);
+
+  if (normalizedLanguage === "zh-Hans") {
+    return {
+      notAuthenticated: "请先登录。",
+      consentRequired: "生成活动建议前，请先在同意设置中允许 AI 分析。",
+      analysisRequired: "生成活动建议前，请先分析最近的日记记录。",
+      crisisReviewRequired:
+        "最近的反思可能需要多一点支持。使用活动建议前，请先查看危机资源。",
+      generationFailedPrefix: "活动建议生成失败",
+    };
+  }
+
+  if (normalizedLanguage === "zh-Hant") {
+    return {
+      notAuthenticated: "請先登入。",
+      consentRequired: "產生活動建議前，請先在同意設定中允許 AI 分析。",
+      analysisRequired: "產生活動建議前，請先分析最近的日記記錄。",
+      crisisReviewRequired:
+        "最近的反思可能需要多一點支持。使用活動建議前，請先查看危機資源。",
+      generationFailedPrefix: "活動建議產生失敗",
+    };
+  }
+
+  if (normalizedLanguage === "es") {
+    return {
+      notAuthenticated: "Inicia sesión primero.",
+      consentRequired:
+        "Activa el análisis con IA en los ajustes de consentimiento antes de generar recomendaciones.",
+      analysisRequired:
+        "Analiza entradas recientes del diario antes de generar recomendaciones.",
+      crisisReviewRequired:
+        "Las reflexiones recientes pueden necesitar apoyo adicional. Revisa los recursos de crisis antes de usar recomendaciones de actividades.",
+      generationFailedPrefix: "No se pudieron generar recomendaciones",
+    };
+  }
+
+  return {
+    notAuthenticated: "Not authenticated",
+    consentRequired:
+      "Please enable AI analysis in consent settings before generating recommendations.",
+    analysisRequired:
+      "Please analyze recent diary entries before generating recommendations.",
+    crisisReviewRequired:
+      "Recent reflections may need extra support. Please review crisis resources before using activity recommendations.",
+    generationFailedPrefix: "Recommendation generation failed",
+  };
 }
 
 const emotionTagPatterns: { tag: string; patterns: string[] }[] = [
@@ -974,7 +1031,10 @@ export async function POST(request: Request) {
   const { data: authData, error: authError } = await supabase.auth.getUser();
 
   if (authError || !authData.user) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return NextResponse.json(
+      { error: getRecommendationApiCopy(null).notAuthenticated },
+      { status: 401 },
+    );
   }
 
   const userId = authData.user.id;
@@ -1003,6 +1063,7 @@ export async function POST(request: Request) {
     )
     .eq("id", userId)
     .maybeSingle();
+  const apiCopy = getRecommendationApiCopy(profile?.preferred_language);
 
   const { data: consent } = await supabase
     .from("consents")
@@ -1013,8 +1074,7 @@ export async function POST(request: Request) {
   if (!consent?.allow_ai_analysis) {
     return NextResponse.json(
       {
-        error:
-          "Please enable AI analysis in consent settings before generating recommendations.",
+        error: apiCopy.consentRequired,
       },
       { status: 403 },
     );
@@ -1031,8 +1091,7 @@ export async function POST(request: Request) {
   if (!latestSummary) {
     return NextResponse.json(
       {
-        error:
-          "Please analyze recent diary entries before generating recommendations.",
+        error: apiCopy.analysisRequired,
       },
       { status: 400 },
     );
@@ -1041,8 +1100,7 @@ export async function POST(request: Request) {
   if (latestSummary.safety_level === "elevated" && !crisisAcknowledged) {
     return NextResponse.json(
       {
-        error:
-          "Recent reflections may need extra support. Please review crisis resources before using activity recommendations.",
+        error: apiCopy.crisisReviewRequired,
         requiresCrisisAcknowledgement: true,
       },
       { status: 409 },
@@ -1190,7 +1248,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
-        error: `Recommendation generation failed: ${message}`,
+        error: `${apiCopy.generationFailedPrefix}: ${message}`,
       },
       { status: 500 },
     );

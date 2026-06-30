@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 
+import { normalizeLanguage } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 
 const model = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
@@ -61,11 +62,17 @@ type ResourceContext = {
 };
 
 function getOutputLanguageName(language: string | null | undefined) {
-  if (language === "zh" || language === "zh-CN" || language === "zh-Hans") {
+  const normalizedLanguage = normalizeLanguage(language);
+
+  if (normalizedLanguage === "zh-Hans") {
     return "Simplified Chinese";
   }
 
-  if (language === "es") {
+  if (normalizedLanguage === "zh-Hant") {
+    return "Traditional Chinese";
+  }
+
+  if (normalizedLanguage === "es") {
     return "Spanish";
   }
 
