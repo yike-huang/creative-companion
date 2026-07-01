@@ -4,19 +4,19 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
+    --background: 42 56% 96%;
+    --foreground: 28 18% 13%;
+    --card: 42 68% 98%;
     --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
+    --popover: 42 68% 98%;
     --popover-foreground: 0 0% 3.9%;
     --primary: 0 0% 9%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
+    --secondary: 38 38% 92%;
     --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
+    --muted: 42 36% 92%;
     --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
+    --accent: 36 45% 91%;
     --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
@@ -64,5 +64,14 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  h1,
+  h2,
+  h3,
+  button,
+  a {
+    font-family:
+      "Trebuchet MS", "Avenir Next Rounded", var(--font-geist-sans), sans-serif;
   }
 }

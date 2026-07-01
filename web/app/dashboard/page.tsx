@@ -1,3 +1,11 @@
+import {
+  BookOpenText,
+  Brush,
+  ClipboardCheck,
+  Palette,
+  Sparkles,
+} from "lucide-react";
+
 import { AppShell } from "@/components/app-shell";
 import { FeatureCard } from "@/components/feature-card";
 import { getDictionary, normalizeLanguage } from "@/lib/i18n";
@@ -19,34 +27,58 @@ async function DashboardContent() {
       href: "/profile",
       title: t.dashboard.profileTitle,
       description: t.dashboard.profileDescription,
+      icon: ClipboardCheck,
+      accentClassName:
+        "border-sky-200 bg-sky-50 text-sky-900 dark:border-sky-900/60 dark:bg-sky-950/40 dark:text-sky-100",
     },
     {
       href: "/diary",
       title: t.dashboard.diaryTitle,
       description: t.dashboard.diaryDescription,
+      icon: BookOpenText,
+      accentClassName:
+        "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-100",
     },
     {
       href: "/recommendations",
       title: t.dashboard.recommendationsTitle,
       description: t.dashboard.recommendationsDescription,
+      icon: Sparkles,
+      accentClassName:
+        "border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-100",
     },
     {
       href: "/artworks",
       title: t.dashboard.artworksTitle,
       description: t.dashboard.artworksDescription,
+      icon: Palette,
+      accentClassName:
+        "border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-100",
     },
     {
       href: "/consent",
       title: t.dashboard.consentTitle,
       description: t.dashboard.consentDescription,
+      icon: Brush,
+      accentClassName:
+        "border-violet-200 bg-violet-50 text-violet-950 dark:border-violet-900/60 dark:bg-violet-950/40 dark:text-violet-100",
     },
   ];
 
   return (
     <div className="grid gap-8">
-      <div className="grid gap-3">
-        <h1 className="text-3xl font-bold">{t.dashboard.title}</h1>
-        <p className="max-w-2xl text-muted-foreground">{t.dashboard.intro}</p>
+      <div className="relative overflow-hidden rounded-lg border border-border/70 bg-[linear-gradient(135deg,hsl(var(--muted))_0%,hsl(var(--background))_55%,rgba(254,243,199,0.45)_100%)] p-6 shadow-sm md:p-8 dark:bg-[linear-gradient(135deg,hsl(var(--muted))_0%,hsl(var(--background))_65%,rgba(15,118,110,0.18)_100%)]">
+        <div className="absolute right-5 top-5 hidden gap-2 md:flex">
+          <span className="size-4 rounded-full bg-rose-200/80" />
+          <span className="size-4 rounded-full bg-emerald-200/80" />
+          <span className="size-4 rounded-full bg-sky-200/80" />
+        </div>
+        <div className="grid max-w-3xl gap-3">
+          <h1 className="text-3xl font-bold">{t.dashboard.title}</h1>
+          <p className="text-base leading-7 text-muted-foreground">
+            {t.dashboard.intro}
+          </p>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

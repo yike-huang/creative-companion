@@ -15,6 +15,7 @@ import { useState } from "react";
 import { ArtworkDrawingCanvas } from "@/components/artwork-drawing-canvas";
 import { Button } from "@/components/ui/button";
 import type { dictionary } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 type RecommendationCopyKey = keyof (typeof dictionary)["en"]["recommendations"];
 type RecommendationCopy = Record<RecommendationCopyKey, string>;
@@ -164,6 +165,10 @@ function PreferenceControl<T extends string>({
               type="button"
               variant={value === option.value ? "default" : "outline"}
               size="sm"
+              className={cn(
+                "h-auto min-h-9 rounded-lg px-3 py-2",
+                value !== option.value && "bg-background/70",
+              )}
               onClick={() => onChange(option.value)}
               aria-pressed={value === option.value}
             >
@@ -283,7 +288,7 @@ export function RecommendationWorkspace({
         </Button>
 
         <div className="grid gap-5 xl:grid-cols-[22rem_1fr]">
-          <aside className="grid content-start gap-4 rounded-md border p-5">
+          <aside className="grid content-start gap-4 rounded-lg border border-border/70 bg-[linear-gradient(180deg,hsl(var(--background))_0%,hsl(var(--muted))_100%)] p-5 shadow-sm">
             <div className="grid gap-2">
               <p className="text-sm font-medium text-muted-foreground">
                 {copy.selectedActivity}
@@ -299,7 +304,7 @@ export function RecommendationWorkspace({
               </p>
             </div>
 
-            <div className="rounded-md border p-3 text-sm">
+            <div className="rounded-lg border bg-background/75 p-3 text-sm">
               <h3 className="font-semibold">{copy.whyThisMightFit}</h3>
               <p className="mt-2 text-muted-foreground">
                 {selectedRecommendation.whyThisFits}
@@ -315,7 +320,7 @@ export function RecommendationWorkspace({
               </ol>
             </div>
 
-            <div className="rounded-md border p-3 text-sm text-muted-foreground">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-sm text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100">
               {selectedRecommendation.safetyNote}
             </div>
 
@@ -367,19 +372,19 @@ export function RecommendationWorkspace({
 
   return (
     <div className="grid gap-5">
-      <div className="grid gap-3 rounded-md border p-5">
-        <div className="grid gap-2">
+      <section className="grid gap-5 rounded-lg border border-border/70 bg-card p-5 shadow-sm">
+        <div className="grid gap-2 border-b border-border/70 pb-4">
           <h2 className="text-xl font-semibold">{copy.workspaceTitle}</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
             {copy.workspaceDescription}
           </p>
-          <p className="text-sm text-muted-foreground">
+          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
             {copy.workspaceBoundary}
           </p>
         </div>
-        <div className="grid gap-4 border-t pt-4">
+        <div className="grid gap-4 rounded-lg border border-border/70 bg-muted/35 p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <p className="text-sm text-muted-foreground">
+            <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
               {copy.preferencesDescription}
             </p>
             <Button
@@ -466,29 +471,45 @@ export function RecommendationWorkspace({
           </div>
         )}
         {error && <p className="text-sm text-red-500">{error}</p>}
-      </div>
+      </section>
 
       {recommendations.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2">
-          {recommendations.map((recommendation) => (
+          {recommendations.map((recommendation, index) => (
             <article
               key={recommendation.id}
-              className="grid gap-4 rounded-md border p-5"
+              className={cn(
+                "grid gap-4 rounded-lg border border-border/70 bg-card p-5 shadow-sm",
+                index === 0
+                  ? "border-l-4 border-l-rose-200 dark:border-l-rose-900/70"
+                  : "border-l-4 border-l-emerald-200 dark:border-l-emerald-900/70",
+              )}
             >
               <div className="grid gap-2">
-                <h2 className="text-xl font-semibold">
-                  {recommendation.title}
-                </h2>
+                <div className="flex items-start gap-3">
+                  <div
+                    className={cn(
+                      "mt-1 size-3 shrink-0 rounded-full",
+                      index === 0
+                        ? "bg-rose-300 dark:bg-rose-700"
+                        : "bg-emerald-300 dark:bg-emerald-700",
+                    )}
+                    aria-hidden="true"
+                  />
+                  <h2 className="text-xl font-semibold leading-tight">
+                    {recommendation.title}
+                  </h2>
+                </div>
                 <p className="text-sm text-muted-foreground">
                   {recommendation.reason}
                 </p>
               </div>
-              <ol className="grid list-decimal gap-2 pl-5 text-sm">
+              <ol className="grid list-decimal gap-2 rounded-lg bg-muted/35 p-4 pl-8 text-sm">
                 {recommendation.steps.map((step) => (
                   <li key={step}>{step}</li>
                 ))}
               </ol>
-              <p className="text-sm text-muted-foreground">
+              <p className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-sm text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100">
                 {recommendation.safetyNote}
               </p>
               <div className="flex flex-wrap gap-3">
@@ -515,7 +536,7 @@ export function RecommendationWorkspace({
                 </Button>
               </div>
               {expandedRecommendationId === recommendation.id && (
-                <div className="grid gap-3 rounded-md border p-3 text-sm">
+                <div className="grid gap-3 rounded-lg border bg-muted/25 p-3 text-sm">
                   <div className="grid gap-1">
                     <p className="font-medium">{copy.whyThisMightFit}</p>
                     <p className="text-muted-foreground">
@@ -564,7 +585,7 @@ export function RecommendationWorkspace({
                       )}
                     </div>
                   )}
-                  <details className="rounded-md border p-3 text-muted-foreground">
+                  <details className="rounded-lg border bg-background/70 p-3 text-muted-foreground">
                     <summary className="cursor-pointer font-medium text-foreground">
                       {copy.evidenceNotes}
                     </summary>

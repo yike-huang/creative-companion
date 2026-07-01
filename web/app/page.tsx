@@ -51,7 +51,7 @@ function HomeActions({
   }
 
   return (
-      <div className="flex flex-wrap gap-3">
+    <div className="flex flex-wrap gap-3">
       <Button asChild>
         <Link href="/auth/sign-up">{copy.createAccount}</Link>
       </Button>
@@ -70,9 +70,17 @@ async function HomeHero() {
 
   return (
     <>
-      <div className="grid max-w-3xl gap-5">
-        <h1 className="text-4xl font-bold md:text-6xl">{copy.homeTitle}</h1>
-        <p className="text-lg text-muted-foreground md:text-xl">
+      <div className="grid max-w-3xl gap-6">
+        <div className="flex gap-2" aria-hidden="true">
+          <span className="h-3 w-16 rounded-lg bg-rose-200/80" />
+          <span className="h-3 w-10 rounded-lg bg-emerald-200/80" />
+          <span className="h-3 w-14 rounded-lg bg-sky-200/80" />
+          <span className="h-3 w-8 rounded-lg bg-amber-200/80" />
+        </div>
+        <h1 className="text-4xl font-bold leading-tight md:text-6xl">
+          {copy.homeTitle}
+        </h1>
+        <p className="text-lg leading-8 text-muted-foreground md:text-xl">
           {copy.homeIntro}
         </p>
         <HomeActions copy={copy} isSignedIn={isSignedIn} />
@@ -87,10 +95,10 @@ async function HomeContent() {
   const { copy } = await getHomeCopy();
 
   return (
-    <main className="min-h-screen flex flex-col items-center">
+    <main className="flex min-h-screen flex-col items-center">
       <div className="w-full max-w-6xl flex-1 p-5">
         <nav className="flex flex-col gap-4 py-4 text-sm md:flex-row md:items-center md:justify-between">
-          <Link href="/" className="font-semibold">
+          <Link href="/" className="font-semibold tracking-wide">
             {copy.brand}
           </Link>
           <div className="flex flex-wrap items-center gap-3">
