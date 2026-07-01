@@ -19,7 +19,7 @@
 
 ## Features
 
-Project writing and AI-output tone should follow the [Creative Companion Tone Guide](docs/tone-guide.md).
+Project writing and AI-output tone should follow the [Creative Companion Tone Guide](docs/tone-guide.md). Visual and interaction design should follow the [Creative Companion Visual Design Guide](docs/visual-design-guide.md).
 
 - Works across the entire [Next.js](https://nextjs.org) stack
   - App Router
