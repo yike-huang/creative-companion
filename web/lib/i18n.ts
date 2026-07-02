@@ -59,13 +59,13 @@ export const dictionary = {
       homeTitle:
         "A creative reflection space for cancer patients and survivors",
       homeIntro:
-        "Creative Companion offers a private, non-clinical place to check in with emotions, reflect through art, and explore gentle AI-assisted activity ideas when you choose.",
+        "Creative Companion offers a private, non-clinical space to reflect on emotions and explore gentle, AI-assisted art activity ideas based on your preferences.",
       featureOverview: "Feature overview",
       signInToTry: "Sign in to try this feature",
       backHome: "Back home",
       features: {
         daily: {
-          title: "Daily emotional reflection",
+          title: "Daily emotion check-in",
           description:
             "A private diary space for naming emotions, choosing intensity, and writing what you want to remember about the day.",
           details: [
@@ -76,7 +76,7 @@ export const dictionary = {
           cta: "Create an account to reflect",
         },
         analysis: {
-          title: "Emotion analysis",
+          title: "Emotion reflection",
           description:
             "Optional AI-assisted reflections can help you notice recent emotional patterns across diary entries.",
           details: [
@@ -527,13 +527,13 @@ export const dictionary = {
       logout: "退出登录",
       homeTitle: "为癌症患者和康复者准备的创作与反思空间",
       homeIntro:
-        "Creative Companion 提供一个私人的、非临床的空间。你可以在这里记录情绪，用创作整理感受，并在愿意的时候看看 AI 辅助生成的温和活动想法。",
+        "Creative Companion 提供一个私人的、非临床的空间。你可以在这里回看自己的情绪，并根据偏好探索 AI 辅助生成的温和艺术活动想法。",
       featureOverview: "功能简介",
       signInToTry: "登录后试用这个功能",
       backHome: "回到主页",
       features: {
         daily: {
-          title: "每日情绪记录",
+          title: "每日情绪 check-in",
           description:
             "一个私人的日记空间，可以选择情绪、标记强度，也可以写下今天想记住的内容。",
           details: [
@@ -980,13 +980,13 @@ export const dictionary = {
       homeTitle:
         "Un espacio creativo de reflexión para pacientes y sobrevivientes de cáncer",
       homeIntro:
-        "Creative Companion ofrece un lugar privado y no clínico para registrar emociones, reflexionar mediante el arte y explorar ideas suaves de actividades asistidas por IA cuando tú lo elijas.",
+        "Creative Companion ofrece un espacio privado y no clínico para reflexionar sobre tus emociones y explorar ideas suaves de actividades artísticas asistidas por IA según tus preferencias.",
       featureOverview: "Resumen de la función",
       signInToTry: "Iniciar sesión para probar esta función",
       backHome: "Volver al inicio",
       features: {
         daily: {
-          title: "Reflexión emocional diaria",
+          title: "Registro emocional diario",
           description:
             "Un espacio privado de diario para nombrar emociones, elegir intensidad y escribir lo que quieras recordar del día.",
           details: [
@@ -997,7 +997,7 @@ export const dictionary = {
           cta: "Crear una cuenta para reflexionar",
         },
         analysis: {
-          title: "Análisis emocional",
+          title: "Reflexión emocional",
           description:
             "Las reflexiones opcionales con IA pueden ayudarte a notar patrones emocionales recientes en tus entradas.",
           details: [

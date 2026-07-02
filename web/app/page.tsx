@@ -70,20 +70,35 @@ async function HomeHero() {
 
   return (
     <>
-      <div className="grid max-w-3xl gap-6">
-        <div className="flex gap-2" aria-hidden="true">
-          <span className="h-3 w-16 rounded-lg bg-rose-200/80" />
-          <span className="h-3 w-10 rounded-lg bg-emerald-200/80" />
-          <span className="h-3 w-14 rounded-lg bg-sky-200/80" />
-          <span className="h-3 w-8 rounded-lg bg-amber-200/80" />
+      <div className="relative grid max-w-4xl gap-7">
+        <div
+          className="pointer-events-none absolute -left-8 top-8 h-5 w-44 rotate-[-7deg] rounded-full bg-rose-200/55 blur-[1px]"
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute left-28 top-20 h-4 w-36 rotate-[4deg] rounded-full bg-emerald-200/55 blur-[1px]"
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute left-10 top-32 h-4 w-52 rotate-[-2deg] rounded-full bg-amber-200/45 blur-[1px]"
+          aria-hidden="true"
+        />
+
+        <div className="relative flex gap-2" aria-hidden="true">
+          <span className="h-3 w-16 rounded-lg bg-rose-200/80 shadow-sm" />
+          <span className="h-3 w-10 rounded-lg bg-emerald-200/80 shadow-sm" />
+          <span className="h-3 w-14 rounded-lg bg-sky-200/80 shadow-sm" />
+          <span className="h-3 w-8 rounded-lg bg-amber-200/80 shadow-sm" />
         </div>
-        <h1 className="text-4xl font-bold leading-tight md:text-6xl">
+        <h1 className="relative max-w-4xl text-4xl leading-tight md:text-6xl">
           {copy.homeTitle}
         </h1>
-        <p className="text-lg leading-8 text-muted-foreground md:text-xl">
+        <p className="relative max-w-3xl text-lg leading-8 text-muted-foreground md:text-xl">
           {copy.homeIntro}
         </p>
-        <HomeActions copy={copy} isSignedIn={isSignedIn} />
+        <div className="relative">
+          <HomeActions copy={copy} isSignedIn={isSignedIn} />
+        </div>
       </div>
 
       <HomeFeatureLinks copy={copy.features} />
@@ -114,7 +129,7 @@ async function HomeContent() {
           </div>
         </nav>
 
-        <section className="grid min-h-[calc(100vh-9rem)] content-center gap-10 py-10">
+        <section className="grid min-h-[calc(100vh-9rem)] content-center gap-12 py-10">
           <Suspense>
             <HomeHero />
           </Suspense>
