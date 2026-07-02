@@ -82,11 +82,6 @@ export function HomeFeatureLinks({ copy }: { copy: HomeFeatureCopy }) {
             <span className="font-medium leading-snug text-foreground">
               {copy[feature.key].title}
             </span>
-            <div className="mt-auto flex gap-1.5" aria-hidden="true">
-              <span className="paint-ribbon w-10 bg-rose-200/70" />
-              <span className="paint-ribbon w-6 bg-sky-200/70" />
-              <span className="paint-ribbon w-8 bg-amber-200/70" />
-            </div>
           </Link>
         );
       })}

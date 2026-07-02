@@ -7,6 +7,7 @@ import { AnalyzeDiaryButton } from "@/components/analyze-diary-button";
 import { DiaryEntryForm } from "@/components/diary-entry-form";
 import { DiaryEntryList } from "@/components/diary-entry-list";
 import { EmotionSummaryList } from "@/components/emotion-summary-list";
+import { PageHero } from "@/components/page-hero";
 import { Button } from "@/components/ui/button";
 import { getDictionary, normalizeLanguage } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
@@ -90,12 +91,7 @@ async function DiaryHeader() {
     : { data: null };
   const t = getDictionary(normalizeLanguage(profile?.preferred_language));
 
-  return (
-    <div className="grid gap-2">
-      <h1 className="text-3xl font-bold">{t.diary.pageTitle}</h1>
-      <p className="max-w-2xl text-muted-foreground">{t.diary.pageIntro}</p>
-    </div>
-  );
+  return <PageHero title={t.diary.pageTitle} intro={t.diary.pageIntro} />;
 }
 
 export default function DiaryPage() {

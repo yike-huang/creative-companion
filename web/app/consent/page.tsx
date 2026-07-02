@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { AppShell } from "@/components/app-shell";
 import { ConsentSettingsForm } from "@/components/consent-settings-form";
 import { CreateConsentButton } from "@/components/create-consent-button";
+import { PageHero } from "@/components/page-hero";
 import { getDictionary, normalizeLanguage } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 
@@ -74,12 +75,7 @@ async function ConsentHeader() {
     : { data: null };
   const t = getDictionary(normalizeLanguage(profile?.preferred_language));
 
-  return (
-    <div className="grid gap-2">
-      <h1 className="text-3xl font-bold">{t.consent.pageTitle}</h1>
-      <p className="max-w-2xl text-muted-foreground">{t.consent.pageIntro}</p>
-    </div>
-  );
+  return <PageHero title={t.consent.pageTitle} intro={t.consent.pageIntro} />;
 }
 
 export default function ConsentPage() {

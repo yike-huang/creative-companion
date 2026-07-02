@@ -6,6 +6,7 @@ import { AppShell } from "@/components/app-shell";
 import { ArtworkDrawingCanvas } from "@/components/artwork-drawing-canvas";
 import { ArtworkGallery } from "@/components/artwork-gallery";
 import { ArtworkUploadForm } from "@/components/artwork-upload-form";
+import { PageHero } from "@/components/page-hero";
 import { Button } from "@/components/ui/button";
 import { getDictionary, normalizeLanguage } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
@@ -91,14 +92,7 @@ async function ArtworksHeader() {
     : { data: null };
   const t = getDictionary(normalizeLanguage(profile?.preferred_language));
 
-  return (
-    <div className="grid gap-2">
-      <h1 className="text-3xl font-bold">{t.artworks.pageTitle}</h1>
-      <p className="max-w-2xl text-muted-foreground">
-        {t.artworks.pageIntro}
-      </p>
-    </div>
-  );
+  return <PageHero title={t.artworks.pageTitle} intro={t.artworks.pageIntro} />;
 }
 
 export default function ArtworksPage() {

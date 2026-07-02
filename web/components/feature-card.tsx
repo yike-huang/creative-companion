@@ -17,6 +17,7 @@ type FeatureCardProps = {
   openLabel: string;
   icon?: React.ComponentType<{ className?: string }>;
   accentClassName?: string;
+  ribbonClassName?: string;
 };
 
 export function FeatureCard({
@@ -26,6 +27,7 @@ export function FeatureCard({
   openLabel,
   icon: Icon,
   accentClassName,
+  ribbonClassName,
 }: FeatureCardProps) {
   return (
     <Link href={href} className="group block">
@@ -60,11 +62,11 @@ export function FeatureCard({
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="mb-4 flex gap-2" aria-hidden="true">
-            <span className="paint-ribbon w-14 bg-rose-200/80" />
-            <span className="paint-ribbon w-8 bg-emerald-200/80" />
-            <span className="paint-ribbon w-10 bg-amber-200/80" />
-          </div>
+          {ribbonClassName && (
+            <div className="mb-4" aria-hidden="true">
+              <span className={cn("paint-ribbon block w-16", ribbonClassName)} />
+            </div>
+          )}
           <p className="text-sm font-medium text-foreground">{openLabel}</p>
         </CardContent>
       </Card>

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { AppShell } from "@/components/app-shell";
+import { PageHero } from "@/components/page-hero";
 import { ProfileOnboardingForm } from "@/components/profile-onboarding-form";
 import { getDictionary, normalizeLanguage } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
@@ -62,12 +63,7 @@ async function ProfileHeader() {
     : { data: null };
   const t = getDictionary(normalizeLanguage(profile?.preferred_language));
 
-  return (
-    <div className="grid gap-2">
-      <h1 className="text-3xl font-bold">{t.profile.pageTitle}</h1>
-      <p className="max-w-2xl text-muted-foreground">{t.profile.pageIntro}</p>
-    </div>
-  );
+  return <PageHero title={t.profile.pageTitle} intro={t.profile.pageIntro} />;
 }
 
 export default function ProfilePage() {
