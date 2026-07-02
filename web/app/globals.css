@@ -83,6 +83,25 @@
 }
 
 @layer utilities {
+  .paper-surface {
+    background:
+      radial-gradient(circle at 18% 16%, rgba(255, 255, 255, 0.7), transparent 26%),
+      radial-gradient(circle at 84% 12%, rgba(242, 200, 121, 0.18), transparent 24%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.52), rgba(255, 250, 240, 0.82)),
+      repeating-linear-gradient(
+        0deg,
+        rgba(91, 57, 36, 0.022) 0,
+        rgba(91, 57, 36, 0.022) 1px,
+        transparent 1px,
+        transparent 7px
+      );
+  }
+
+  .vertical-panel-label {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+
   .line-clamp-2 {
     display: -webkit-box;
     -webkit-box-orient: vertical;

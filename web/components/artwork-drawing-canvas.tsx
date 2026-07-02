@@ -26,9 +26,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { dictionary } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
 const canvasWidth = 900;
 const canvasHeight = 600;
+const creativeSwatches = [
+  "#5b3924",
+  "#a95f45",
+  "#e9a6b0",
+  "#f2c879",
+  "#8fd8b8",
+  "#7bb6d6",
+  "#8f7ac8",
+  "#2f3a3d",
+];
 
 type DrawingTool = "brush" | "eraser" | "fill" | "line" | "rectangle" | "ellipse";
 type BrushStyle =
@@ -97,6 +108,7 @@ export function ArtworkDrawingCanvas({
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isToolPanelOpen, setIsToolPanelOpen] = useState(true);
   const [, setHistoryVersion] = useState(0);
   const router = useRouter();
 
@@ -869,8 +881,8 @@ export function ArtworkDrawingCanvas({
       ref={rootRef}
       className={
         isFullscreen
-          ? "grid h-screen gap-5 overflow-auto bg-background p-5"
-          : "grid gap-5 rounded-3xl border border-border/70 bg-background p-5"
+          ? "paper-surface grid h-screen gap-5 overflow-auto p-5"
+          : "paper-surface grid gap-5 rounded-3xl border border-border/70 p-5"
       }
     >
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -898,9 +910,12 @@ export function ArtworkDrawingCanvas({
 
       <div
         className={
-          isFullscreen
-            ? "grid min-h-0 flex-1 gap-4 xl:grid-cols-[1fr_18rem]"
-            : "grid gap-4 xl:grid-cols-[1fr_18rem]"
+          cn(
+            isFullscreen ? "grid min-h-0 flex-1 gap-4" : "grid gap-4",
+            isToolPanelOpen
+              ? "xl:grid-cols-[minmax(0,1fr)_18rem]"
+              : "xl:grid-cols-[minmax(0,1fr)_4rem]",
+          )
         }
       >
         <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
@@ -917,15 +932,27 @@ export function ArtworkDrawingCanvas({
           />
         </div>
 
-        <details
-          className="grid content-start rounded-3xl border border-border/70 bg-card/80 p-4 shadow-sm"
-          open
+        <aside
+          className={cn(
+            "grid content-start rounded-3xl border border-border/70 bg-card/80 p-4 shadow-sm",
+            !isToolPanelOpen && "justify-items-center",
+          )}
         >
-          <summary className="cursor-pointer text-xl font-semibold">
-            {copy.tools}
-          </summary>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="rounded-2xl"
+            onClick={() => setIsToolPanelOpen((current) => !current)}
+            aria-label={copy.tools}
+            title={copy.tools}
+          >
+            {isToolPanelOpen ? <Minimize2 /> : <Maximize2 />}
+          </Button>
 
-          <div className="mt-4 grid gap-5">
+          {isToolPanelOpen ? (
+            <div className="mt-4 grid gap-5">
+              <h3 className="text-xl font-semibold">{copy.tools}</h3>
             <div className="flex flex-wrap gap-2">
             <Button
               type="button"
@@ -1025,6 +1052,21 @@ export function ArtworkDrawingCanvas({
                 }}
                 placeholder="#2f3a3d"
               />
+            </div>
+            <div className="flex flex-wrap gap-2" aria-label={copy.color}>
+              {creativeSwatches.map((swatch) => (
+                <button
+                  key={swatch}
+                  type="button"
+                  className="size-8 rounded-full border border-border shadow-sm transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  style={{ backgroundColor: swatch }}
+                  aria-label={`${copy.color} ${swatch}`}
+                  onClick={() => {
+                    setBrushColor(swatch);
+                    setBrushColorText(swatch);
+                  }}
+                />
+              ))}
             </div>
             </div>
 
@@ -1162,8 +1204,13 @@ export function ArtworkDrawingCanvas({
           >
             {isSaving ? copy.saving : copy.saveDrawing}
             </Button>
-          </div>
-        </details>
+            </div>
+          ) : (
+            <p className="vertical-panel-label mt-4 text-sm font-semibold text-muted-foreground">
+              {copy.tools}
+            </p>
+          )}
+        </aside>
       </div>
     </div>
   );

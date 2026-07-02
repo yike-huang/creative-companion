@@ -4,6 +4,8 @@ import {
   BatteryLow,
   BatteryMedium,
   Blend,
+  ChevronLeft,
+  ChevronRight,
   Laptop,
   Pencil,
   Shuffle,
@@ -44,57 +46,6 @@ type Recommendation = {
   }[];
 };
 
-function getResearchSources(recommendation: Recommendation) {
-  return recommendation.researchSources ?? [];
-}
-
-function isConnectionResource(source: {
-  sourceType?: string | null;
-  sourceName: string;
-}) {
-  const sourceType = source.sourceType?.toLowerCase() ?? "";
-  const sourceName = source.sourceName.toLowerCase();
-
-  return (
-    sourceType.includes("support_resource") ||
-    sourceType.includes("support") ||
-    sourceName.includes("imerman angels") ||
-    sourceName.includes("cancer support community")
-  );
-}
-
-function getReadingSources(recommendation: Recommendation) {
-  return recommendation.sources.filter((source) => !isConnectionResource(source));
-}
-
-function getConnectionSources(recommendation: Recommendation) {
-  return recommendation.sources.filter(isConnectionResource);
-}
-
-function SourceLink({
-  source,
-}: {
-  source: { title: string; sourceName: string; url: string | null };
-}) {
-  return (
-    <>
-      {source.url ? (
-        <a
-          href={source.url}
-          target="_blank"
-          rel="noreferrer"
-          className="underline underline-offset-4"
-        >
-          {source.title}
-        </a>
-      ) : (
-        source.title
-      )}{" "}
-      <span>({source.sourceName})</span>
-    </>
-  );
-}
-
 type RecommendationResponse = {
   recommendations?: Recommendation[];
   error?: string;
@@ -129,17 +80,60 @@ const mediumOptions: PreferenceOption<MediumPreference>[] = [
 
 const directionOptions: PreferenceOption<DirectionPreference>[] = [
   { value: "surprise_me", labelKey: "openToAnything", icon: Shuffle },
-  {
-    value: "gently_engage",
-    labelKey: "expressFeeling",
-    icon: Blend,
-  },
-  {
-    value: "take_a_pause",
-    labelKey: "focusElsewhere",
-    icon: Sparkles,
-  },
+  { value: "gently_engage", labelKey: "expressFeeling", icon: Blend },
+  { value: "take_a_pause", labelKey: "focusElsewhere", icon: Sparkles },
 ];
+
+function isConnectionResource(source: {
+  sourceType?: string | null;
+  sourceName: string;
+}) {
+  const sourceType = source.sourceType?.toLowerCase() ?? "";
+  const sourceName = source.sourceName.toLowerCase();
+
+  return (
+    sourceType.includes("support_resource") ||
+    sourceType.includes("support") ||
+    sourceName.includes("imerman angels") ||
+    sourceName.includes("cancer support community")
+  );
+}
+
+function getReadingSources(recommendation: Recommendation) {
+  return recommendation.sources.filter((source) => !isConnectionResource(source));
+}
+
+function getConnectionSources(recommendation: Recommendation) {
+  return recommendation.sources.filter(isConnectionResource);
+}
+
+function getResearchSources(recommendation: Recommendation) {
+  return recommendation.researchSources ?? [];
+}
+
+function SourceLink({
+  source,
+}: {
+  source: { title: string; sourceName: string; url: string | null };
+}) {
+  return (
+    <>
+      {source.url ? (
+        <a
+          href={source.url}
+          target="_blank"
+          rel="noreferrer"
+          className="underline underline-offset-4"
+        >
+          {source.title}
+        </a>
+      ) : (
+        source.title
+      )}{" "}
+      <span>({source.sourceName})</span>
+    </>
+  );
+}
 
 function PreferenceControl<T extends string>({
   label,
@@ -199,6 +193,7 @@ export function RecommendationWorkspace({
   const [selectedRecommendation, setSelectedRecommendation] =
     useState<Recommendation | null>(null);
   const [creationMode, setCreationMode] = useState<CreationMode | null>(null);
+  const [isActivityPanelOpen, setIsActivityPanelOpen] = useState(true);
   const [expandedRecommendationId, setExpandedRecommendationId] = useState<
     string | null
   >(null);
@@ -261,9 +256,7 @@ export function RecommendationWorkspace({
 
     if (!response.ok) {
       if (result.requiresCrisisAcknowledgement) {
-        setCrisisWarning(
-          result.error ?? copy.crisisDefaultWarning,
-        );
+        setCrisisWarning(result.error ?? copy.crisisDefaultWarning);
         setError(null);
         setIsGenerating(false);
         return;
@@ -296,93 +289,125 @@ export function RecommendationWorkspace({
           {copy.backToRecommendations}
         </Button>
 
-        <div className="grid gap-5 xl:grid-cols-[22rem_1fr]">
-          <aside className="grid content-start gap-4 rounded-3xl border border-border/70 bg-[linear-gradient(180deg,hsl(var(--background))_0%,hsl(var(--muted))_100%)] p-5 shadow-sm">
-            <div className="grid gap-2">
-              <p className="text-sm font-medium text-muted-foreground">
+        <div
+          className={cn(
+            "grid gap-5",
+            isActivityPanelOpen
+              ? "xl:grid-cols-[22rem_minmax(0,1fr)]"
+              : "xl:grid-cols-[4rem_minmax(0,1fr)]",
+          )}
+        >
+          <aside
+            className={cn(
+              "paper-surface grid content-start gap-4 rounded-3xl border border-border/70 p-5 shadow-sm",
+              !isActivityPanelOpen && "justify-items-center p-3",
+            )}
+          >
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="rounded-2xl"
+              onClick={() => setIsActivityPanelOpen((current) => !current)}
+              aria-label={copy.selectedActivity}
+              title={copy.selectedActivity}
+            >
+              {isActivityPanelOpen ? <ChevronLeft /> : <ChevronRight />}
+            </Button>
+
+            {isActivityPanelOpen ? (
+              <>
+                <div className="grid gap-2">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {copy.selectedActivity}
+                  </p>
+                  <h2
+                    className="line-clamp-2 text-2xl leading-tight"
+                    title={selectedRecommendation.title}
+                  >
+                    {selectedRecommendation.title}
+                  </h2>
+                  <p className="line-clamp-3 leading-7 text-muted-foreground">
+                    {selectedRecommendation.reason}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {copy.oneCreativeOption}
+                  </p>
+                </div>
+
+                <details className="rounded-2xl border bg-background/75 p-4">
+                  <summary className="cursor-pointer font-semibold">
+                    {copy.whyThisMightFit}
+                  </summary>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {selectedRecommendation.whyThisFits}
+                  </p>
+                </details>
+
+                {creationMode !== "paper" && (
+                  <details className="rounded-2xl border bg-background/75 p-4">
+                    <summary className="cursor-pointer font-semibold">
+                      {copy.steps}
+                    </summary>
+                    <ol className="mt-3 grid list-decimal gap-2 pl-5 leading-7">
+                      {selectedRecommendation.steps.map((step) => (
+                        <li key={step}>{step}</li>
+                      ))}
+                    </ol>
+                  </details>
+                )}
+
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100">
+                  {selectedRecommendation.safetyNote}
+                </div>
+
+                {(getReadingSources(selectedRecommendation).length > 0 ||
+                  getConnectionSources(selectedRecommendation).length > 0) && (
+                  <div className="grid gap-2 text-sm text-muted-foreground">
+                    {getReadingSources(selectedRecommendation).length > 0 && (
+                      <div className="grid gap-1">
+                        <h3 className="font-semibold text-foreground">
+                          {copy.gentleBackground}
+                        </h3>
+                        <ul className="grid list-disc gap-1 pl-5">
+                          {getReadingSources(selectedRecommendation).map(
+                            (source) => (
+                              <li key={`${source.sourceName}-${source.title}`}>
+                                <SourceLink source={source} />
+                              </li>
+                            ),
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                    {getConnectionSources(selectedRecommendation).length > 0 && (
+                      <div className="grid gap-1">
+                        <h3 className="font-semibold text-foreground">
+                          {copy.connectionResources}
+                        </h3>
+                        <p>{copy.connectionResourcesDescription}</p>
+                        <ul className="grid list-disc gap-1 pl-5">
+                          {getConnectionSources(selectedRecommendation).map(
+                            (source) => (
+                              <li key={`${source.sourceName}-${source.title}`}>
+                                <SourceLink source={source} />
+                              </li>
+                            ),
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="vertical-panel-label text-sm font-semibold text-muted-foreground">
                 {copy.selectedActivity}
               </p>
-              <h2
-                className="line-clamp-2 text-2xl leading-tight"
-                title={selectedRecommendation.title}
-              >
-                {selectedRecommendation.title}
-              </h2>
-              <p className="line-clamp-3 leading-7 text-muted-foreground">
-                {selectedRecommendation.reason}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {copy.oneCreativeOption}
-              </p>
-            </div>
-
-            <details className="rounded-2xl border bg-background/75 p-4">
-              <summary className="cursor-pointer font-semibold">
-                {copy.whyThisMightFit}
-              </summary>
-              <p className="mt-3 leading-7 text-muted-foreground">
-                {selectedRecommendation.whyThisFits}
-              </p>
-            </details>
-
-            {creationMode !== "paper" && (
-              <details className="rounded-2xl border bg-background/75 p-4">
-                <summary className="cursor-pointer font-semibold">
-                  {copy.steps}
-                </summary>
-                <ol className="mt-3 grid list-decimal gap-2 pl-5 leading-7">
-                  {selectedRecommendation.steps.map((step) => (
-                    <li key={step}>{step}</li>
-                  ))}
-                </ol>
-              </details>
-            )}
-
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100">
-              {selectedRecommendation.safetyNote}
-            </div>
-
-            {(getReadingSources(selectedRecommendation).length > 0 ||
-              getConnectionSources(selectedRecommendation).length > 0) && (
-              <div className="grid gap-2 text-sm text-muted-foreground">
-                {getReadingSources(selectedRecommendation).length > 0 && (
-                  <div className="grid gap-1">
-                    <h3 className="font-semibold text-foreground">
-                      {copy.gentleBackground}
-                    </h3>
-                    <ul className="grid list-disc gap-1 pl-5">
-                      {getReadingSources(selectedRecommendation).map(
-                        (source) => (
-                          <li key={`${source.sourceName}-${source.title}`}>
-                            <SourceLink source={source} />
-                          </li>
-                        ),
-                      )}
-                    </ul>
-                  </div>
-                )}
-                {getConnectionSources(selectedRecommendation).length > 0 && (
-                  <div className="grid gap-1">
-                    <h3 className="font-semibold text-foreground">
-                      {copy.connectionResources}
-                    </h3>
-                    <p>{copy.connectionResourcesDescription}</p>
-                    <ul className="grid list-disc gap-1 pl-5">
-                      {getConnectionSources(selectedRecommendation).map(
-                        (source) => (
-                          <li key={`${source.sourceName}-${source.title}`}>
-                            <SourceLink source={source} />
-                          </li>
-                        ),
-                      )}
-                    </ul>
-                  </div>
-                )}
-              </div>
             )}
           </aside>
 
-          <section className="grid content-start gap-4 rounded-3xl border border-border/70 bg-card/80 p-5 shadow-sm">
+          <section className="paper-surface grid content-start gap-4 rounded-3xl border border-border/70 p-5 shadow-sm">
             <div className="grid gap-3">
               <h2 className="text-3xl leading-tight">{copy.chooseHowToCreate}</h2>
               <p className="max-w-3xl leading-7 text-muted-foreground">
@@ -449,7 +474,11 @@ export function RecommendationWorkspace({
                     <p className="text-sm text-muted-foreground">
                       {artworkCopy.storageOffDescription}
                     </p>
-                    <Button asChild className="w-fit rounded-2xl" variant="outline">
+                    <Button
+                      asChild
+                      className="w-fit rounded-2xl"
+                      variant="outline"
+                    >
                       <Link href="/consent">{artworkCopy.openConsent}</Link>
                     </Button>
                   </div>
@@ -611,6 +640,7 @@ export function RecommendationWorkspace({
                   onClick={() => {
                     setSelectedRecommendation(recommendation);
                     setCreationMode(null);
+                    setIsActivityPanelOpen(true);
                   }}
                 >
                   {copy.createWithThisIdea}
