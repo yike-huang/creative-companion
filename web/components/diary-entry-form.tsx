@@ -8,6 +8,12 @@ import { Label } from "@/components/ui/label";
 import { moodOptions } from "@/components/mood-options";
 import { createClient } from "@/lib/supabase/client";
 
+const nonSpecificMoodValues = new Set([
+  "Not sure yet",
+  "Mixed or hard to name",
+  "Prefer not to name it",
+]);
+
 type DiaryCopy = {
   newEntryTitle: string;
   newEntryDescription: string;
@@ -45,11 +51,19 @@ export function DiaryEntryForm({
         return current.filter((mood) => mood !== value);
       }
 
-      if (current.length >= 3) {
-        return current;
+      if (nonSpecificMoodValues.has(value)) {
+        return [value];
       }
 
-      return [...current, value];
+      const specificMoodLabels = current.filter(
+        (mood) => !nonSpecificMoodValues.has(mood),
+      );
+
+      if (specificMoodLabels.length >= 3) {
+        return specificMoodLabels;
+      }
+
+      return [...specificMoodLabels, value];
     });
   }
 
@@ -103,7 +117,9 @@ export function DiaryEntryForm({
               variant={moodLabels.includes(mood.value) ? "default" : "outline"}
               onClick={() => toggleMood(mood.value)}
               disabled={
-                moodLabels.length >= 3 && !moodLabels.includes(mood.value)
+                moodLabels.length >= 3 &&
+                !moodLabels.includes(mood.value) &&
+                !nonSpecificMoodValues.has(mood.value)
               }
               className="justify-start"
             >

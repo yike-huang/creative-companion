@@ -1,4 +1,7 @@
 export const moodOptions = [
+  { value: "Not sure yet", emoji: "…" },
+  { value: "Mixed or hard to name", emoji: "〰️" },
+  { value: "Prefer not to name it", emoji: "♡" },
   { value: "Happy", emoji: "😊" },
   { value: "Hopeful", emoji: "🌱" },
   { value: "Calm", emoji: "😌" },
