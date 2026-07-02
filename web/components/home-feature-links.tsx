@@ -62,8 +62,15 @@ export function HomeFeatureLinks({ copy }: { copy: HomeFeatureCopy }) {
           <Link
             key={feature.introHref}
             href={feature.introHref}
-            className="group grid min-h-36 gap-4 rounded-3xl border border-border/70 bg-card/85 p-5 text-sm shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:bg-card"
+            className="creative-card-surface group relative grid min-h-36 overflow-hidden rounded-3xl border border-border/70 p-5 text-sm shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-primary/20"
           >
+            <div
+              className="pointer-events-none absolute right-4 top-4 flex gap-1"
+              aria-hidden="true"
+            >
+              <span className="size-2 rounded-full bg-rose-200/80" />
+              <span className="size-2 rounded-full bg-emerald-200/80" />
+            </div>
             <div
               className={cn(
                 "flex size-14 items-center justify-center rounded-2xl border shadow-sm",
@@ -75,6 +82,11 @@ export function HomeFeatureLinks({ copy }: { copy: HomeFeatureCopy }) {
             <span className="font-medium leading-snug text-foreground">
               {copy[feature.key].title}
             </span>
+            <div className="mt-auto flex gap-1.5" aria-hidden="true">
+              <span className="paint-ribbon w-10 bg-rose-200/70" />
+              <span className="paint-ribbon w-6 bg-sky-200/70" />
+              <span className="paint-ribbon w-8 bg-amber-200/70" />
+            </div>
           </Link>
         );
       })}

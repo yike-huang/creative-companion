@@ -83,6 +83,20 @@
 }
 
 @layer utilities {
+  .creative-card-surface {
+    background:
+      radial-gradient(circle at 90% 12%, rgba(143, 216, 184, 0.16), transparent 22%),
+      radial-gradient(circle at 12% 92%, rgba(233, 166, 176, 0.15), transparent 24%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(255, 250, 240, 0.9)),
+      repeating-linear-gradient(
+        90deg,
+        rgba(91, 57, 36, 0.018) 0,
+        rgba(91, 57, 36, 0.018) 1px,
+        transparent 1px,
+        transparent 9px
+      );
+  }
+
   .paper-surface {
     background:
       radial-gradient(circle at 18% 16%, rgba(255, 255, 255, 0.7), transparent 26%),
@@ -100,6 +114,13 @@
   .vertical-panel-label {
     writing-mode: vertical-rl;
     text-orientation: mixed;
+  }
+
+  .paint-ribbon {
+    height: 0.7rem;
+    border-radius: 999px;
+    opacity: 0.82;
+    box-shadow: 0 1px 3px rgba(91, 57, 36, 0.12);
   }
 
   .line-clamp-2 {

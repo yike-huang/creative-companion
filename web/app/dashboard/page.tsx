@@ -67,7 +67,7 @@ async function DashboardContent() {
 
   return (
     <div className="grid gap-8">
-      <div className="relative overflow-hidden rounded-lg border border-border/70 bg-[linear-gradient(135deg,hsl(var(--muted))_0%,hsl(var(--background))_55%,rgba(254,243,199,0.45)_100%)] p-6 shadow-sm md:p-8 dark:bg-[linear-gradient(135deg,hsl(var(--muted))_0%,hsl(var(--background))_65%,rgba(15,118,110,0.18)_100%)]">
+      <div className="paper-surface relative overflow-hidden rounded-3xl border border-border/70 p-6 shadow-sm md:p-8">
         <div className="absolute right-5 top-5 hidden gap-2 md:flex">
           <span className="size-4 rounded-full bg-rose-200/80" />
           <span className="size-4 rounded-full bg-emerald-200/80" />
@@ -78,6 +78,12 @@ async function DashboardContent() {
           <p className="text-base leading-7 text-muted-foreground">
             {t.dashboard.intro}
           </p>
+          <div className="mt-2 flex gap-2" aria-hidden="true">
+            <span className="paint-ribbon w-16 bg-rose-200/80" />
+            <span className="paint-ribbon w-10 bg-emerald-200/80" />
+            <span className="paint-ribbon w-14 bg-sky-200/80" />
+            <span className="paint-ribbon w-8 bg-amber-200/80" />
+          </div>
         </div>
       </div>
 

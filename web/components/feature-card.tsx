@@ -29,13 +29,21 @@ export function FeatureCard({
 }: FeatureCardProps) {
   return (
     <Link href={href} className="group block">
-      <Card className="h-full overflow-hidden rounded-lg border-border/70 shadow-sm transition-colors hover:bg-accent/60">
+      <Card className="creative-card-surface relative h-full overflow-hidden rounded-3xl border-border/70 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-primary/20">
+        <div
+          className="pointer-events-none absolute right-5 top-5 flex gap-1.5"
+          aria-hidden="true"
+        >
+          <span className="size-2.5 rounded-full bg-rose-200/85" />
+          <span className="size-2.5 rounded-full bg-emerald-200/85" />
+          <span className="size-2.5 rounded-full bg-sky-200/85" />
+        </div>
         <CardHeader className="gap-4">
           <div className="flex items-start justify-between gap-4">
             {Icon && (
               <div
                 className={cn(
-                  "flex size-12 shrink-0 items-center justify-center rounded-lg border",
+                  "flex size-14 shrink-0 items-center justify-center rounded-2xl border shadow-sm",
                   accentClassName ?? "bg-muted text-foreground",
                 )}
               >
@@ -52,6 +60,11 @@ export function FeatureCard({
           </div>
         </CardHeader>
         <CardContent className="pt-0">
+          <div className="mb-4 flex gap-2" aria-hidden="true">
+            <span className="paint-ribbon w-14 bg-rose-200/80" />
+            <span className="paint-ribbon w-8 bg-emerald-200/80" />
+            <span className="paint-ribbon w-10 bg-amber-200/80" />
+          </div>
           <p className="text-sm font-medium text-foreground">{openLabel}</p>
         </CardContent>
       </Card>
