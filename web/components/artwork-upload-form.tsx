@@ -103,7 +103,10 @@ export function ArtworkUploadForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-4 rounded-md border p-5">
+    <form
+      onSubmit={handleSubmit}
+      className="grid gap-4 rounded-3xl border border-border/70 bg-background/75 p-5"
+    >
       <div className="grid gap-2">
         <h2 className="text-xl font-semibold">{copy.uploadTitle}</h2>
         <p className="text-sm text-muted-foreground">

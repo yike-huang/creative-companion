@@ -20,6 +20,11 @@ async function RecommendationsContent() {
     .select("preferred_language")
     .eq("id", data.user.id)
     .single();
+  const { data: consent } = await supabase
+    .from("consents")
+    .select("allow_artwork_storage")
+    .eq("user_id", data.user.id)
+    .single();
   const t = getDictionary(normalizeLanguage(profile?.preferred_language));
 
   return (
@@ -27,6 +32,7 @@ async function RecommendationsContent() {
       userId={data.user.id}
       copy={t.recommendations}
       artworkCopy={t.artworks}
+      canStoreArtwork={Boolean(consent?.allow_artwork_storage)}
     />
   );
 }

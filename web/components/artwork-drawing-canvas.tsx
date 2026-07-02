@@ -870,16 +870,16 @@ export function ArtworkDrawingCanvas({
       className={
         isFullscreen
           ? "grid h-screen gap-5 overflow-auto bg-background p-5"
-          : "grid gap-5 rounded-md border bg-background p-5"
+          : "grid gap-5 rounded-3xl border border-border/70 bg-background p-5"
       }
     >
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div className="grid gap-2">
-          <h2 className="text-xl font-semibold">{copy.drawTitle}</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="text-3xl leading-tight">{copy.drawTitle}</h2>
+          <p className="max-w-2xl leading-7 text-muted-foreground">
             {copy.drawDescription}
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {copy.currentTool}: {activeToolLabel} ·{" "}
             {brushStyleLabels[brushStyle]} · {brushSize}px · {brushOpacity}%{" "}
             {copy.opacity}
@@ -903,7 +903,7 @@ export function ArtworkDrawingCanvas({
             : "grid gap-4 xl:grid-cols-[1fr_18rem]"
         }
       >
-        <div className="overflow-hidden rounded-md border bg-white">
+        <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
           <canvas
             ref={canvasRef}
             width={canvasWidth}
@@ -917,8 +917,16 @@ export function ArtworkDrawingCanvas({
           />
         </div>
 
-        <div className="grid content-start gap-5">
-          <div className="flex flex-wrap gap-2">
+        <details
+          className="grid content-start rounded-3xl border border-border/70 bg-card/80 p-4 shadow-sm"
+          open
+        >
+          <summary className="cursor-pointer text-xl font-semibold">
+            {copy.tools}
+          </summary>
+
+          <div className="mt-4 grid gap-5">
+            <div className="flex flex-wrap gap-2">
             <Button
               type="button"
               variant="outline"
@@ -939,9 +947,9 @@ export function ArtworkDrawingCanvas({
               <Redo2 />
               {copy.redo}
             </Button>
-          </div>
+            </div>
 
-          <div className="grid gap-2">
+            <div className="grid gap-2">
             <Label>{copy.tools}</Label>
             <div className="grid grid-cols-6 gap-2 xl:grid-cols-3">
               {tools.map((item) => (
@@ -958,9 +966,9 @@ export function ArtworkDrawingCanvas({
                 </Button>
               ))}
             </div>
-          </div>
+            </div>
 
-          <div className="grid gap-2">
+            <div className="grid gap-2">
             <Label>{copy.brushStyle}</Label>
             <div className="grid grid-cols-2 gap-2">
               {(
@@ -986,9 +994,9 @@ export function ArtworkDrawingCanvas({
                 </Button>
               ))}
             </div>
-          </div>
+            </div>
 
-          <div className="grid gap-2">
+            <div className="grid gap-2">
             <Label htmlFor="brush_color">{copy.color}</Label>
             <div className="grid grid-cols-[4rem_1fr] gap-2">
               <Input
@@ -1018,9 +1026,9 @@ export function ArtworkDrawingCanvas({
                 placeholder="#2f3a3d"
               />
             </div>
-          </div>
+            </div>
 
-          <div className="grid gap-2">
+            <div className="grid gap-2">
             <Label htmlFor="brush_size">
               {copy.brushSize}: {brushSize}
             </Label>
@@ -1033,9 +1041,9 @@ export function ArtworkDrawingCanvas({
               onChange={(event) => setBrushSize(event.target.value)}
               className="w-full accent-primary"
             />
-          </div>
+            </div>
 
-          <div className="grid gap-2">
+            <div className="grid gap-2">
             <Label htmlFor="brush_opacity">
               {copy.opacity}: {brushOpacity}%
             </Label>
@@ -1048,9 +1056,9 @@ export function ArtworkDrawingCanvas({
               onChange={(event) => setBrushOpacity(event.target.value)}
               className="w-full accent-primary"
             />
-          </div>
+            </div>
 
-          <div className="grid gap-2">
+            <div className="grid gap-2">
             <div className="flex items-center justify-between gap-3">
               <Label>{copy.layers}</Label>
               <Button
@@ -1107,9 +1115,9 @@ export function ArtworkDrawingCanvas({
                   </div>
                 ))}
             </div>
-          </div>
+            </div>
 
-          <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2">
             <Button
               type="button"
               variant="outline"
@@ -1120,9 +1128,9 @@ export function ArtworkDrawingCanvas({
             <Button type="button" variant="outline" onClick={clearAllLayers}>
               {copy.clearAll}
             </Button>
-          </div>
+            </div>
 
-          <div className="grid gap-2">
+            <div className="grid gap-2">
             <Label htmlFor="digital_title">{copy.title}</Label>
             <Input
               id="digital_title"
@@ -1130,9 +1138,9 @@ export function ArtworkDrawingCanvas({
               onChange={(event) => setTitle(event.target.value)}
               placeholder={copy.optionalTitle}
             />
-          </div>
+            </div>
 
-          <div className="grid gap-2">
+            <div className="grid gap-2">
             <Label htmlFor="digital_reflection">{copy.reflection}</Label>
             <textarea
               id="digital_reflection"
@@ -1141,20 +1149,21 @@ export function ArtworkDrawingCanvas({
               placeholder={copy.drawingReflectionPlaceholder}
               className="min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
             />
-          </div>
+            </div>
 
-          {message && <p className="text-sm text-green-600">{message}</p>}
-          {error && <p className="text-sm text-red-500">{error}</p>}
+            {message && <p className="text-sm text-green-600">{message}</p>}
+            {error && <p className="text-sm text-red-500">{error}</p>}
 
-          <Button
+            <Button
             type="button"
             className="w-fit"
             onClick={saveDrawing}
             disabled={isSaving}
           >
             {isSaving ? copy.saving : copy.saveDrawing}
-          </Button>
-        </div>
+            </Button>
+          </div>
+        </details>
       </div>
     </div>
   );

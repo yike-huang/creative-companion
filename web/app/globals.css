@@ -81,3 +81,29 @@
     font-weight: 400;
   }
 }
+
+@layer utilities {
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+
+  .creative-theme :where(main, form, article, section, aside) .text-sm {
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+
+  .creative-theme :where(main, form, article, section, aside) .text-xs {
+    font-size: 0.925rem;
+    line-height: 1.5;
+  }
+}

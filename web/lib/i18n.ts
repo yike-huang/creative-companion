@@ -380,6 +380,16 @@ export const dictionary = {
         "Research links may be detailed or technical, so they live here instead of in the lighter background section. They are context for transparency, not homework or a promise that the activity will work a certain way.",
       sourceLimitNote:
         "A source may inform the general direction without proving that this exact activity will work for you. That is why each suggestion stays optional and easy to adjust.",
+      chooseHowToCreate: "How would you like to create?",
+      chooseHowToCreateDescription:
+        "You can make something online here, or keep the steps nearby while you create with paper or other materials.",
+      drawOnline: "Draw online",
+      usePaper: "Use paper or offline materials",
+      paperModeTitle: "Create away from the screen",
+      paperModeDescription:
+        "Keep these steps nearby while you use paper, markers, paint, collage, or any materials that feel manageable.",
+      uploadFinishedArtwork: "Upload finished artwork",
+      switchToDigital: "Switch to digital drawing",
       fetchError: "Unable to reach the recommendation service.",
       unexpectedResponse:
         "The recommendation service returned an unexpected response.",
@@ -844,6 +854,16 @@ export const dictionary = {
         "研究资料可能比较细或比较学术，所以放在这里，而不是放进轻量的背景资料里。它们用于透明说明，不是作业，也不是效果承诺。",
       sourceLimitNote:
         "资料可以支持一个大方向，但不代表这个具体活动一定会对你产生某种效果。所以每个建议都保留为可选、可调整。",
+      chooseHowToCreate: "你想怎么创作？",
+      chooseHowToCreateDescription:
+        "可以直接在这里线上画，也可以把步骤放在旁边，用纸笔或其他材料慢慢做。",
+      drawOnline: "在线上画",
+      usePaper: "用纸笔或线下材料",
+      paperModeTitle: "离开屏幕创作",
+      paperModeDescription:
+        "你可以把这些步骤放在旁边，用纸、马克笔、颜料、拼贴，或任何此刻感觉合适的材料。",
+      uploadFinishedArtwork: "上传完成的作品",
+      switchToDigital: "切换到线上画板",
       fetchError: "暂时无法连接到活动建议服务。",
       unexpectedResponse: "活动建议服务返回了无法识别的结果。",
       crisisDefaultWarning:
@@ -1314,6 +1334,16 @@ export const dictionary = {
         "Los enlaces de investigación pueden ser detallados o técnicos, así que viven aquí en lugar de la sección de contexto ligero. Son contexto para transparencia, no tarea ni promesa de que la actividad tendrá un efecto específico.",
       sourceLimitNote:
         "Una fuente puede orientar la dirección general sin demostrar que esta actividad exacta funcionará para ti. Por eso cada sugerencia sigue siendo opcional y fácil de ajustar.",
+      chooseHowToCreate: "¿Cómo te gustaría crear?",
+      chooseHowToCreateDescription:
+        "Puedes crear algo en línea aquí, o mantener los pasos cerca mientras usas papel u otros materiales.",
+      drawOnline: "Dibujar en línea",
+      usePaper: "Usar papel o materiales fuera de línea",
+      paperModeTitle: "Crear lejos de la pantalla",
+      paperModeDescription:
+        "Mantén estos pasos cerca mientras usas papel, marcadores, pintura, collage o cualquier material que se sienta manejable.",
+      uploadFinishedArtwork: "Subir obra terminada",
+      switchToDigital: "Cambiar a dibujo digital",
       fetchError: "No se pudo conectar con el servicio de recomendaciones.",
       unexpectedResponse:
         "El servicio de recomendaciones devolvió una respuesta inesperada.",

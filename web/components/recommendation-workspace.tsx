@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { ArtworkDrawingCanvas } from "@/components/artwork-drawing-canvas";
+import { ArtworkUploadForm } from "@/components/artwork-upload-form";
 import { Button } from "@/components/ui/button";
 import type { dictionary } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -106,6 +107,7 @@ type DirectionPreference =
   | "surprise_me"
   | "gently_engage"
   | "take_a_pause";
+type CreationMode = "digital" | "paper";
 
 type PreferenceOption<T extends string> = {
   value: T;
@@ -186,14 +188,17 @@ export function RecommendationWorkspace({
   userId,
   copy,
   artworkCopy,
+  canStoreArtwork,
 }: {
   userId: string;
   copy: RecommendationCopy;
   artworkCopy: ArtworkCopy;
+  canStoreArtwork: boolean;
 }) {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [selectedRecommendation, setSelectedRecommendation] =
     useState<Recommendation | null>(null);
+  const [creationMode, setCreationMode] = useState<CreationMode | null>(null);
   const [expandedRecommendationId, setExpandedRecommendationId] = useState<
     string | null
   >(null);
@@ -271,6 +276,7 @@ export function RecommendationWorkspace({
     setCrisisWarning(null);
     setRecommendations(result.recommendations ?? []);
     setSelectedRecommendation(null);
+    setCreationMode(null);
     setExpandedRecommendationId(null);
     setIsGenerating(false);
   }
@@ -282,45 +288,57 @@ export function RecommendationWorkspace({
           type="button"
           variant="outline"
           className="w-fit"
-          onClick={() => setSelectedRecommendation(null)}
+          onClick={() => {
+            setSelectedRecommendation(null);
+            setCreationMode(null);
+          }}
         >
           {copy.backToRecommendations}
         </Button>
 
         <div className="grid gap-5 xl:grid-cols-[22rem_1fr]">
-          <aside className="grid content-start gap-4 rounded-lg border border-border/70 bg-[linear-gradient(180deg,hsl(var(--background))_0%,hsl(var(--muted))_100%)] p-5 shadow-sm">
+          <aside className="grid content-start gap-4 rounded-3xl border border-border/70 bg-[linear-gradient(180deg,hsl(var(--background))_0%,hsl(var(--muted))_100%)] p-5 shadow-sm">
             <div className="grid gap-2">
               <p className="text-sm font-medium text-muted-foreground">
                 {copy.selectedActivity}
               </p>
-              <h2 className="text-2xl font-semibold">
+              <h2
+                className="line-clamp-2 text-2xl leading-tight"
+                title={selectedRecommendation.title}
+              >
                 {selectedRecommendation.title}
               </h2>
-              <p className="text-sm text-muted-foreground">
+              <p className="line-clamp-3 leading-7 text-muted-foreground">
                 {selectedRecommendation.reason}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 {copy.oneCreativeOption}
               </p>
             </div>
 
-            <div className="rounded-lg border bg-background/75 p-3 text-sm">
-              <h3 className="font-semibold">{copy.whyThisMightFit}</h3>
-              <p className="mt-2 text-muted-foreground">
+            <details className="rounded-2xl border bg-background/75 p-4">
+              <summary className="cursor-pointer font-semibold">
+                {copy.whyThisMightFit}
+              </summary>
+              <p className="mt-3 leading-7 text-muted-foreground">
                 {selectedRecommendation.whyThisFits}
               </p>
-            </div>
+            </details>
 
-            <div className="grid gap-3">
-              <h3 className="font-semibold">{copy.steps}</h3>
-              <ol className="grid list-decimal gap-2 pl-5 text-sm">
-                {selectedRecommendation.steps.map((step) => (
-                  <li key={step}>{step}</li>
-                ))}
-              </ol>
-            </div>
+            {creationMode !== "paper" && (
+              <details className="rounded-2xl border bg-background/75 p-4">
+                <summary className="cursor-pointer font-semibold">
+                  {copy.steps}
+                </summary>
+                <ol className="mt-3 grid list-decimal gap-2 pl-5 leading-7">
+                  {selectedRecommendation.steps.map((step) => (
+                    <li key={step}>{step}</li>
+                  ))}
+                </ol>
+              </details>
+            )}
 
-            <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-sm text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100">
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100">
               {selectedRecommendation.safetyNote}
             </div>
 
@@ -364,7 +382,81 @@ export function RecommendationWorkspace({
             )}
           </aside>
 
-          <ArtworkDrawingCanvas userId={userId} copy={artworkCopy} />
+          <section className="grid content-start gap-4 rounded-3xl border border-border/70 bg-card/80 p-5 shadow-sm">
+            <div className="grid gap-3">
+              <h2 className="text-3xl leading-tight">{copy.chooseHowToCreate}</h2>
+              <p className="max-w-3xl leading-7 text-muted-foreground">
+                {copy.chooseHowToCreateDescription}
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  type="button"
+                  variant={creationMode === "digital" ? "default" : "outline"}
+                  className="rounded-2xl"
+                  onClick={() => setCreationMode("digital")}
+                >
+                  <Laptop />
+                  {copy.drawOnline}
+                </Button>
+                <Button
+                  type="button"
+                  variant={creationMode === "paper" ? "default" : "outline"}
+                  className="rounded-2xl"
+                  onClick={() => setCreationMode("paper")}
+                >
+                  <Pencil />
+                  {copy.usePaper}
+                </Button>
+              </div>
+            </div>
+
+            {creationMode === "digital" && (
+              <ArtworkDrawingCanvas userId={userId} copy={artworkCopy} />
+            )}
+
+            {creationMode === "paper" && (
+              <div className="grid gap-5">
+                <div className="grid gap-5 rounded-3xl border border-border/70 bg-background/75 p-5">
+                  <div className="grid gap-2">
+                    <h3 className="text-2xl leading-tight">
+                      {copy.paperModeTitle}
+                    </h3>
+                    <p className="leading-7 text-muted-foreground">
+                      {copy.paperModeDescription}
+                    </p>
+                  </div>
+                  <ol className="grid list-decimal gap-3 pl-5 leading-7">
+                    {selectedRecommendation.steps.map((step) => (
+                      <li key={step}>{step}</li>
+                    ))}
+                  </ol>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-fit rounded-2xl"
+                    onClick={() => setCreationMode("digital")}
+                  >
+                    {copy.switchToDigital}
+                  </Button>
+                </div>
+                {canStoreArtwork ? (
+                  <ArtworkUploadForm userId={userId} copy={artworkCopy} />
+                ) : (
+                  <div className="grid gap-3 rounded-3xl border border-border/70 bg-background/75 p-5">
+                    <h3 className="text-xl leading-tight">
+                      {artworkCopy.storageOffTitle}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {artworkCopy.storageOffDescription}
+                    </p>
+                    <Button asChild className="w-fit rounded-2xl" variant="outline">
+                      <Link href="/consent">{artworkCopy.openConsent}</Link>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
         </div>
       </div>
     );
@@ -516,7 +608,10 @@ export function RecommendationWorkspace({
                 <Button
                   type="button"
                   className="w-fit"
-                  onClick={() => setSelectedRecommendation(recommendation)}
+                  onClick={() => {
+                    setSelectedRecommendation(recommendation);
+                    setCreationMode(null);
+                  }}
                 >
                   {copy.createWithThisIdea}
                 </Button>
