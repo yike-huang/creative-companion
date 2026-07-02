@@ -4,6 +4,7 @@ import { Suspense } from "react";
 
 import { AuthButton } from "@/components/auth-button";
 import { HomeFeatureLinks } from "@/components/home-feature-links";
+import { PublicLanguageSelect } from "@/components/public-language-select";
 import { Button } from "@/components/ui/button";
 import { getDictionary, normalizeLanguage } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
@@ -24,7 +25,11 @@ async function getHomeCopy() {
     normalizeLanguage(profile?.preferred_language ?? cookieLanguage),
   );
 
-  return { copy: t.publicPages, isSignedIn: Boolean(data.user) };
+  return {
+    copy: t.publicPages,
+    currentLanguage: profile?.preferred_language ?? cookieLanguage,
+    isSignedIn: Boolean(data.user),
+  };
 }
 
 function HomeActions({
@@ -107,7 +112,7 @@ async function HomeHero() {
 }
 
 async function HomeContent() {
-  const { copy } = await getHomeCopy();
+  const { copy, currentLanguage } = await getHomeCopy();
 
   return (
     <main className="flex min-h-screen flex-col items-center">
@@ -117,6 +122,7 @@ async function HomeContent() {
             {copy.brand}
           </Link>
           <div className="flex flex-wrap items-center gap-3">
+            <PublicLanguageSelect currentLanguage={currentLanguage} />
             <Link
               href="/crisis"
               className="text-muted-foreground hover:text-foreground"

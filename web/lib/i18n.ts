@@ -151,7 +151,8 @@ export const dictionary = {
     },
     auth: {
       loginTitle: "Sign in",
-      loginDescription: "Enter your email and password to continue.",
+      loginDescription:
+        "Welcome back. Sign in to return to your private creative space.",
       email: "Email",
       password: "Password",
       forgotPassword: "Forgot your password?",
@@ -159,13 +160,13 @@ export const dictionary = {
       loginAction: "Sign in",
       noAccount: "Do not have an account?",
       signUp: "Create an account",
-      signUpTitle: "Create an account",
+      signUpTitle: "Create your private space",
       signUpDescription:
-        "Create a private account before using diary, AI, or artwork features.",
+        "Start with an account so your diary, consent choices, and artwork can stay private to you.",
       repeatPassword: "Repeat password",
-      safetyTitle: "I understand the safety boundaries",
+      safetyTitle: "I understand this is non-clinical support",
       safetyDescription:
-        "Creative Companion is a non-clinical support tool, not a medical, psychotherapy, crisis, or emergency service. Please review consent settings before using diary or AI features.",
+        "Creative Companion can support private reflection, but it is not medical care, psychotherapy, art therapy, crisis support, or emergency care. You can review consent settings before using diary or AI features.",
       safetyLink: "Safety and consent basics",
       crisisLink: "Crisis resources",
       creatingAccount: "Creating an account...",
@@ -619,7 +620,7 @@ export const dictionary = {
     },
     auth: {
       loginTitle: "登录",
-      loginDescription: "输入邮箱和密码后继续。",
+      loginDescription: "欢迎回来。登录后可以回到你的私人创作空间。",
       email: "邮箱",
       password: "密码",
       forgotPassword: "忘记密码？",
@@ -627,12 +628,13 @@ export const dictionary = {
       loginAction: "登录",
       noAccount: "还没有账号？",
       signUp: "创建账号",
-      signUpTitle: "创建账号",
-      signUpDescription: "使用日记、AI 或作品功能前，请先创建私人账号。",
+      signUpTitle: "创建你的私人空间",
+      signUpDescription:
+        "先创建一个账号，这样日记、同意设置和作品都可以只保存在你的账户里。",
       repeatPassword: "再次输入密码",
-      safetyTitle: "我理解这个应用的安全边界",
+      safetyTitle: "我理解这是非临床支持",
       safetyDescription:
-        "Creative Companion 是非临床支持工具，不是医疗、心理治疗、危机或紧急服务。使用日记或 AI 功能前，请先查看同意设置。",
+        "Creative Companion 可以支持私人反思，但不是医疗、心理治疗、艺术治疗、危机支持或紧急服务。使用日记或 AI 功能前，你可以查看同意设置。",
       safetyLink: "安全与同意基础",
       crisisLink: "危机资源",
       creatingAccount: "正在创建账号...",
@@ -1072,7 +1074,8 @@ export const dictionary = {
     },
     auth: {
       loginTitle: "Iniciar sesión",
-      loginDescription: "Ingresa tu correo y contraseña para continuar.",
+      loginDescription:
+        "Bienvenido/a de nuevo. Inicia sesión para volver a tu espacio creativo privado.",
       email: "Correo electrónico",
       password: "Contraseña",
       forgotPassword: "¿Olvidaste tu contraseña?",
@@ -1080,13 +1083,13 @@ export const dictionary = {
       loginAction: "Iniciar sesión",
       noAccount: "¿No tienes una cuenta?",
       signUp: "Crear una cuenta",
-      signUpTitle: "Crear una cuenta",
+      signUpTitle: "Crea tu espacio privado",
       signUpDescription:
-        "Crea una cuenta privada antes de usar diario, IA u obras.",
+        "Empieza con una cuenta para que tu diario, tus decisiones de consentimiento y tus obras puedan permanecer privadas para ti.",
       repeatPassword: "Repetir contraseña",
-      safetyTitle: "Entiendo los límites de seguridad",
+      safetyTitle: "Entiendo que esto es apoyo no clínico",
       safetyDescription:
-        "Creative Companion es una herramienta de apoyo no clínico, no un servicio médico, de psicoterapia, crisis o emergencia. Revisa los ajustes de consentimiento antes de usar diario o IA.",
+        "Creative Companion puede apoyar la reflexión privada, pero no es atención médica, psicoterapia, arteterapia, apoyo de crisis ni atención de emergencia. Puedes revisar los ajustes de consentimiento antes de usar diario o IA.",
       safetyLink: "Bases de seguridad y consentimiento",
       crisisLink: "Recursos de crisis",
       creatingAccount: "Creando una cuenta...",

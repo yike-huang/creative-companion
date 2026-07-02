@@ -86,10 +86,19 @@ export function SignUpForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">{copy.signUpTitle}</CardTitle>
-          <CardDescription>{copy.signUpDescription}</CardDescription>
+      <Card className="rounded-3xl border-border/70 bg-card/90 shadow-sm">
+        <CardHeader className="gap-3">
+          <div className="flex gap-2" aria-hidden="true">
+            <span className="h-2.5 w-10 rounded-full bg-rose-200/80" />
+            <span className="h-2.5 w-7 rounded-full bg-emerald-200/80" />
+            <span className="h-2.5 w-9 rounded-full bg-sky-200/80" />
+          </div>
+          <CardTitle className="text-3xl leading-tight">
+            {copy.signUpTitle}
+          </CardTitle>
+          <CardDescription className="text-base leading-7">
+            {copy.signUpDescription}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignUp}>
@@ -131,7 +140,7 @@ export function SignUpForm({
                   onChange={(e) => setRepeatPassword(e.target.value)}
                 />
               </div>
-              <div className="flex items-start gap-3 rounded-md border p-3">
+              <div className="flex items-start gap-3 rounded-3xl border border-border/70 bg-accent/35 p-4">
                 <Checkbox
                   id="safety-acknowledgement"
                   checked={acceptedSafetyTerms}
@@ -165,8 +174,16 @@ export function SignUpForm({
                   </p>
                 </div>
               </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              {error && (
+                <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {error}
+                </p>
+              )}
+              <Button
+                type="submit"
+                className="w-full rounded-2xl"
+                disabled={isLoading}
+              >
                 {isLoading ? copy.creatingAccount : copy.signUp}
               </Button>
             </div>
