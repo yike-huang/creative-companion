@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Geist, Short_Stack } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
@@ -20,6 +20,13 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
+const handwritten = Short_Stack({
+  variable: "--font-handwritten",
+  display: "swap",
+  subsets: ["latin"],
+  weight: "400",
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +34,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.className} antialiased`}>
+      <body
+        className={`${handwritten.className} ${geistSans.variable} creative-theme antialiased`}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
