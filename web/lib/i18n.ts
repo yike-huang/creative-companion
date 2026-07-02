@@ -526,7 +526,7 @@ export const dictionary = {
       signUp: "注册",
       signedInGreeting: "已登录账号",
       logout: "退出登录",
-      homeTitle: "为癌症患者和康复者准备的创作与反思空间",
+      homeTitle: "为癌症患者和康复者准备的创作与思考空间",
       homeIntro:
         "Creative Companion 提供一个私人的、非临床的空间。你可以在这里回看自己的情绪，并根据偏好探索 AI 辅助生成的温和艺术活动想法。",
       featureOverview: "功能简介",
