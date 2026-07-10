@@ -16,6 +16,7 @@ import { useState } from "react";
 
 import { ArtworkDrawingCanvas } from "@/components/artwork-drawing-canvas";
 import { ArtworkUploadForm } from "@/components/artwork-upload-form";
+import { StepAudioPlayer } from "@/components/step-audio-player";
 import { Button } from "@/components/ui/button";
 import type { dictionary } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -183,11 +184,13 @@ export function RecommendationWorkspace({
   copy,
   artworkCopy,
   canStoreArtwork,
+  language,
 }: {
   userId: string;
   copy: RecommendationCopy;
   artworkCopy: ArtworkCopy;
   canStoreArtwork: boolean;
+  language: string | null | undefined;
 }) {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [selectedRecommendation, setSelectedRecommendation] =
@@ -349,6 +352,11 @@ export function RecommendationWorkspace({
                     <summary className="cursor-pointer font-semibold">
                       {copy.steps}
                     </summary>
+                    <StepAudioPlayer
+                      steps={selectedRecommendation.steps}
+                      language={language}
+                      className="mt-3"
+                    />
                     <ol className="mt-3 grid list-decimal gap-2 pl-5 leading-7">
                       {selectedRecommendation.steps.map((step) => (
                         <li key={step}>{step}</li>
@@ -450,6 +458,10 @@ export function RecommendationWorkspace({
                       {copy.paperModeDescription}
                     </p>
                   </div>
+                  <StepAudioPlayer
+                    steps={selectedRecommendation.steps}
+                    language={language}
+                  />
                   <ol className="grid list-decimal gap-3 pl-5 leading-7">
                     {selectedRecommendation.steps.map((step) => (
                       <li key={step}>{step}</li>
@@ -630,6 +642,7 @@ export function RecommendationWorkspace({
                   <li key={step}>{step}</li>
                 ))}
               </ol>
+              <StepAudioPlayer steps={recommendation.steps} language={language} />
               <p className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-sm text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100">
                 {recommendation.safetyNote}
               </p>

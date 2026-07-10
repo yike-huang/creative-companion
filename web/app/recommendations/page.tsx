@@ -33,6 +33,7 @@ async function RecommendationsContent() {
       copy={t.recommendations}
       artworkCopy={t.artworks}
       canStoreArtwork={Boolean(consent?.allow_artwork_storage)}
+      language={profile?.preferred_language}
     />
   );
 }

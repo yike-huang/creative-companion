@@ -16,13 +16,30 @@ async function ConsentDetails() {
     redirect("/auth/login");
   }
 
-  const { data: consent, error: consentError } = await supabase
+  let supportsAudioGeneration = true;
+  let { data: consent, error: consentError } = await supabase
     .from("consents")
     .select(
-      "id, allow_ai_analysis, allow_diary_storage, allow_emotion_summary_storage, allow_artwork_storage, allow_emergency_contact, emergency_contact_name, emergency_contact_email",
+      "id, allow_ai_analysis, allow_diary_storage, allow_emotion_summary_storage, allow_artwork_storage, allow_audio_generation, allow_emergency_contact, emergency_contact_name, emergency_contact_email",
     )
     .eq("user_id", data.user.id)
     .single();
+
+  if (consentError?.code === "42703") {
+    supportsAudioGeneration = false;
+    const fallbackResult = await supabase
+      .from("consents")
+      .select(
+        "id, allow_ai_analysis, allow_diary_storage, allow_emotion_summary_storage, allow_artwork_storage, allow_emergency_contact, emergency_contact_name, emergency_contact_email",
+      )
+      .eq("user_id", data.user.id)
+      .single();
+
+    consent = fallbackResult.data
+      ? { ...fallbackResult.data, allow_audio_generation: false }
+      : null;
+    consentError = fallbackResult.error;
+  }
 
   if (consentError || !consent) {
     const { data: profile } = await supabase
@@ -58,7 +75,11 @@ async function ConsentDetails() {
           {t.consent.choicesDescription}
         </p>
       </div>
-      <ConsentSettingsForm consent={consent} copy={t.consent} />
+      <ConsentSettingsForm
+        consent={consent}
+        copy={t.consent}
+        supportsAudioGeneration={supportsAudioGeneration}
+      />
     </div>
   );
 }

@@ -494,6 +494,9 @@ export const dictionary = {
       allowArtworkStorage: "Allow artwork storage",
       allowArtworkStorageDescription:
         "Save uploaded artwork photos and reflections in your account.",
+      allowAudioGeneration: "Allow natural voice audio",
+      allowAudioGenerationDescription:
+        "Allow Creative Companion to send the text being read aloud to an audio service to create a more natural voice. Browser voice can still be used without this.",
       allowEmergencyContact: "Allow optional emergency contact information",
       allowEmergencyContactDescription:
         "Store contact details for future user-initiated safety actions. The app should not contact anyone automatically.",
@@ -962,6 +965,9 @@ export const dictionary = {
       allowSummaryStorageDescription: "保存生成的情绪反思，方便之后回看。",
       allowArtworkStorage: "允许储存作品",
       allowArtworkStorageDescription: "保存上传的作品照片和相关反思。",
+      allowAudioGeneration: "允许自然语音朗读",
+      allowAudioGenerationDescription:
+        "允许 Creative Companion 把正在朗读的文字发送给语音服务，用来生成更自然的声音。不同意时，仍然可以使用浏览器自带朗读。",
       allowEmergencyContact: "允许保存可选紧急联系人信息",
       allowEmergencyContactDescription:
         "保存联系人信息，以便未来由你主动发起安全相关操作。应用不应自动联系任何人。",
@@ -1448,6 +1454,9 @@ export const dictionary = {
       allowArtworkStorage: "Permitir almacenamiento de obras",
       allowArtworkStorageDescription:
         "Guardar fotos de obras subidas y reflexiones en tu cuenta.",
+      allowAudioGeneration: "Permitir audio con voz natural",
+      allowAudioGenerationDescription:
+        "Permitir que Creative Companion envíe el texto que se va a leer en voz alta a un servicio de audio para crear una voz más natural. La voz del navegador puede usarse sin esto.",
       allowEmergencyContact:
         "Permitir información opcional de contacto de emergencia",
       allowEmergencyContactDescription:

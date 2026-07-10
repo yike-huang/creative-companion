@@ -15,6 +15,7 @@ type ConsentSettings = {
   allow_diary_storage: boolean;
   allow_emotion_summary_storage: boolean;
   allow_artwork_storage: boolean;
+  allow_audio_generation: boolean;
   allow_emergency_contact: boolean;
   emergency_contact_name: string | null;
   emergency_contact_email: string | null;
@@ -22,6 +23,7 @@ type ConsentSettings = {
 
 type ConsentSettingsFormProps = {
   consent: ConsentSettings;
+  supportsAudioGeneration: boolean;
   copy: {
     allowDiaryStorage: string;
     allowDiaryStorageDescription: string;
@@ -31,6 +33,8 @@ type ConsentSettingsFormProps = {
     allowSummaryStorageDescription: string;
     allowArtworkStorage: string;
     allowArtworkStorageDescription: string;
+    allowAudioGeneration: string;
+    allowAudioGenerationDescription: string;
     allowEmergencyContact: string;
     allowEmergencyContactDescription: string;
     emergencyContactName: string;
@@ -65,6 +69,11 @@ const consentOptions = [
     descriptionKey: "allowArtworkStorageDescription",
   },
   {
+    key: "allow_audio_generation",
+    labelKey: "allowAudioGeneration",
+    descriptionKey: "allowAudioGenerationDescription",
+  },
+  {
     key: "allow_emergency_contact",
     labelKey: "allowEmergencyContact",
     descriptionKey: "allowEmergencyContactDescription",
@@ -78,6 +87,7 @@ type ConsentOptionCopyKey = (typeof consentOptions)[number][
 
 export function ConsentSettingsForm({
   consent,
+  supportsAudioGeneration,
   copy,
 }: ConsentSettingsFormProps) {
   const [values, setValues] = useState({
@@ -85,6 +95,7 @@ export function ConsentSettingsForm({
     allow_diary_storage: consent.allow_diary_storage,
     allow_emotion_summary_storage: consent.allow_emotion_summary_storage,
     allow_artwork_storage: consent.allow_artwork_storage,
+    allow_audio_generation: consent.allow_audio_generation,
     allow_emergency_contact: consent.allow_emergency_contact,
     emergency_contact_name: consent.emergency_contact_name ?? "",
     emergency_contact_email: consent.emergency_contact_email ?? "",
@@ -109,10 +120,22 @@ export function ConsentSettingsForm({
     setMessage(null);
     setError(null);
 
+    const updateValues = supportsAudioGeneration
+      ? values
+      : {
+          allow_ai_analysis: values.allow_ai_analysis,
+          allow_diary_storage: values.allow_diary_storage,
+          allow_emotion_summary_storage: values.allow_emotion_summary_storage,
+          allow_artwork_storage: values.allow_artwork_storage,
+          allow_emergency_contact: values.allow_emergency_contact,
+          emergency_contact_name: values.emergency_contact_name,
+          emergency_contact_email: values.emergency_contact_email,
+        };
+
     const { error } = await supabase
       .from("consents")
       .update({
-        ...values,
+        ...updateValues,
         emergency_contact_name: values.allow_emergency_contact
           ? values.emergency_contact_name || null
           : null,
@@ -136,7 +159,12 @@ export function ConsentSettingsForm({
   return (
     <form onSubmit={handleSubmit} className="grid gap-6">
       <div className="grid gap-4">
-        {consentOptions.map((option) => (
+        {consentOptions
+          .filter(
+            (option) =>
+              supportsAudioGeneration || option.key !== "allow_audio_generation",
+          )
+          .map((option) => (
           <div key={option.key} className="flex items-start gap-3 rounded-md border p-4">
             <Checkbox
               id={option.key}
