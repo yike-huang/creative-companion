@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { Suspense } from "react";
 
+import { CrisisResourceFinder } from "@/components/crisis-resource-finder";
 import { Button } from "@/components/ui/button";
 import { getDictionary, normalizeLanguage } from "@/lib/i18n";
 
@@ -63,21 +64,7 @@ async function CrisisContent() {
             </div>
           </div>
 
-          <div className="grid gap-4 rounded-md border p-5">
-            <h2 className="text-xl font-semibold">{copy.outsideUS}</h2>
-            <p className="text-sm text-muted-foreground">
-              {copy.outsideUSDescription}
-            </p>
-            <Button asChild className="w-fit" variant="outline">
-              <a
-                href="https://findahelpline.com/"
-                target="_blank"
-                rel="noreferrer"
-              >
-                {copy.findAHelpline}
-              </a>
-            </Button>
-          </div>
+          <CrisisResourceFinder copy={copy} />
 
           <div className="rounded-md border p-5 text-sm text-muted-foreground">
             {copy.crisisFooter}

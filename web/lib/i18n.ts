@@ -142,10 +142,31 @@ export const dictionary = {
         "Call or text 988 to reach the 988 Suicide & Crisis Lifeline. You can also use their online chat.",
       call988: "Call 988",
       text988: "Text 988",
-      outsideUS: "Outside the United States",
-      outsideUSDescription:
-        "Crisis and mental health resources vary by country and region. Find A Helpline can help locate available support where you are.",
       findAHelpline: "Find A Helpline",
+      crisisFindLocalTitle: "Find support by country or region",
+      crisisFindLocalDescription:
+        "You can search manually, or choose to use your browser location once for an approximate starting point. Creative Companion does not save your location.",
+      crisisManualLabel: "Country or region",
+      crisisManualPlaceholder: "Example: Canada, United Kingdom, Australia",
+      crisisManualEmpty:
+        "Open Find A Helpline and search for your current country or region.",
+      crisisManualSearchFor:
+        "Open Find A Helpline and search for: {region}.",
+      crisisUseLocationTitle: "Use my location once",
+      crisisUseLocationDescription:
+        "If you choose this, your browser will ask for location permission. The location is only used on this page to suggest a starting point and is not saved.",
+      crisisUseLocation: "Use my location once",
+      crisisLocating: "Checking location...",
+      crisisLocationSuggestion:
+        "Based on your approximate location, you may be in {country}.",
+      crisisLocationUSNote:
+        "The United States resources above may be a useful starting point. Please contact local emergency services if you are in immediate danger.",
+      crisisLocationDirectoryNote:
+        "Use Find A Helpline to check available crisis or emotional support resources for this country or region.",
+      crisisLocationDenied:
+        "Location was not shared. You can still search manually by country or region.",
+      crisisLocationUnavailable:
+        "We could not reliably identify a country from this location. Please search manually by country or region.",
       crisisFooter:
         "AI features in this project should never replace emergency care, local crisis services, clinicians, or trusted support people.",
     },
@@ -629,10 +650,27 @@ export const dictionary = {
         "在美国，可以拨打或发送短信到 988，联系 988 Suicide & Crisis Lifeline。也可以使用他们的在线聊天。",
       call988: "拨打 988",
       text988: "发送短信到 988",
-      outsideUS: "美国以外",
-      outsideUSDescription:
-        "危机和心理健康资源会因国家和地区而不同。Find A Helpline 可以帮助你寻找所在地可用的支持。",
       findAHelpline: "查找当地热线",
+      crisisFindLocalTitle: "按国家或地区查找支持",
+      crisisFindLocalDescription:
+        "你可以手动搜索，也可以选择让浏览器一次性使用当前位置，给出一个大致的起点。Creative Companion 不会保存你的位置。",
+      crisisManualLabel: "国家或地区",
+      crisisManualPlaceholder: "例如：Canada、United Kingdom、Australia",
+      crisisManualEmpty: "打开 Find A Helpline 后，搜索你当前所在的国家或地区。",
+      crisisManualSearchFor: "打开 Find A Helpline 后搜索：{region}。",
+      crisisUseLocationTitle: "一次性使用我的位置",
+      crisisUseLocationDescription:
+        "如果你选择使用，浏览器会询问定位权限。位置只会在当前页面用于推荐一个大致起点，不会被保存。",
+      crisisUseLocation: "一次性使用我的位置",
+      crisisLocating: "正在查看位置...",
+      crisisLocationSuggestion: "根据大致位置，你可能在 {country}。",
+      crisisLocationUSNote:
+        "上面的美国资源可能是一个有用的起点。如果你现在有立即危险，请联系当地紧急服务。",
+      crisisLocationDirectoryNote:
+        "可以使用 Find A Helpline 查看这个国家或地区可用的危机或情绪支持资源。",
+      crisisLocationDenied: "位置没有被分享。你仍然可以按国家或地区手动搜索。",
+      crisisLocationUnavailable:
+        "我们无法根据这个位置可靠判断国家。请按国家或地区手动搜索。",
       crisisFooter:
         "本项目中的 AI 功能永远不能替代紧急照护、当地危机服务、临床人员或可信任的支持者。",
     },
@@ -1101,10 +1139,31 @@ export const dictionary = {
         "Llama o envía un mensaje de texto al 988 para contactar la 988 Suicide & Crisis Lifeline. También puedes usar su chat en línea.",
       call988: "Llamar al 988",
       text988: "Enviar texto al 988",
-      outsideUS: "Fuera de Estados Unidos",
-      outsideUSDescription:
-        "Los recursos de crisis y salud mental varían según país y región. Find A Helpline puede ayudarte a encontrar apoyo disponible donde estés.",
       findAHelpline: "Buscar una línea de ayuda",
+      crisisFindLocalTitle: "Buscar apoyo por país o región",
+      crisisFindLocalDescription:
+        "Puedes buscar manualmente, o usar la ubicación del navegador una sola vez para obtener un punto de partida aproximado. Creative Companion no guarda tu ubicación.",
+      crisisManualLabel: "País o región",
+      crisisManualPlaceholder: "Ejemplo: Canada, United Kingdom, Australia",
+      crisisManualEmpty:
+        "Abre Find A Helpline y busca tu país o región actual.",
+      crisisManualSearchFor:
+        "Abre Find A Helpline y busca: {region}.",
+      crisisUseLocationTitle: "Usar mi ubicación una vez",
+      crisisUseLocationDescription:
+        "Si eliges esto, el navegador pedirá permiso de ubicación. La ubicación solo se usa en esta página para sugerir un punto de partida y no se guarda.",
+      crisisUseLocation: "Usar mi ubicación una vez",
+      crisisLocating: "Revisando ubicación...",
+      crisisLocationSuggestion:
+        "Según tu ubicación aproximada, podrías estar en {country}.",
+      crisisLocationUSNote:
+        "Los recursos de Estados Unidos de arriba pueden ser un punto de partida útil. Contacta servicios locales de emergencia si estás en peligro inmediato.",
+      crisisLocationDirectoryNote:
+        "Usa Find A Helpline para revisar recursos de crisis o apoyo emocional disponibles para este país o región.",
+      crisisLocationDenied:
+        "No se compartió la ubicación. Aún puedes buscar manualmente por país o región.",
+      crisisLocationUnavailable:
+        "No pudimos identificar de forma confiable un país a partir de esta ubicación. Busca manualmente por país o región.",
       crisisFooter:
         "Las funciones de IA de este proyecto nunca deben reemplazar atención de emergencia, servicios locales de crisis, profesionales clínicos o personas de apoyo de confianza.",
     },
