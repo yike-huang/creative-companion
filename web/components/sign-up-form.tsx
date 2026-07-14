@@ -34,6 +34,8 @@ export function SignUpForm({
     crisisLink: string;
     creatingAccount: string;
     signUp: string;
+    continueWithGoogle: string;
+    orUseEmail: string;
     alreadyAccount: string;
     loginAction: string;
     passwordMismatch: string;
@@ -84,6 +86,31 @@ export function SignUpForm({
     }
   };
 
+  const handleGoogleSignUp = async () => {
+    const supabase = createClient();
+    setIsLoading(true);
+    setError(null);
+
+    if (!acceptedSafetyTerms) {
+      setError(copy.safetyRequired);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        },
+      });
+      if (error) throw error;
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : copy.fallbackError);
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="rounded-3xl border-border/70 bg-card/90 shadow-sm">
@@ -101,8 +128,27 @@ export function SignUpForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="grid gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full rounded-2xl"
+              onClick={handleGoogleSignUp}
+              disabled={isLoading}
+            >
+              <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-background font-sans text-sm font-semibold">
+                G
+              </span>
+              {copy.continueWithGoogle}
+            </Button>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="h-px flex-1 bg-border" />
+              <span>{copy.orUseEmail}</span>
+              <span className="h-px flex-1 bg-border" />
+            </div>
+          </div>
           <form onSubmit={handleSignUp}>
-            <div className="flex flex-col gap-6">
+            <div className="mt-6 flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">{copy.email}</Label>
                 <Input
