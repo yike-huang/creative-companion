@@ -60,6 +60,7 @@ type DirectionPreference =
   | "gently_engage"
   | "take_a_pause";
 type CreationMode = "digital" | "paper";
+type RecommendationScope = "latest_reflection" | "recent_pattern";
 
 type PreferenceOption<T extends string> = {
   value: T;
@@ -110,6 +111,14 @@ function getConnectionSources(recommendation: Recommendation) {
 
 function getResearchSources(recommendation: Recommendation) {
   return recommendation.researchSources ?? [];
+}
+
+function cleanStepText(step: string) {
+  return step.replace(/^\s*(?:step\s*)?\d+[\).:、-]?\s+/i, "").trim();
+}
+
+function getCleanSteps(recommendation: Recommendation) {
+  return recommendation.steps.map(cleanStepText).filter(Boolean);
 }
 
 function SourceLink({
@@ -209,6 +218,8 @@ export function RecommendationWorkspace({
     useState<MediumPreference>("surprise_me");
   const [directionPreference, setDirectionPreference] =
     useState<DirectionPreference>("surprise_me");
+  const [recommendationScope, setRecommendationScope] =
+    useState<RecommendationScope>("latest_reflection");
 
   function skipPreferences() {
     setEnergyPreference("surprise_me");
@@ -233,6 +244,7 @@ export function RecommendationWorkspace({
         },
         body: JSON.stringify({
           crisisAcknowledged,
+          recommendationScope,
           preferences: {
             energy: energyPreference,
             medium: mediumPreference,
@@ -353,12 +365,12 @@ export function RecommendationWorkspace({
                       {copy.steps}
                     </summary>
                     <StepAudioPlayer
-                      steps={selectedRecommendation.steps}
+                      steps={getCleanSteps(selectedRecommendation)}
                       language={language}
                       className="mt-3"
                     />
                     <ol className="mt-3 grid list-decimal gap-2 pl-5 leading-7">
-                      {selectedRecommendation.steps.map((step) => (
+                      {getCleanSteps(selectedRecommendation).map((step) => (
                         <li key={step}>{step}</li>
                       ))}
                     </ol>
@@ -459,11 +471,11 @@ export function RecommendationWorkspace({
                     </p>
                   </div>
                   <StepAudioPlayer
-                    steps={selectedRecommendation.steps}
+                    steps={getCleanSteps(selectedRecommendation)}
                     language={language}
                   />
                   <ol className="grid list-decimal gap-3 pl-5 leading-7">
-                    {selectedRecommendation.steps.map((step) => (
+                    {getCleanSteps(selectedRecommendation).map((step) => (
                       <li key={step}>{step}</li>
                     ))}
                   </ol>
@@ -516,6 +528,45 @@ export function RecommendationWorkspace({
           </p>
         </div>
         <div className="grid gap-4 rounded-lg border border-border/70 bg-muted/35 p-4">
+          <div className="grid gap-3">
+            <p className="text-sm font-medium text-foreground">
+              {copy.recommendationScopeLabel}
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                className={cn(
+                  "rounded-2xl border border-border bg-background p-4 text-left shadow-sm transition hover:border-primary/50",
+                  recommendationScope === "latest_reflection" &&
+                    "border-primary bg-primary/10",
+                )}
+                onClick={() => setRecommendationScope("latest_reflection")}
+              >
+                <span className="block text-sm font-semibold text-foreground">
+                  {copy.latestReflectionScope}
+                </span>
+                <span className="mt-1 block text-sm leading-6 text-muted-foreground">
+                  {copy.latestReflectionScopeDescription}
+                </span>
+              </button>
+              <button
+                type="button"
+                className={cn(
+                  "rounded-2xl border border-border bg-background p-4 text-left shadow-sm transition hover:border-primary/50",
+                  recommendationScope === "recent_pattern" &&
+                    "border-primary bg-primary/10",
+                )}
+                onClick={() => setRecommendationScope("recent_pattern")}
+              >
+                <span className="block text-sm font-semibold text-foreground">
+                  {copy.recentPatternScope}
+                </span>
+                <span className="mt-1 block text-sm leading-6 text-muted-foreground">
+                  {copy.recentPatternScopeDescription}
+                </span>
+              </button>
+            </div>
+          </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
               {copy.preferencesDescription}
@@ -638,11 +689,14 @@ export function RecommendationWorkspace({
                 </p>
               </div>
               <ol className="grid list-decimal gap-2 rounded-lg bg-muted/35 p-4 pl-8 text-sm">
-                {recommendation.steps.map((step) => (
+                {getCleanSteps(recommendation).map((step) => (
                   <li key={step}>{step}</li>
                 ))}
               </ol>
-              <StepAudioPlayer steps={recommendation.steps} language={language} />
+              <StepAudioPlayer
+                steps={getCleanSteps(recommendation)}
+                language={language}
+              />
               <p className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-sm text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100">
                 {recommendation.safetyNote}
               </p>

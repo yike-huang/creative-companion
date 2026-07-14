@@ -358,6 +358,13 @@ export const dictionary = {
         "Here you can ask for gentle art-inspired options based on your latest reflection and curated resources. These are creative prompts, not art therapy, medical care, or crisis support.",
       workspaceBoundary:
         "Feelings do not map to one right art exercise. These suggestions offer different possibilities. You can choose one, change it, or skip both.",
+      recommendationScopeLabel: "What should these ideas draw from?",
+      latestReflectionScope: "Latest reflection",
+      latestReflectionScopeDescription:
+        "Use your newest diary entry as the main starting point.",
+      recentPatternScope: "Recent pattern",
+      recentPatternScopeDescription:
+        "Look across your latest 5 diary entries for a broader pattern.",
       preferencesDescription:
         "These preferences are optional for this moment only. You can leave them open if you would rather see a wider mix of ideas.",
       skipPreferences: "Skip preferences",
@@ -852,6 +859,13 @@ export const dictionary = {
         "这里可以根据最近的反思和已整理的资料，生成一些温和的艺术启发活动。这些只是创作提示，不是艺术治疗、医疗建议或危机支持。",
       workspaceBoundary:
         "情绪和创作练习之间没有唯一正确的对应关系。这里会提供不同可能性，你可以选择、调整，或者两个都不做。",
+      recommendationScopeLabel: "这次想参考哪部分日记？",
+      latestReflectionScope: "最新一篇",
+      latestReflectionScopeDescription:
+        "主要根据最新的日记内容生成活动想法。",
+      recentPatternScope: "最近的整体状态",
+      recentPatternScopeDescription:
+        "参考最近 5 篇日记，看看有没有更宽一点的趋势。",
       preferencesDescription:
         "这些偏好只用于这一次生成，也可以不选。保持开放时，系统会给出更宽一点的想法。",
       skipPreferences: "跳过偏好选择",
@@ -1356,6 +1370,13 @@ export const dictionary = {
         "Aquí puedes pedir opciones suaves inspiradas en el arte a partir de tu reflexión más reciente y recursos curados. Son invitaciones creativas, no arteterapia, atención médica ni apoyo de crisis.",
       workspaceBoundary:
         "Los sentimientos no tienen un único ejercicio de arte correcto. Estas sugerencias ofrecen distintas posibilidades. Puedes elegir una, cambiarla o no usar ninguna.",
+      recommendationScopeLabel: "¿De qué quieres que partan estas ideas?",
+      latestReflectionScope: "Reflexión más reciente",
+      latestReflectionScopeDescription:
+        "Usar tu entrada de diario más nueva como punto de partida principal.",
+      recentPatternScope: "Patrón reciente",
+      recentPatternScopeDescription:
+        "Mirar tus últimas 5 entradas de diario para notar un patrón más amplio.",
       preferencesDescription:
         "Estas preferencias son opcionales y solo para este momento. Puedes dejarlas abiertas si prefieres ver una mezcla más amplia de ideas.",
       skipPreferences: "Omitir preferencias",

@@ -7,7 +7,8 @@ import { createClient } from "@/lib/supabase/server";
 const model = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
 const embeddingModel =
   process.env.OPENAI_EMBEDDING_MODEL ?? "text-embedding-3-small";
-const promptVersion = "recommendation-v1.3";
+const promptVersion = "recommendation-v1.4";
+const recentPatternEntryLimit = 5;
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -98,6 +99,8 @@ type RecommendationPreferences = {
   direction: "surprise_me" | "gently_engage" | "take_a_pause";
 };
 
+type RecommendationScope = "latest_reflection" | "recent_pattern";
+
 function getOutputLanguageName(language: string | null | undefined) {
   const normalizedLanguage = normalizeLanguage(language);
 
@@ -185,11 +188,82 @@ const emotionTagPatterns: { tag: string; patterns: string[] }[] = [
   { tag: "numbness", patterns: ["numb", "empty", "disconnected"] },
 ];
 
+const bodyImagePatterns = [
+  "body image",
+  "self-image",
+  "self image",
+  "appearance",
+  "look at my body",
+  "my body",
+  "body shape",
+  "scars",
+  "scar",
+  "surgery",
+  "mastectomy",
+  "amputation",
+  "amputat",
+  "ostomy",
+  "stoma",
+  "hair loss",
+  "weight change",
+  "sexuality",
+  "intimacy",
+];
+
 const defaultPreferences: RecommendationPreferences = {
   energy: "surprise_me",
   medium: "surprise_me",
   direction: "surprise_me",
 };
+
+function isSupportResourceSource(source: RecommendationSourceOption) {
+  const sourceType = source.sourceType?.toLowerCase() ?? "";
+  const sourceName = source.sourceName.toLowerCase();
+
+  return (
+    sourceType.includes("support_resource") ||
+    sourceType.includes("support") ||
+    sourceName.includes("imerman angels") ||
+    sourceName.includes("cancer support community")
+  );
+}
+
+function shouldOfferConnectionResources({
+  emotionTargetTags,
+  queryText,
+}: {
+  emotionTargetTags: string[];
+  queryText: string;
+}) {
+  const lowerQuery = queryText.toLowerCase();
+
+  return (
+    emotionTargetTags.includes("loneliness") ||
+    /\b(lonely|loneliness|alone|isolated|isolation|peer support|support group)\b/.test(
+      lowerQuery,
+    )
+  );
+}
+
+function recommendationTextIncludesConnectionNeed({
+  title,
+  reason,
+  whyThisFits,
+  steps,
+}: {
+  title: string;
+  reason: string;
+  whyThisFits: string;
+  steps: string[];
+}) {
+  const recommendationText = [title, reason, whyThisFits, ...steps]
+    .join(" ")
+    .toLowerCase();
+
+  return /\b(lonely|loneliness|alone|isolated|isolation|connection|connect with|peer support|support group|community|reach out|reaching out)\b/.test(
+    recommendationText,
+  );
+}
 
 function parsePreferences(value: unknown): RecommendationPreferences {
   const preferences =
@@ -212,6 +286,10 @@ function parsePreferences(value: unknown): RecommendationPreferences {
         ? preferences.direction
         : defaultPreferences.direction,
   };
+}
+
+function parseRecommendationScope(value: unknown): RecommendationScope {
+  return value === "recent_pattern" ? "recent_pattern" : "latest_reflection";
 }
 
 function inferEmotionTargetTags({
@@ -241,6 +319,39 @@ function inferEmotionTargetTags({
   return emotionTagPatterns
     .filter(({ patterns }) => patterns.some((pattern) => text.includes(pattern)))
     .map(({ tag }) => tag);
+}
+
+function inferIdentityBodyTargetTags({
+  latestSummary,
+  entries,
+  profile,
+}: {
+  latestSummary: {
+    summary_text: string | null;
+    dominant_moods: string[] | null;
+  };
+  entries:
+    | { mood_labels: string[] | null; diary_text: string | null }[]
+    | null;
+  profile: UserProfileContext | null;
+}) {
+  const text = [
+    latestSummary.summary_text,
+    ...(latestSummary.dominant_moods ?? []),
+    profile?.cancer_type,
+    profile?.journey_stage,
+    ...(entries ?? []).flatMap((entry) => [
+      entry.diary_text,
+      ...(entry.mood_labels ?? []),
+    ]),
+  ]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ")
+    .toLowerCase();
+
+  return bodyImagePatterns.some((pattern) => text.includes(pattern))
+    ? ["body_image"]
+    : [];
 }
 
 async function getContextSources(
@@ -770,6 +881,31 @@ function parseRecommendations(
           sourceIds?: unknown;
           researchSourceIds?: unknown;
         };
+        const title =
+          typeof recommendation.title === "string"
+            ? recommendation.title
+            : "Creative reflection";
+        const reason =
+          typeof recommendation.reason === "string"
+            ? recommendation.reason
+            : "This activity is intended as non-clinical creative reflection.";
+        const whyThisFits =
+          typeof recommendation.whyThisFits === "string"
+            ? recommendation.whyThisFits
+            : "This activity was generated from your latest non-clinical emotion reflection and curated creative-support boundaries.";
+        const steps = Array.isArray(recommendation.steps)
+          ? recommendation.steps.filter((step) => typeof step === "string")
+          : [];
+        const safetyNote =
+          typeof recommendation.safetyNote === "string"
+            ? recommendation.safetyNote
+            : "This is a non-clinical creative activity, not art therapy or medical care.";
+        const includesConnectionNeed = recommendationTextIncludesConnectionNeed({
+          title,
+          reason,
+          whyThisFits,
+          steps,
+        });
         const sourceIds = Array.isArray(recommendation.sourceIds)
           ? recommendation.sourceIds.filter(
               (sourceId): sourceId is string =>
@@ -782,7 +918,8 @@ function parseRecommendations(
               (option) => option.id === sourceId,
             );
 
-            return source
+            return source &&
+              (includesConnectionNeed || !isSupportResourceSource(source))
               ? [
                   {
                     title: source.title,
@@ -826,25 +963,11 @@ function parseRecommendations(
             typeof recommendation.id === "string"
               ? recommendation.id
               : `generated-${index + 1}`,
-          title:
-            typeof recommendation.title === "string"
-              ? recommendation.title
-              : "Creative reflection",
-          reason:
-            typeof recommendation.reason === "string"
-              ? recommendation.reason
-              : "This activity is intended as non-clinical creative reflection.",
-          whyThisFits:
-            typeof recommendation.whyThisFits === "string"
-              ? recommendation.whyThisFits
-              : "This activity was generated from your latest non-clinical emotion reflection and curated creative-support boundaries.",
-          steps: Array.isArray(recommendation.steps)
-            ? recommendation.steps.filter((step) => typeof step === "string")
-            : [],
-          safetyNote:
-            typeof recommendation.safetyNote === "string"
-              ? recommendation.safetyNote
-              : "This is a non-clinical creative activity, not art therapy or medical care.",
+          title,
+          reason,
+          whyThisFits,
+          steps,
+          safetyNote,
           sources,
           researchSources,
         };
@@ -891,8 +1014,9 @@ async function getResourceContextByTags(
   });
 }
 
-async function getResourceContextByEmotionTargets(
+async function getResourceContextByCoverageTargets(
   supabase: SupabaseClient,
+  dimension: string,
   targetTags: string[],
 ): Promise<ResourceContext[]> {
   if (targetTags.length === 0) {
@@ -904,7 +1028,7 @@ async function getResourceContextByEmotionTargets(
     .select(
       "resource_id, evidence_role, user_facing_fit, recommendation_coverage_plan!inner(dimension, target_tag)",
     )
-    .eq("recommendation_coverage_plan.dimension", "emotion_to_activity")
+    .eq("recommendation_coverage_plan.dimension", dimension)
     .in("recommendation_coverage_plan.target_tag", targetTags);
 
   if (linksError || !links || links.length === 0) {
@@ -1051,6 +1175,11 @@ export async function POST(request: Request) {
       ? (requestBody as Record<string, unknown>).preferences
       : null,
   );
+  const recommendationScope = parseRecommendationScope(
+    typeof requestBody === "object" && requestBody !== null
+      ? (requestBody as Record<string, unknown>).recommendationScope
+      : null,
+  );
   const crisisAcknowledged =
     typeof requestBody === "object" &&
     requestBody !== null &&
@@ -1112,7 +1241,7 @@ export async function POST(request: Request) {
     .select("mood_labels, mood_intensity, diary_text, created_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
-    .limit(5);
+    .limit(recentPatternEntryLimit);
 
   if (entriesError) {
     return NextResponse.json({ error: entriesError.message }, { status: 500 });
@@ -1121,19 +1250,45 @@ export async function POST(request: Request) {
   const client = new OpenAI({
     timeout: 30_000,
   });
+  const scopedEntries =
+    recommendationScope === "latest_reflection"
+      ? (entries ?? []).slice(0, 1)
+      : (entries ?? []);
+  const recommendationScopeContext = {
+    scope: recommendationScope,
+    entry_count: scopedEntries.length,
+    max_recent_entries:
+      recommendationScope === "recent_pattern" ? recentPatternEntryLimit : 1,
+    meaning:
+      recommendationScope === "latest_reflection"
+        ? "Prioritize the user's latest diary entry. Use older patterns only if they are included in the latest emotion summary, and do not let older diary entries override the latest entry."
+        : `Use the user's latest ${recentPatternEntryLimit} diary entries to look for a recent pattern. If the entries point in different directions, acknowledge the mixed pattern and do not collapse it into one emotion.`,
+  };
   const contextQuery = JSON.stringify({
+    recommendation_scope: recommendationScopeContext,
     latest_summary: latestSummary,
-    recent_entries: entries ?? [],
+    recent_entries: scopedEntries,
     profile: profile ?? null,
     creative_preferences: preferences,
   });
   const emotionTargetTags = inferEmotionTargetTags({
     latestSummary,
-    entries: entries ?? [],
+    entries: scopedEntries,
   });
-  const emotionTargetContext = await getResourceContextByEmotionTargets(
+  const identityBodyTargetTags = inferIdentityBodyTargetTags({
+    latestSummary,
+    entries: scopedEntries,
+    profile: (profile ?? null) as UserProfileContext | null,
+  });
+  const emotionTargetContext = await getResourceContextByCoverageTargets(
     supabase,
+    "emotion_to_activity",
     emotionTargetTags,
+  );
+  const identityBodyContext = await getResourceContextByCoverageTargets(
+    supabase,
+    "identity_body",
+    identityBodyTargetTags,
   );
   const embeddedActivityContext = await getResourceContextByEmbedding(
     supabase,
@@ -1143,6 +1298,7 @@ export async function POST(request: Request) {
   );
   let activityContext = [
     ...emotionTargetContext,
+    ...identityBodyContext,
     ...embeddedActivityContext,
   ].filter(
     (item, index, context) =>
@@ -1188,10 +1344,17 @@ export async function POST(request: Request) {
     ...activityContext,
     ...safetyContext,
   ]);
-  const recommendationSources = await getContextSources(
+  const rawRecommendationSources = await getContextSources(
     supabase,
     [...activityContext, ...safetyContext],
     (profile ?? null) as UserProfileContext | null,
+  );
+  const canOfferConnectionResources = shouldOfferConnectionResources({
+    emotionTargetTags,
+    queryText: contextQuery,
+  });
+  const recommendationSources = rawRecommendationSources.filter(
+    (source) => canOfferConnectionResources || !isSupportResourceSource(source),
   );
   const researchSources = await getResearchSources(supabase, [
     ...activityContext,
@@ -1209,18 +1372,20 @@ export async function POST(request: Request) {
         {
           role: "system",
           content:
-            "You generate non-clinical art-inspired coping activity recommendations for people affected by cancer. Write all user-facing JSON string values in the requested output_language, including title, reason, whyThisFits, steps, and safetyNote. Do not translate source IDs. Use a neutral yet empathetic tone in that language: calm, plain, respectful, choice-centered, and humble about evidence. Avoid literal translation patterns; write naturally for the language and context. Do not sound clinical, overly casual, motivational, or intimate. There is no deterministic or universally valid one-to-one mapping between an emotion and an art exercise. Present every output as a tentative creative option, never as the correct activity for a feeling. Mood labels are optional hints, not required inputs. If recent entries have no mood labels, rely on diary_text, latest_summary, and semantic context rather than saying there is not enough emotional data. If entries include Not sure yet, Mixed or hard to name, or Prefer not to name it, respect that choice: do not force a precise emotion label, do not say the user is avoiding feelings, and frame activities as options for something unclear, mixed, heavy, or hard to name when appropriate. Use creative_preferences as optional, momentary preferences rather than a wellbeing assessment: low energy should reduce steps and effort; medium should influence paper versus digital format; direction should gently shape whether options engage with a feeling or offer a pause. A preference is a soft constraint, never permission to force emotional disclosure, and surprise_me means preserve variety. Use activity_context for grounded creative activity framing and safety_context for boundaries. Use evidence_scope_context to judge how closely retrieved evidence matches the user's optional profile. Treat profile fields as contextual preferences, not clinical facts. When evidence comes from a different age group, cancer type, journey stage, or care setting, adapt conservatively and describe the connection with lower certainty. Never imply that evidence from hospitalized adolescents, a specific cancer population, or professionally delivered art therapy directly validates a self-guided activity for a different user. If scope data is absent or mismatched, keep the activity low-risk and general rather than filling gaps with clinical assumptions. Separate evidence-supported mechanisms from creative presentation: reasons and whyThisFits may refer only to grounded mechanisms or broad principles, while materials, colors, subjects, composition, and mark-making can vary as clearly non-validated creative adaptations. Do not imply that every material variation was studied. Treat sources as background principles and creative constraints for source-informed adaptation, not as a closed catalog of activities or instructions that prescribe exact art activities. You may create gentle variations that combine supported principles with different colors, marks, shapes, patterns, symbols, collage-like composition, short captions, or digital and paper formats. Keep adaptations proportionate to the evidence and clearly distinguish them from a study's exact activity. Do not say or imply that NIH, NCCIH, AATA, ACS, or any source recommends this specific activity unless the source explicitly does. Do not call the activities art therapy, psychotherapy, treatment, or medical advice. Do not diagnose. Do not claim clinical benefit, symptom reduction, or guaranteed emotional improvement. Generate exactly two genuinely different, complementary options so the user can choose what feels manageable. Unless the user's medium preference requires otherwise, use different materials or visual structures for the two options. Vary the creative process, visual structure, level of emotional engagement, and effort level; avoid repeatedly defaulting to the same watercolor, mandala, breathing-color, or journaling prompt unless it is especially relevant. When supported by the retrieved context, one option may gently engage with, notice, or express the emotion, while the other may offer soothing, grounding, attentional shifting, or a neutral absorbing subject. If body image, self-image, appearance changes, sexuality, intimacy, surgery-related change, amputation, mastectomy, ostomy, scarring, hair loss, or permanent appearance changes are relevant in diary_text, profile, or retrieved context, treat body image as more than appearance. It may involve identity, intimacy, gendered experience, being seen or judged, control, grief, privacy, and relationship with the body. Do not ask the user to draw a beautiful self, a better body, a before-and-after transformation, or anything that pressures acceptance, positivity, body inspection, exposure, or comparison. Do not assume permanent body changes unless the user or profile clearly mentions them; if permanent-change evidence is retrieved but user context is unclear, frame it as an optional pathway for people carrying lasting changes rather than as the user's situation. Prefer compassionate, non-inspecting prompts such as symbolic body maps, protective boundaries, what the body has carried, a private symbol for change, or an image of care toward the body. If emotion_target_tags includes sadness_low_mood, preserve two possible pathways when feasible: one option may gently name, symbolize, or express a small part of sadness or low mood, and the other may offer soft attention-shifting, comfort, neutral imagery, pleasant imagery, or a quiet ordinary subject. Do not let one sadness-related source override the whole recommendation. Do not imply that distraction is always better than expression, that expression is always necessary, or that the user should avoid sadness. Do not use depression as a diagnosis or as the user's label unless the user explicitly used that word; prefer everyday terms such as sadness, low mood, heaviness, grief, or feeling down. Do not rank the options, claim one regulation strategy is generally better, or imply the user should avoid, suppress, confront, or process an emotion. Never force emotional disclosure or interpretation. Recommend gentle, optional, low-pressure creative activities that can be done digitally or on paper. Avoid trauma processing, exposure, body inspection, or emotionally intense prompts. Every recommendation should make it easy for the user to stop, rest, simplify, or choose something else. Use phrases equivalent to one option, you can, if it feels useful, and feel free to skip in the requested language. Avoid phrases equivalent to you should, this will help, best, proven, fix, release everything, and forced positivity. Return only valid JSON with key recommendations, an array of exactly 2 items. Each item must include id, title, reason, whyThisFits, steps, safetyNote, sourceIds, and researchSourceIds. sourceIds must contain zero to two IDs copied exactly from user_facing_source_options that genuinely support that specific option. researchSourceIds must contain zero to two IDs copied exactly from research_source_options that genuinely support that specific option. Prefer target-specific or stage-specific public sources. Use broad general-context sources only when they clearly fit the recommendation; otherwise use an empty array. Sources with source_type containing support_resource are connection/support options, not ordinary reading links. Use them when the suggestion relates to loneliness, isolation, peer support, or reaching out, and describe connection as optional and low-pressure. Do not automatically attach the same sources or research sources to both recommendations. Do not cite a broad article just because no better source is available. Never invent source IDs, citations, or URLs. Use short practical steps.",
+            "You generate non-clinical art-inspired coping activity recommendations for people affected by cancer. Write all user-facing JSON string values in the requested output_language, including title, reason, whyThisFits, steps, and safetyNote. Do not translate source IDs. Use a neutral yet empathetic tone in that language: calm, plain, respectful, choice-centered, and humble about evidence. Avoid literal translation patterns; write naturally for the language and context. Do not sound clinical, overly casual, motivational, or intimate. There is no deterministic or universally valid one-to-one mapping between an emotion and an art exercise. Present every output as a tentative creative option, never as the correct activity for a feeling. Follow recommendation_scope carefully: latest_reflection means prioritize the newest diary entry and use older patterns only as soft background if they appear in the latest summary; recent_pattern means look across the stated number of recent entries and avoid making one older entry dominate the whole recommendation. Mood labels are optional hints, not required inputs. If recent entries have no mood labels, rely on diary_text, latest_summary, and semantic context rather than saying there is not enough emotional data. If entries include Not sure yet, Mixed or hard to name, or Prefer not to name it, respect that choice: do not force a precise emotion label, do not say the user is avoiding feelings, and frame activities as options for something unclear, mixed, heavy, or hard to name when appropriate. Use creative_preferences as optional, momentary preferences rather than a wellbeing assessment: low energy should reduce steps and effort; medium should influence paper versus digital format; direction should gently shape whether options engage with a feeling or offer a pause. A preference is a soft constraint, never permission to force emotional disclosure, and surprise_me means preserve variety. Use activity_context for grounded creative activity framing and safety_context for boundaries. Use evidence_scope_context to judge how closely retrieved evidence matches the user's optional profile. Treat profile fields as contextual preferences, not clinical facts. When evidence comes from a different age group, cancer type, journey stage, or care setting, adapt conservatively and describe the connection with lower certainty. Never imply that evidence from hospitalized adolescents, a specific cancer population, or professionally delivered art therapy directly validates a self-guided activity for a different user. If scope data is absent or mismatched, keep the activity low-risk and general rather than filling gaps with clinical assumptions. Separate evidence-supported mechanisms from creative presentation: reasons and whyThisFits may refer only to grounded mechanisms or broad principles, while materials, colors, subjects, composition, and mark-making can vary as clearly non-validated creative adaptations. Do not imply that every material variation was studied. Treat sources as background principles and creative constraints for source-informed adaptation, not as a closed catalog of activities or instructions that prescribe exact art activities. You may create gentle variations that combine supported principles with different colors, marks, shapes, patterns, symbols, collage-like composition, short captions, or digital and paper formats. Keep adaptations proportionate to the evidence and clearly distinguish them from a study's exact activity. Do not say or imply that NIH, NCCIH, AATA, ACS, or any source recommends this specific activity unless the source explicitly does. Do not call the activities art therapy, psychotherapy, treatment, or medical advice. Do not diagnose. Do not claim clinical benefit, symptom reduction, or guaranteed emotional improvement. Generate exactly two genuinely different, complementary options so the user can choose what feels manageable. Unless the user's medium preference requires otherwise, use different materials or visual structures for the two options. Vary the creative process, visual structure, level of emotional engagement, and effort level; avoid repeatedly defaulting to the same watercolor, mandala, breathing-color, or journaling prompt unless it is especially relevant. When supported by the retrieved context, one option may gently engage with, notice, or express the emotion, while the other may offer soothing, grounding, attentional shifting, or a neutral absorbing subject. If body image, self-image, appearance changes, sexuality, intimacy, surgery-related change, amputation, mastectomy, ostomy, scarring, hair loss, or permanent appearance changes are relevant in diary_text, profile, or retrieved context, treat body image as more than appearance. It may involve identity, intimacy, gendered experience, being seen or judged, control, grief, privacy, and relationship with the body. Do not ask the user to draw a beautiful self, a better body, a before-and-after transformation, or anything that pressures acceptance, positivity, body inspection, exposure, or comparison. Do not assume permanent body changes unless the user or profile clearly mentions them; if permanent-change evidence is retrieved but user context is unclear, frame it as an optional pathway for people carrying lasting changes rather than as the user's situation. Prefer compassionate, non-inspecting prompts such as symbolic body maps, protective boundaries, what the body has carried, a private symbol for change, or an image of care toward the body. If emotion_target_tags includes sadness_low_mood, preserve two possible pathways when feasible: one option may gently name, symbolize, or express a small part of sadness or low mood, and the other may offer soft attention-shifting, comfort, neutral imagery, pleasant imagery, or a quiet ordinary subject. Do not let one sadness-related source override the whole recommendation. Do not imply that distraction is always better than expression, that expression is always necessary, or that the user should avoid sadness. Do not use depression as a diagnosis or as the user's label unless the user explicitly used that word; prefer everyday terms such as sadness, low mood, heaviness, grief, or feeling down. Do not rank the options, claim one regulation strategy is generally better, or imply the user should avoid, suppress, confront, or process an emotion. Never force emotional disclosure or interpretation. Recommend gentle, optional, low-pressure creative activities that can be done digitally or on paper. Avoid trauma processing, exposure, body inspection, or emotionally intense prompts. Every recommendation should make it easy for the user to stop, rest, simplify, or choose something else. Use phrases equivalent to one option, you can, if it feels useful, and feel free to skip in the requested language. Avoid phrases equivalent to you should, this will help, best, proven, fix, release everything, and forced positivity. Return only valid JSON with key recommendations, an array of exactly 2 items. Each item must include id, title, reason, whyThisFits, steps, safetyNote, sourceIds, and researchSourceIds. sourceIds must contain zero to two IDs copied exactly from user_facing_source_options that genuinely support that specific option, not merely the diary overall. Match sources to the specific recommendation content, mechanism, and emotional focus. A diary can contain several feelings; do not cite a loneliness, peer support, or connection source for a body image, sadness, anger, or grounding activity unless that exact recommendation is explicitly about loneliness, isolation, peer support, or reaching out. researchSourceIds must contain zero to two IDs copied exactly from research_source_options that genuinely support that specific option. Prefer target-specific or stage-specific public sources. Use broad general-context sources only when they clearly fit the recommendation; otherwise use an empty array. Sources with source_type containing support_resource are connection/support options, not ordinary reading links. Use support or connection resources only when user_facing_source_options includes them and the recommendation itself clearly focuses on loneliness, isolation, peer support, support groups, or reaching out. Do not attach connection resources merely because the diary included loneliness somewhere or because a generated explanation happens to use the word loneliness. Do not automatically attach the same sources or research sources to both recommendations. Do not cite a broad article just because no better source is available. Never invent source IDs, citations, or URLs. Use short practical steps.",
         },
         {
           role: "user",
           content: JSON.stringify({
             instruction:
-              "Generate two personalized and meaningfully different art-inspired creative coping options based on the latest non-clinical emotion summary and recent diary entries. Present them as equal choices, not as a best option and a fallback. Ground them in the provided context as gentle adaptations of general principles, not as source-prescribed interventions. Explain why each option might fit in tentative, non-clinical language. Keep the tone calm, respectful, plain, and choice-centered. Treat mood labels as optional hints. If labels are missing or the user chose not to name feelings, use the diary text and summary semantically while keeping the explanation broad and non-forcing. Preserve the user's choice between engaging with a feeling and taking a gentle pause from it when the evidence context supports both.",
+            "Generate two personalized and meaningfully different art-inspired creative coping options based on the requested recommendation_scope, latest non-clinical emotion summary, and provided diary entries. If recommendation_scope.scope is latest_reflection, keep the newest diary entry as the center of the suggestion. If it is recent_pattern, use the stated entry_count and max_recent_entries to look for a recent pattern without letting one older entry take over. Present recommendations as equal choices, not as a best option and a fallback. Ground them in the provided context as gentle adaptations of general principles, not as source-prescribed interventions. Explain why each option might fit in tentative, non-clinical language. Keep the tone calm, respectful, plain, and choice-centered. Treat mood labels as optional hints. If labels are missing or the user chose not to name feelings, use the diary text and summary semantically while keeping the explanation broad and non-forcing. Preserve the user's choice between engaging with a feeling and taking a gentle pause from it when the evidence context supports both. If identity_body_target_tags includes body_image and a recommendation focuses on body image, self-image, appearance change, or relationship with the body, prefer body image source IDs over unrelated emotion or connection sources.",
             output_language: outputLanguage,
+            recommendation_scope: recommendationScopeContext,
             latest_summary: latestSummary,
-            recent_entries: entries ?? [],
+            recent_entries: scopedEntries,
             profile: (profile ?? null) as UserProfileContext | null,
             emotion_target_tags: emotionTargetTags,
+            identity_body_target_tags: identityBodyTargetTags,
             creative_preferences: preferences,
             activity_context: activityContext,
             safety_context: safetyContext,
