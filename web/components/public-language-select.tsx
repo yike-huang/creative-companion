@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { normalizeLanguage, supportedLanguages } from "@/lib/i18n";
@@ -11,19 +12,22 @@ export function PublicLanguageSelect({
 }) {
   const router = useRouter();
   const selectedLanguage = normalizeLanguage(currentLanguage);
+  const [language, setLanguage] = useState(selectedLanguage);
 
   function handleLanguageChange(event: React.ChangeEvent<HTMLSelectElement>) {
     const nextLanguage = normalizeLanguage(event.target.value);
 
+    setLanguage(nextLanguage);
     document.cookie = `creative_companion_language=${nextLanguage}; path=/; max-age=31536000; SameSite=Lax`;
     document.documentElement.lang = nextLanguage;
     router.refresh();
+    window.location.reload();
   }
 
   return (
     <select
       aria-label="Language"
-      value={selectedLanguage}
+      value={language}
       onChange={handleLanguageChange}
       className="h-9 rounded-full border border-border/70 bg-card/85 px-3 text-sm text-foreground shadow-sm transition-colors hover:bg-card focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
     >
