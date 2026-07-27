@@ -124,6 +124,12 @@ async function HomeContent() {
           <div className="flex flex-wrap items-center gap-3">
             <PublicLanguageSelect currentLanguage={currentLanguage} />
             <Link
+              href="/about"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {copy.about}
+            </Link>
+            <Link
               href="/crisis"
               className="text-muted-foreground hover:text-foreground"
             >

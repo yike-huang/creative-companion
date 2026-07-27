@@ -37,6 +37,7 @@ export const dictionary = {
         artworks: "Artworks",
         consent: "Consent",
         crisis: "Crisis Resources",
+        about: "About",
       },
       footerNote: "Creative Companion is a non-clinical support tool.",
       crisisResources: "Crisis Resources",
@@ -46,6 +47,7 @@ export const dictionary = {
     },
     publicPages: {
       brand: "Creative Companion",
+      about: "About",
       crisisResources: "Crisis Resources",
       dashboard: "Dashboard",
       goToDashboard: "Go to dashboard",
@@ -555,6 +557,7 @@ export const dictionary = {
         artworks: "作品空间",
         consent: "同意设置",
         crisis: "危机资源",
+        about: "关于",
       },
       footerNote: "Creative Companion 提供的是非临床支持。",
       crisisResources: "危机资源",
@@ -564,6 +567,7 @@ export const dictionary = {
     },
     publicPages: {
       brand: "Creative Companion",
+      about: "关于",
       crisisResources: "危机资源",
       dashboard: "首页",
       goToDashboard: "进入首页",
@@ -1052,6 +1056,7 @@ export const dictionary = {
         artworks: "Obras",
         consent: "Consentimiento",
         crisis: "Recursos de crisis",
+        about: "Acerca de",
       },
       footerNote: "Creative Companion es una herramienta de apoyo no clínico.",
       crisisResources: "Recursos de crisis",
@@ -1061,6 +1066,7 @@ export const dictionary = {
     },
     publicPages: {
       brand: "Creative Companion",
+      about: "Acerca de",
       crisisResources: "Recursos de crisis",
       dashboard: "Inicio",
       goToDashboard: "Ir al inicio",

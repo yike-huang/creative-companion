@@ -15,6 +15,7 @@ const navItems = [
   { href: "/artworks", labelKey: "artworks" },
   { href: "/consent", labelKey: "consent" },
   { href: "/crisis", labelKey: "crisis" },
+  { href: "/about", labelKey: "about" },
 ] as const;
 
 async function AppShellContent({ children }: { children: React.ReactNode }) {
