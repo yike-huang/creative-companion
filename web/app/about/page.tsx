@@ -118,8 +118,8 @@ async function AboutContent() {
               </AboutParagraph>
               <AboutParagraph indent>
                 Nevertheless, it is important to emphasize that Creative
-                Companion is <strong>NOT</strong> a therapy website and does{" "}
-                <strong>NOT</strong> possess the credentials for art therapy.
+                Companion is <strong>NOT</strong>{" "}a therapy website and does{" "}
+                <strong>NOT</strong>{" "}possess the credentials for art therapy.
                 Instead, it is a safe space for emotion processing through the
                 users&apos; personal, creative processes.
               </AboutParagraph>
@@ -133,7 +133,7 @@ async function AboutContent() {
                 To answer this question, I would like to first explain the role
                 of AI in Creative Companion. Here, the AI{" "}
                 <strong>ASSIST</strong> in helping users reflect on their
-                emotions and <strong>recommends</strong> personalized art-based
+                emotions and <strong>recommends</strong>{" "}personalized art-based
                 coping activities. As studies highlight the risk of
                 over-reliance on AI tools in art-based interventions and the
                 possibilities of increasing sense of agency via those
@@ -194,7 +194,7 @@ async function AboutContent() {
               <AboutParagraph indent>
                 First and foremost, it is again important to note that Creative
                 Companion is <strong>not</strong> a clinical support tool and
-                can <strong>never</strong> replace licensed mental health
+                can <strong>never</strong>{" "}replace licensed mental health
                 professionals. The mental risk of an emotional support platform
                 is worth addressing (Blease et al., 2020; Ohu et al., 2025).
                 Currently, the website features crisis resources and high-risk
@@ -220,7 +220,7 @@ async function AboutContent() {
                 database.
               </AboutParagraph>
               <AboutParagraph indent>
-                I acknowledge the <strong>limitations</strong> of current
+                I acknowledge the <strong>limitations</strong>{" "}of current
                 safety precautions. Currently, Creative Companion has not found
                 an optimal way to address dangerous users&apos; reliance, the
                 lack of real-time feedback for urgent emotional needs,
