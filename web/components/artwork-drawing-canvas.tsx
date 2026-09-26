@@ -919,17 +919,19 @@ export function ArtworkDrawingCanvas({
         }
       >
         <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
+          <div className="relative aspect-[3/2] w-full">
           <canvas
             ref={canvasRef}
             width={canvasWidth}
             height={canvasHeight}
-            className="block aspect-[3/2] w-full touch-none cursor-crosshair"
+            className="absolute inset-0 block h-full w-full touch-none cursor-crosshair"
             onPointerDown={startDrawing}
             onPointerMove={draw}
             onPointerUp={stopDrawing}
             onPointerCancel={stopDrawing}
             onPointerLeave={stopDrawing}
           />
+          </div>
         </div>
 
         <aside
