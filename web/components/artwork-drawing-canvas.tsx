@@ -918,7 +918,7 @@ export function ArtworkDrawingCanvas({
           )
         }
       >
-        <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
+        <div className="self-start overflow-hidden rounded-3xl border bg-white shadow-sm">
           <div className="relative aspect-[3/2] w-full">
           <canvas
             ref={canvasRef}
