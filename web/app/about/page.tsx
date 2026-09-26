@@ -29,20 +29,17 @@ async function getAboutHeaderCopy() {
   };
 }
 
-function Section({
-  title,
+function AboutParagraph({
   children,
+  indent = false,
 }: {
-  title: string;
   children: React.ReactNode;
+  indent?: boolean;
 }) {
   return (
-    <section className="paper-surface grid gap-4 rounded-3xl border border-border/70 p-6 shadow-sm md:p-8">
-      <h2 className="text-2xl leading-tight md:text-3xl">{title}</h2>
-      <div className="grid gap-4 text-base leading-8 text-muted-foreground md:text-lg">
-        {children}
-      </div>
-    </section>
+    <p className={indent ? "indent-10" : undefined}>
+      {children}
+    </p>
   );
 }
 
@@ -76,143 +73,241 @@ async function AboutContent() {
           </div>
         </nav>
 
-        <div className="grid gap-7 py-10">
-          <header className="relative grid gap-5 overflow-hidden rounded-3xl border border-border/70 bg-card/85 p-7 shadow-sm md:p-10">
-            <div
-              className="pointer-events-none absolute -left-8 top-10 h-5 w-48 rotate-[-7deg] rounded-full bg-rose-200/50 blur-[1px]"
-              aria-hidden="true"
-            />
-            <div
-              className="pointer-events-none absolute right-10 top-16 h-4 w-40 rotate-[5deg] rounded-full bg-emerald-200/50 blur-[1px]"
-              aria-hidden="true"
-            />
-            <p className="relative text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              About Creative Companion
-            </p>
-            <h1 className="relative max-w-3xl text-4xl leading-tight md:text-6xl">
-              The stories behind Creative Companion
+        <article className="paper-surface my-8 rounded-3xl border border-border/70 px-6 py-8 shadow-sm md:px-12 md:py-10">
+          <div className="mx-auto max-w-3xl font-sans text-base leading-8 text-foreground md:text-lg">
+            <h1 className="mb-8 text-center font-sans text-3xl font-semibold leading-tight md:text-4xl">
+              The Stories Behind Creative Companion
             </h1>
-            <p className="relative max-w-3xl text-lg leading-8 text-muted-foreground md:text-xl">
-              A personal note on why this project exists, how AI is used here,
-              and what Creative Companion is still learning to do better.
-            </p>
-          </header>
 
-          <Section title="Hi, I’m Yike">
-            <p>
-              I’m the developer of Creative Companion. I’m an ordinary high
-              school student, an art lover, and a childhood cancer survivor.
-            </p>
-          </Section>
+            <AboutParagraph>
+              Hi there! I&apos;m Yike, the developer of Creative Companion.
+              I&apos;m a high school student, an art lover, and a childhood
+              cancer survivor.
+            </AboutParagraph>
 
-          <Section title="Why create Creative Companion?">
-            <p>
-              During treatment, as someone who had loved art from a very young
-              age, I naturally turned to creating when tough moments came. I
-              doodled mindlessly for distraction after hearing my diagnosis. I
-              painted feelings of confinement after chemotherapy sessions filled
-              with vomiting. I even drew the snacks I longed for during
-              transplant, because I am a huge foodie.
-            </p>
-            <p>
-              The helpfulness of creating art went beyond what I expected.
-              Through art, I could process emotions without being overwhelmed
-              by them. I could express feelings that felt too personal to be
-              fully understood by anyone other than myself while going through
-              treatment.
-            </p>
-            <p>
-              My original purpose in creating this website is to share the
-              supportive power of art with more cancer patients and survivors,
-              and to make art a more accessible channel for non-clinical
-              emotional support.
-            </p>
-          </Section>
+            <section className="mt-8">
+              <h2 className="font-sans text-xl font-semibold">
+                (1) Why create Creative Companion?
+              </h2>
+              <AboutParagraph indent>
+                During treatments, being an art-love since a very young age, I
+                naturally turned to art when tough moments approached. I
+                doddled mindlessly for distractions; I painted my frustration
+                after chemotherapy bombarded by vomiting; I even drew out the
+                snacks that I longed for during transplant (as I am a huge
+                foodie &gt;_&lt;). The restorative power of art-making went
+                beyond my expectations. Through art, I was able to express the
+                feelings that are too personal to be understood by anyone other
+                than myself going through treatments; I was able to process my
+                feelings without being overwhelmed by them.
+              </AboutParagraph>
+              <AboutParagraph indent>
+                Aligning with my experiences, studies have found art-based
+                intervention, including both art therapy and creative arts
+                without clinical interpretation, to be a beneficial
+                complementary intervention for cancer patients&apos; mental
+                wellbeing and quality of life (Kaimal et al., 2020; Rivest et
+                al., 2025). However, art therapy may not be readily accessible
+                due to various reasons, such as limited art therapists in the
+                region or insurance coverage.{" "}
+                <strong>
+                  My original purpose of creating this website is, therefore,
+                  to make the art-making process more accessible for cancer
+                  patients and survivors.
+                </strong>
+              </AboutParagraph>
+              <AboutParagraph indent>
+                Nevertheless, it is important to emphasize that Creative
+                Companion is <strong>NOT</strong> a therapy website and does{" "}
+                <strong>NOT</strong> possess the credentials for art therapy.
+                Instead, it is a safe space for emotion processing through the
+                users&apos; personal, creative processes.
+              </AboutParagraph>
+            </section>
 
-          <Section title="Why incorporate AI?">
-            <p>
-              A question I often get is: why is Creative Companion AI-powered?
-              Here, the AI assistant helps users reflect on emotions and offers
-              personalized art-inspired coping activity ideas. Its role is
-              always assistant, never protagonist.
-            </p>
-            <p>
-              Users remain the center of the emotional and creative process.
-              They choose consent settings, what to write in diary entries,
-              whether to use AI recommendations, and how to create. Creative
-              Companion is against the idea that AI could replace human roles
-              in emotional support or creative activity.
-            </p>
-            <p>
-              Emotional needs vary from person to person. This can be especially
-              important for cancer patients and survivors, because age,
-              treatment phase, cancer type, personal life, and current context
-              may shape very different emotional needs. With consent, AI
-              recommendations are based on limited profile information, diary
-              reflections, and curated reliable mental health and art-related
-              sources.
-            </p>
-            <p>
-              People also feel differently about creating art. Some may prefer
-              drawing from their own ideas. Others may find step-by-step
-              guidance less intimidating. Creative Companion includes both:
-              AI-assisted activity ideas and an independent artwork space.
-            </p>
-          </Section>
+            <section className="mt-8">
+              <h2 className="font-sans text-xl font-semibold">
+                (2) Why incorporate AI in Creative Companion?
+              </h2>
+              <AboutParagraph indent>
+                To answer this question, I would like to first explain the role
+                of AI in Creative Companion. Here, the AI{" "}
+                <strong>ASSIST</strong> in helping users reflect on their
+                emotions and <strong>recommends</strong> personalized art-based
+                coping activities. As studies highlight the risk of
+                over-reliance on AI tools in art-based interventions and the
+                possibilities of increasing sense of agency via those
+                interventions, Creative Companion is aware of the risks of AI
+                and strives to protect users&apos; autonomy (Zubala et al.,
+                2025; Kaimal et al., 2020).
+              </AboutParagraph>
+              <AboutParagraph indent>
+                Thus, the AI&apos;s role here is, and will always be an
+                assistance. Users, having full choices of consent settings,
+                emotion diary entries, and the final process of art creating,
+                are the absolute protagonists of their emotional journey and
+                creative processes. AI does not produce art in this process.
+              </AboutParagraph>
+              <AboutParagraph indent>
+                That being said, Creative Companion is <strong>AGAINST</strong>{" "}
+                the idea that AI could replace humans&apos; role in emotional
+                support and creative activities. Instead, Creative Companion
+                aims to promote growth of emotional agency and every
+                user&apos;s unique creativity.
+              </AboutParagraph>
+              <AboutParagraph indent>
+                &quot;Then why still use AI?&quot; One may ask. Emotional needs
+                vary between people, especially when factors such as age, cancer
+                type, or treatment phases add nuances to one&apos;s needs.
+                Therefore, AI is incorporated to achieve the goal of delivering
+                personalized service.
+              </AboutParagraph>
+              <AboutParagraph indent>
+                At Creative Companion, with consents, the art-inspired coping
+                recommendations delivered by AI are based on analysis of
+                users&apos; basic profile information, emotional diary entries,
+                and curated reliable mental health information sources.
+              </AboutParagraph>
+              <AboutParagraph indent>
+                In addition, individuals&apos; feelings and understandings
+                about art-making differ. For example, one may prefer drawing
+                with their own ideas and inspirations; some may find
+                step-by-step guidance making the creative process less
+                intimidating. Recognizing those preference differences, I
+                incorporated AI to provide step-by-step guides for art-based
+                coping activities, along with a drawing space without AI
+                recommendations if preferred, hoping to make creating art
+                possible and relaxing for <strong>everyone.</strong>
+              </AboutParagraph>
+            </section>
 
-          <Section title="What AI does not do here">
-            <p>
-              AI in Creative Companion is not meant to substitute for human
-              care, clinical support, art therapy, psychotherapy, medical
-              advice, crisis support, or emergency care. It should not diagnose
-              users or claim that a specific creative activity will produce a
-              guaranteed emotional result.
-            </p>
-            <p>
-              The goal is to support emotional agency and each user’s unique
-              creativity, while keeping choices visible and consent-centered.
-            </p>
-          </Section>
+            <section className="mt-8">
+              <h2 className="font-sans text-xl font-semibold">
+                (3) Is using Creative Companion safe?
+              </h2>
+              <AboutParagraph indent>
+                As someone who had been through mental health struggles during
+                cancer treatments, I am aware of the safety risks and ethical
+                concerns of Creative Companion, especially after incorporating
+                AI.
+              </AboutParagraph>
+              <AboutParagraph indent>
+                First and foremost, it is again important to note that Creative
+                Companion is <strong>not</strong> a clinical support tool and
+                can <strong>never</strong> replace licensed mental health
+                professionals. The mental risk of an emotional support platform
+                is worth addressing (Blease et al., 2020; Ohu et al., 2025).
+                Currently, the website features crisis resources and high-risk
+                emotion detection, through which reminder messages regarding
+                the need of professional support would appear. Creative
+                Companion&apos;s responses to acute clinical symptoms such as
+                suicidal intention is still in its preliminary stage and would
+                require ongoing development.
+              </AboutParagraph>
+              <AboutParagraph indent>
+                A safe and ethical use of AI is also one of the top priorities.
+                Recognizing the potential harm of AI{" "}
+                <strong>hallucination</strong>, especially under the context of
+                emotional support for cancer populations, I used the
+                Retrieval-Augmented Generation framework so that the
+                recommendations given by AI are based on{" "}
+                <strong>curated, reliable</strong> mental health sources.
+                Creative Companion also values the <strong>privacy</strong> of
+                every user. Therefore, the website only collects minimal
+                identifiable information for user profiles. All information
+                disclosures are transparent and could be managed by consent
+                settings. The user data is securely stored in an online
+                database.
+              </AboutParagraph>
+              <AboutParagraph indent>
+                I acknowledge the <strong>limitations</strong> of current
+                safety precautions. Currently, Creative Companion has not found
+                an optimal way to address dangerous users&apos; reliance, the
+                lack of real-time feedback for urgent emotional needs,
+                additional stress that inaccurate AI-recommendations may cause,
+                potential biases in the AI model for recommendations, and the
+                risks of cyber attack to the user database.
+              </AboutParagraph>
+              <AboutParagraph indent>
+                I will continue learning and developing, hoping to make the
+                experience at Creative Companion safer and more helpful for
+                every user. In the meantime, I would really appreciate any
+                feedback or suggestions on any facets of Creative Companion.
+              </AboutParagraph>
+            </section>
 
-          <Section title="Safety, privacy, and reliable sources">
-            <p>
-              As someone who experienced mental health struggles during cancer
-              treatment, I recognize the safety risks and ethical questions in
-              this project, especially because it includes AI.
-            </p>
-            <p>
-              Creative Companion is not a clinical support tool and can never
-              replace licensed mental health professionals. The site includes
-              crisis resources and high-risk emotion detection as safety
-              supports, but these are not a replacement for urgent or
-              professional help.
-            </p>
-            <p>
-              To reduce the risk of AI hallucination, Creative Companion uses a
-              retrieval-augmented generation approach. This means AI responses
-              are guided by curated sources rather than being generated from
-              the model alone. The site also collects only limited identifiable
-              profile information, uses consent settings, and stores user data
-              in Supabase.
-            </p>
-          </Section>
-
-          <Section title="Limitations and next steps">
-            <p>
-              I also recognize the limitations of the current safety
-              precautions. Creative Companion has not yet found perfect ways to
-              address risks such as unhealthy reliance on the tool, lack of
-              real-time feedback for urgent emotional needs, additional stress
-              from inaccurate AI suggestions, or cybersecurity risks to the
-              database.
-            </p>
-            <p>
-              I will continue learning and developing, hoping to make Creative
-              Companion safer and more helpful. Feedback and suggestions are
-              deeply appreciated.
-            </p>
-          </Section>
-        </div>
+            <section className="mt-10 border-t border-border/70 pt-8 text-sm leading-7 md:text-base">
+              <h2 className="mb-4 font-sans text-lg font-semibold">
+                References:
+              </h2>
+              <div className="grid gap-6">
+                <p>
+                  Blease, C., & Torous, J. (2023). ChatGPT and mental
+                  healthcare: balancing benefits with risks of harms.{" "}
+                  <em>BMJ Ment Health, 26</em>(1).{" "}
+                  <a
+                    href="https://doi.org/10.1136/bmjment-2023-300884"
+                    className="underline underline-offset-4"
+                  >
+                    https://doi.org/10.1136/bmjment-2023-300884
+                  </a>
+                </p>
+                <p>
+                  Kaimal, G., Carroll-Haskins, K., Mensinger, J. L.,
+                  Dieterich-Hartwell, R., Biondo, J., & Levin, W. P. (2020).
+                  Outcomes of Therapeutic Artmaking in Patients Undergoing
+                  Radiation Oncology Treatment: A Mixed-Methods Pilot Study.{" "}
+                  <em>Integrative Cancer Therapies, 19</em>,
+                  153473542091283.{" "}
+                  <a
+                    href="https://doi.org/10.1177/1534735420912835"
+                    className="underline underline-offset-4"
+                  >
+                    https://doi.org/10.1177/1534735420912835
+                  </a>
+                </p>
+                <p>
+                  Ohu, F. C., Burrell, D. N., & Jones, L. A. (2025). Public
+                  Health Risk Management, Policy, and Ethical Imperatives in
+                  the Use of AI Tools for Mental Health Therapy.{" "}
+                  <em>Healthcare, 13</em>(21), 2721-2721.{" "}
+                  <a
+                    href="https://doi.org/10.3390/healthcare13212721"
+                    className="underline underline-offset-4"
+                  >
+                    https://doi.org/10.3390/healthcare13212721
+                  </a>
+                </p>
+                <p>
+                  Rivest, J., Pellerin, A., Desbeaumes Jodoin, V., Haslam, J.,
+                  Martineau, J. T., Caron, D., & Chammas, M. (2025).
+                  Integrating Art-Based Approaches in Psycho-Oncology Practice:
+                  Insights From a Pilot Creative Arts Workshop Designed for
+                  Cancer Patients Receiving Psychiatric Care.{" "}
+                  <em>Journal of Patient Experience, 12</em>.{" "}
+                  <a
+                    href="https://doi.org/10.1177/23743735251380955"
+                    className="underline underline-offset-4"
+                  >
+                    https://doi.org/10.1177/23743735251380955
+                  </a>
+                </p>
+                <p>
+                  Zubala, A., Pease, A., Łyszkiewicz, K., & Hackett, S. (2025).
+                  Art psychotherapy meets creative AI: an integrative review
+                  positioning the role of creative AI in art therapy process.{" "}
+                  <em>Frontiers in Psychology, 16</em>.{" "}
+                  <a
+                    href="https://doi.org/10.3389/fpsyg.2025.1548396"
+                    className="underline underline-offset-4"
+                  >
+                    https://doi.org/10.3389/fpsyg.2025.1548396
+                  </a>
+                </p>
+              </div>
+            </section>
+          </div>
+        </article>
       </div>
     </main>
   );
