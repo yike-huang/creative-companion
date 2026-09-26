@@ -1,111 +1,130 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# Creative Companion
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+Creative Companion is a non-clinical, AI-assisted web application designed to support private emotional reflection and art-inspired coping activities for cancer patients and survivors.
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+The project combines daily emotion check-ins, diary reflection, curated resources, AI-assisted activity recommendations, and digital or offline artwork creation. It is built as a research and prototype system, not as medical care, psychotherapy, art therapy, crisis support, or emergency care.
+
+## Current Status
+
+Creative Companion is currently an active prototype. It includes core user flows for authentication, reflection, recommendation, artwork creation, consent management, and crisis-resource display. The system is suitable for demonstration, design review, and continued research development, but it should not be treated as a validated clinical or therapeutic intervention.
 
 ## Features
 
-Project writing and AI-output tone should follow the [Creative Companion Tone Guide](docs/tone-guide.md). Visual and interaction design should follow the [Creative Companion Visual Design Guide](docs/visual-design-guide.md).
+- Account creation and sign-in with email or Google OAuth
+- Profile setup with limited background information
+- Consent-centered settings for AI reflection, data storage, and related support features
+- Daily emotion diary entries with optional emotion labels
+- AI-assisted, non-diagnostic emotion reflection
+- Personalized art-inspired activity recommendations based on user context, diary reflections, consent settings, and curated sources
+- Retrieval-Augmented Generation (RAG) support using curated mental health, cancer support, and art-related resources
+- User-facing source links and optional research links for recommendation context
+- Digital artwork canvas with multiple tools, brushes, color controls, layers, and saving
+- Offline artwork flow for users who prefer paper or other physical materials
+- Private artwork upload and gallery
+- Crisis resources and approximate location-based support-resource guidance
+- Multilingual interface support for English, Simplified Chinese, Traditional Chinese, and Spanish
+- About page explaining the project story, AI use, safety boundaries, privacy, and limitations
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Proxy
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+## System Architecture
 
-## Demo
+Creative Companion uses a Vercel + Supabase architecture.
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+- **Next.js** powers the web application, routes, server-side actions, and API endpoints.
+- **Vercel** hosts the production deployment.
+- **Supabase Auth** manages user authentication.
+- **Supabase PostgreSQL** stores profiles, consent settings, diary entries, emotion summaries, recommendations, curated sources, RAG traces, and artwork metadata.
+- **Supabase Storage** stores uploaded artwork images.
+- **Supabase pgvector** supports embedding-based retrieval for curated resource chunks.
+- **OpenAI API** supports AI-assisted diary reflection, recommendation generation, and resource embeddings.
 
-## Deploy to Vercel
+## Safety and Ethical Boundaries
 
-Vercel deployment will guide you through creating a Supabase account and project.
+Creative Companion is intentionally framed as non-clinical support.
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+It does **not** provide:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+- medical advice
+- diagnosis
+- psychotherapy
+- art therapy
+- crisis counseling
+- emergency support
+- guaranteed emotional outcomes from any activity
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+The project uses consent settings, crisis-resource display, high-risk expression detection, and curated-source retrieval to reduce risk. These protections are still preliminary and require continued review, testing, and improvement.
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+Known limitations include:
 
-## Clone and run locally
+- possible inaccurate or unhelpful AI-generated recommendations
+- possible over-reliance on the system by users
+- limited real-time support for urgent emotional needs
+- incomplete crisis-resource coverage outside the United States
+- possible bias in AI recommendations or source coverage
+- cybersecurity and privacy risks that require ongoing maintenance
+- incomplete validation with intended users
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+## Local Development
 
-2. Create a Next.js app using the Supabase Starter template npx command
+1. Install dependencies:
 
    ```bash
-   npx create-next-app --example with-supabase with-supabase-app
+   npm install
    ```
+
+2. Create a local environment file:
 
    ```bash
-   yarn create next-app --example with-supabase with-supabase-app
+   cp .env.example .env.local
    ```
 
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
+3. Fill in the required environment variables in `.env.local`:
+
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your-project-url
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-or-anon-key
+   OPENAI_API_KEY=your-openai-api-key
+   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+   OPENAI_EMBEDDING_MODEL=text-embedding-3-small
    ```
 
-3. Use `cd` to change into the app's directory
-
-   ```bash
-   cd with-supabase-app
-   ```
-
-4. Rename `.env.example` to `.env.local` and update the following:
-
-  ```env
-  NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=[INSERT SUPABASE PROJECT API PUBLISHABLE OR ANON KEY]
-  ```
-  > [!NOTE]
-  > This example uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, which refers to Supabase's new **publishable** key format.
-  > Both legacy **anon** keys and new **publishable** keys can be used with this variable name during the transition period. Supabase's dashboard may show `NEXT_PUBLIC_SUPABASE_ANON_KEY`; its value can be used in this example.
-  > See the [full announcement](https://github.com/orgs/supabase/discussions/29260) for more information.
-
-  Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
-
-5. You can now run the Next.js local development server:
+4. Start the local development server:
 
    ```bash
    npm run dev
    ```
 
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
+5. Open the local site:
 
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
+   ```text
+   http://localhost:3000
+   ```
 
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
+## Useful Commands
 
-## Feedback and issues
+```bash
+npm run dev
+npm run lint
+npm run build
+npm run embed:resources
+```
 
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
+## DOI Preparation Checklist
 
-## More Supabase examples
+Before archiving a version for DOI, the project should have:
 
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+- an updated README describing the current project rather than the original starter template
+- a license file
+- citation metadata, such as `CITATION.cff` or `.zenodo.json`
+- no secrets committed to GitHub
+- a clean production build
+- a stable GitHub release tag, such as `v0.1.0-alpha`
+- a short release description explaining what the archived version can and cannot do
+
+## Citation
+
+Citation metadata will be added before the first DOI release.
+
+## License
+
+License information will be added before the first DOI release.
+
