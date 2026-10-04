@@ -196,7 +196,7 @@ async function AboutContent() {
                 Companion is <strong>not</strong> a clinical support tool and
                 can <strong>never</strong>{" "}replace licensed mental health
                 professionals. The mental risk of an emotional support platform
-                is worth addressing (Blease et al., 2020; Ohu et al., 2025).
+                is worth addressing (Blease et al., 2023; Ohu et al., 2025).
                 Currently, the website features crisis resources and high-risk
                 emotion detection, through which reminder messages regarding
                 the need of professional support would appear. Creative

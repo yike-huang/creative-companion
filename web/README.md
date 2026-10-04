@@ -1,67 +1,53 @@
 # Creative Companion
 
-Creative Companion is a non-clinical, AI-assisted web application designed to support private emotional reflection and art-inspired coping activities for cancer patients and survivors.
+Creative Companion is an AI-powered website for personalized, art-inspired, non-clinical emotional support for cancer patients and survivors. The project aims to provide a supportive space for emotion expression, reflection, processing, and coping via creative activities.
 
-The project combines daily emotion check-ins, diary reflection, curated resources, AI-assisted activity recommendations, and digital or offline artwork creation. It is built as a research and prototype system, not as medical care, psychotherapy, art therapy, crisis support, or emergency care.
+This project is NOT a medical, diagnostic, crisis intervention, psychotherapy, or art therapy service. It is designed as a complementary creative coping tool that should not replace professional care.
 
-## Current Status
+## Intended Users
 
-Creative Companion is currently an active prototype. It includes core user flows for authentication, reflection, recommendation, artwork creation, consent management, and crisis-resource display. The system is suitable for demonstration, design review, and continued research development, but it should not be treated as a validated clinical or therapeutic intervention.
+- Cancer patients and survivors
+- Users who want private, low-pressure emotional reflection and personalized, creative coping activity recommendations
 
-## Features
+## Core Features
 
-- Account creation and sign-in with email or Google OAuth
-- Profile setup with limited background information
-- Consent-centered settings for AI reflection, data storage, and related support features
-- Daily emotion diary entries with optional emotion labels
-- AI-assisted, non-diagnostic emotion reflection
-- Personalized art-inspired activity recommendations based on user context, diary reflections, consent settings, and curated sources
-- Retrieval-Augmented Generation (RAG) support using curated mental health, cancer support, and art-related resources
-- User-facing source links and optional research links for recommendation context
-- Digital artwork canvas with multiple tools, brushes, color controls, layers, and saving
-- Offline artwork flow for users who prefer paper or other physical materials
-- Private artwork upload and gallery
-- Crisis resources and approximate location-based support-resource guidance
-- Multilingual interface support for English, Simplified Chinese, Traditional Chinese, and Spanish
-- About page explaining the project story, AI use, safety boundaries, privacy, and limitations
+- User account creation and authentication
+- Limited background profile collection, including age range, cancer type, cancer journey stage, and current country of residence, for personalized services
+- Consent settings for AI analysis and data storage
+- Space for emotion check-ins and diary entries
+- AI-assisted analysis of diary entries to identify recent emotional patterns
+- Personalized art-inspired coping activity recommendations based on diary content, emotion patterns, user background information, and curated mental health resources
+- Text and audio step-by-step guidance for recommended activities
+- A private artwork space where users can create digital art pieces, upload photos of physical artworks, and add reflections or notes
+- Crisis resources, which appear when potentially high-risk emotional expressions are detected
+- Supabase-backed data storage, multilingual support, and responsive web design
 
-## System Architecture
+## Planned Architecture
 
-Creative Companion uses a Vercel + Supabase architecture.
+The system uses a Vercel + Supabase architecture.
 
-- **Next.js** powers the web application, routes, server-side actions, and API endpoints.
-- **Vercel** hosts the production deployment.
-- **Supabase Auth** manages user authentication.
-- **Supabase PostgreSQL** stores profiles, consent settings, diary entries, emotion summaries, recommendations, curated sources, RAG traces, and artwork metadata.
-- **Supabase Storage** stores uploaded artwork images.
-- **Supabase pgvector** supports embedding-based retrieval for curated resource chunks.
-- **OpenAI API** supports AI-assisted diary reflection, recommendation generation, and resource embeddings.
+- Vercel hosts the Next.js web application and handles server-side API functions.
+- Supabase Auth manages user accounts and authentication.
+- Supabase PostgreSQL stores user profiles, diary entries, consent settings, emotion summaries, recommendation records, curated resources, RAG traces, and artwork metadata.
+- Supabase Storage stores uploaded artwork photos.
+- Supabase pgvector supports retrieval from curated mental health, psychoeducation, and art-inspired coping resources, building a basic RAG structure.
+- OpenAI API connects the application to AI models for emotion pattern analysis, recommendation generation, and resource embeddings.
+- The safety layer combines conservative risk-pattern checks with AI-assisted review, while treating crisis detection as a safety signal rather than a clinical judgment.
 
-## Safety and Ethical Boundaries
+## Safety and Ethics
 
-Creative Companion is intentionally framed as non-clinical support.
+As an emotional support app for cancer patients and survivors, Creative Companion prioritizes users' safety.
 
-It does **not** provide:
-
-- medical advice
-- diagnosis
-- psychotherapy
-- art therapy
-- crisis counseling
-- emergency support
-- guaranteed emotional outcomes from any activity
-
-The project uses consent settings, crisis-resource display, high-risk expression detection, and curated-source retrieval to reduce risk. These protections are still preliminary and require continued review, testing, and improvement.
-
-Known limitations include:
-
-- possible inaccurate or unhelpful AI-generated recommendations
-- possible over-reliance on the system by users
-- limited real-time support for urgent emotional needs
-- incomplete crisis-resource coverage outside the United States
-- possible bias in AI recommendations or source coverage
-- cybersecurity and privacy risks that require ongoing maintenance
-- incomplete validation with intended users
+- The website avoids clinical diagnosis, treatment claims, or claims of providing therapy.
+- The website does NOT provide art therapy.
+- All AI functions and data storage are explained and managed by user consent.
+- AI outputs use supportive, reflective language and do not present themselves as a therapist, clinician, or crisis counselor.
+- AI outputs are based on curated mental health resources to reduce hallucination risk.
+- Crisis detection is treated as a safety signal, not a diagnosis.
+- When high-risk language is detected, the app displays crisis resources clearly and immediately.
+- Sensitive information collection is minimized and collected only when necessary for personalization.
+- Currently, multilingual crisis support resources are still under development.
+- Currently, the potential risks of user's overreliance, inability to give immediate responses to acute emotions, AI hallucination, and data insecurity under cyberattack are not fully addressed.
 
 ## Local Development
 
@@ -108,23 +94,10 @@ npm run build
 npm run embed:resources
 ```
 
-## DOI Preparation Checklist
+## DOI Preparation
 
-Before archiving a version for DOI, the project should have:
-
-- an updated README describing the current project rather than the original starter template
-- a license file
-- citation metadata, such as `CITATION.cff` or `.zenodo.json`
-- no secrets committed to GitHub
-- a clean production build
-- a stable GitHub release tag, such as `v0.1.0-alpha`
-- a short release description explaining what the archived version can and cannot do
-
-## Citation
-
-Citation metadata will be added before the first DOI release.
+This repository is being prepared for a versioned DOI release. Before DOI publication, the project should have a stable GitHub release, clear citation metadata, no committed secrets, and a passing production build.
 
 ## License
 
-License information will be added before the first DOI release.
-
+This project is licensed under the MIT License.
