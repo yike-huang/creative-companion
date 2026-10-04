@@ -1,79 +1,113 @@
 # Creative Companion
 
-Creative Companion is an AI-powered web application concept for personalized, art-inspired, non-clinical emotional support for cancer patients and survivors. The project aims to help users reflect on daily emotions, notice recent emotional patterns, and receive gentle creative coping activity suggestions grounded in curated, reliable resources.
+Creative Companion is an AI-powered website for personalized, art-inspired, non-clinical emotional support for cancer patients and survivors. The project aims to provide a supportive space for emotion expression, reflection, processing, and coping via creative activities.
 
-This project is not a medical, diagnostic, crisis intervention, psychotherapy, or art therapy service. It is designed as a supportive reflection and creative coping tool that should complement, not replace, professional care.
+This project is NOT a medical, diagnostic, crisis intervention, psychotherapy, or art therapy service. It is designed as a complementary creative coping tool that should not replace professional care.
 
 ## Intended Users
 
-- Cancer patients
-- Cancer survivors
-- People navigating different stages of a cancer journey
-- Users who want private, low-pressure emotional reflection and creative coping prompts
+- Cancer patients and survivors
+- Users who want private, low-pressure emotional reflection and personalized, creative coping activity recommendations
 
 ## Core Features
 
 - User account creation and authentication
-- Limited background profile collection, such as age range, cancer type, cancer journey stage, and current country of residence
-- Consent settings for AI analysis, data storage, and optional emergency contact information
-- Daily emotion check-ins and diary entries
+- Limited background profile collection, including age range, cancer type, cancer journey stage, and current country of residence, for personalized services
+- Consent settings for AI analysis and data storage
+- Space for emotion check-ins and diary entries
 - AI-assisted analysis of diary entries to identify recent emotional patterns
-- Personalized art-inspired coping activity recommendations based on diary content, emotion patterns, user background information, and curated professional resources rather than model output alone
+- Personalized art-inspired coping activity recommendations based on diary content, emotion patterns, user background information, and curated mental health resources
 - Text and audio step-by-step guidance for recommended activities
-- A private artwork space where users can upload photos of artworks and add reflections or notes
-- Crisis resource display when potentially high-risk emotional expressions are detected
-- Optional, user-initiated emergency contact notification
-- Secure data storage, multilingual support, and responsive web design
+- A private artwork space where users can create digital art pieces, upload photos of physical artworks, and add reflections or notes
+- Crisis resources, which appear when potentially high-risk emotional expressions are detected
+- Supabase-backed data storage, multilingual support, and responsive web design
 
 ## Planned Architecture
 
-The system will use a Vercel + Supabase architecture.
+The system uses a Vercel + Supabase architecture.
 
-- Vercel will host the Next.js web application and handle server-side API functions.
-- Supabase Auth will manage user accounts and authentication.
-- Supabase PostgreSQL will store user profiles, diary entries, consent settings, emotion summaries, recommendation records, and safety-related user preferences.
-- Supabase Storage will store uploaded artwork photos.
-- Supabase pgvector may support retrieval from curated mental health, psychoeducation, and art-inspired coping resources.
-- Vercel AI SDK or AI Gateway may connect the application to AI models for emotion pattern analysis and recommendation generation.
-- Server-side API routes will keep AI provider keys private and separate from browser code.
-- The safety layer will combine conservative risk-pattern checks with AI-assisted review, while treating crisis detection as a safety signal rather than a clinical judgment.
+- Vercel hosts the Next.js web application and handles server-side API functions.
+- Supabase Auth manages user accounts and authentication.
+- Supabase PostgreSQL stores user profiles, diary entries, consent settings, emotion summaries, recommendation records, curated resources, RAG traces, and artwork metadata.
+- Supabase Storage stores uploaded artwork photos.
+- Supabase pgvector supports retrieval from curated mental health, psychoeducation, and art-inspired coping resources, building a basic RAG structure.
+- OpenAI API connects the application to AI models for emotion pattern analysis, recommendation generation, and resource embeddings.
+- The safety layer combines conservative risk-pattern checks with AI-assisted review, while treating crisis detection as a safety signal rather than a clinical judgment.
 
 ## Safety and Ethics
 
-Because the project supports people affected by cancer, safety boundaries must be explicit.
+As an emotional support app for cancer patients and survivors, Creative Companion prioritizes users' safety.
 
-- The app should avoid clinical diagnosis, treatment claims, or claims of providing therapy.
-- The app should use language such as "art-inspired coping activities" unless licensed clinical art therapy services and appropriate governance are involved.
-- AI outputs should use supportive, reflective language and should not present itself as a therapist, clinician, or crisis counselor.
-- Crisis detection should be treated as a safety signal, not a diagnosis.
-- When high-risk language is detected, the app should display crisis resources clearly and immediately.
-- Emergency contact notification should remain user-controlled, opt-in, transparent, and manually confirmed by the user.
-- Users should be able to understand what data is stored, what is analyzed by AI, and what can be deleted.
-- Sensitive fields should be minimized and collected only when necessary for personalization or safety, with a clear reason for each field.
-- Multilingual support should include region-aware crisis and support resources when possible.
+- The website avoids clinical diagnosis, treatment claims, or claims of providing therapy.
+- The website does NOT provide art therapy.
+- All AI functions and data storage are explained and managed by user consent.
+- AI outputs use supportive, reflective language and do not present themselves as a therapist, clinician, or crisis counselor.
+- AI outputs are based on curated mental health resources to reduce hallucination risk.
+- Crisis detection is treated as a safety signal, not a diagnosis.
+- When high-risk language is detected, the app displays crisis resources clearly and immediately.
+- Sensitive information collection is minimized and collected only when necessary for personalization.
+- Currently, multilingual crisis support resources are still under development.
+- Currently, the potential risks of user's overreliance, inability to give immediate responses to acute emotions, AI hallucination, and data insecurity under cyberattack are not fully addressed.
 
-## Data Model Ideas
+## Local Development
 
-Potential Supabase tables:
+The Next.js application is located in the `web` directory.
 
-- `profiles`: user background and non-sensitive personalization fields
-- `consents`: user choices for AI analysis, data storage, and optional emergency contact use
-- `diary_entries`: daily check-ins and diary text
-- `emotion_summaries`: AI-generated pattern summaries, with timestamps and model metadata
-- `recommendations`: recommended activities and the reasoning or source references used
-- `artworks`: uploaded artwork metadata and user reflections
-- `curated_resources`: reviewed resources used for retrieval and recommendation grounding
+1. Go into the app directory:
 
-## Development Direction
+   ```bash
+   cd web
+   ```
 
-The first build should focus on a small, safe MVP:
+2. Install dependencies:
 
-1. Authentication and user profile
-2. Consent settings
-3. Daily check-in and diary CRUD
-4. Basic non-clinical emotion summary with careful storage of sensitive analysis results
-5. Curated art-inspired activity recommendations
-6. Crisis resource display for high-risk expressions
-7. Artwork upload and private reflections
+   ```bash
+   npm install
+   ```
 
-The project should grow slowly, with privacy, consent, and safety reviewed at each stage.
+3. Create a local environment file:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+4. Fill in the required environment variables in `.env.local`:
+
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your-project-url
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-or-anon-key
+   OPENAI_API_KEY=your-openai-api-key
+   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+   OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+   ```
+
+5. Start the local development server:
+
+   ```bash
+   npm run dev
+   ```
+
+6. Open the local site:
+
+   ```text
+   http://localhost:3000
+   ```
+
+## Useful Commands
+
+Run these commands from the `web` directory:
+
+```bash
+npm run dev
+npm run lint
+npm run build
+npm run embed:resources
+```
+
+## DOI Preparation
+
+This repository is being prepared for a versioned DOI release. Before DOI publication, the project should have a stable GitHub release, clear citation metadata, no committed secrets, and a passing production build.
+
+## License
+
+This project is licensed under the MIT License.
