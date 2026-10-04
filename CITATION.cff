@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use Creative Companion in your work, please cite it using the metadata below."
+title: "Creative Companion"
+authors:
+  - family-names: "Huang"
+    given-names: "Yike"
+type: software
+repository-code: "https://github.com/yike-huang/creative-companion"
+url: "https://github.com/yike-huang/creative-companion"
+license: "MIT"
+version: "0.1.0"
+abstract: "Creative Companion is an AI-powered website for personalized, art-inspired, non-clinical emotional support for cancer patients and survivors. It supports private emotional reflection, AI-assisted emotion pattern summaries, personalized creative coping activity recommendations, artwork creation and upload, and crisis resource display while emphasizing consent, safety boundaries, and non-clinical use."
+keywords:
+  - "cancer survivorship"
+  - "emotional support"
+  - "creative coping"
+  - "art-inspired activities"
+  - "human-centered AI"
+  - "retrieval-augmented generation"
+  - "digital health"
